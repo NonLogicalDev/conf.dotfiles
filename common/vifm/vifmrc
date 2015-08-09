@@ -1,0 +1,3 @@
+colo solarized-dark
+command Q :execute '!echo %d > ~/.vifm/lastdir' | quit
+set vicmd=mvim

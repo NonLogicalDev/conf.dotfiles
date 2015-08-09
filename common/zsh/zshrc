@@ -1,0 +1,26 @@
+#
+# Executes commands at the start of an interactive session.
+#
+# Authors:
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
+# Customize to your needs ######################################################
+
+source ~/.zfunc
+
+# I want to install apps where they belong
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+
+export PATH="$PATH:/Users/olegutkin/bin"
+export PATH="$HOME/Library/Haskell/bin:$PATH"
+export ANSIBLE_NOCOWS=1
+
+# Setting up aliases
+alias vifm='source ~/.vifm/vf'
+alias fuck='sudo $(fc -ln -1)'

@@ -1,0 +1,7 @@
+if [ -f ~/.vifm/lastdir ]; then
+	rm -f ~/.vifm/lastdir
+fi
+/usr/local/bin/vifm "$@"
+if [ -f ~/.vifm/lastdir ]; then
+	cd "$(cat ~/.vifm/lastdir)"
+fi

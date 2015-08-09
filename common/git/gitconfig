@@ -1,0 +1,16 @@
+[user]
+  name = NonLogicalDev
+  email = utkin.oleg@me.com
+[alias]
+  b = branch
+  st = status
+  cc = commit
+  co = checkout
+  lg = log --oneline -n 10
+  lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
+  cm = commit -m
+[pager]
+  lg = false
+  lgg = false
+[push]
+  default = simple

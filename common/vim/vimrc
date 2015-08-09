@@ -1,0 +1,551 @@
+" Author: Oleg Utkin
+" Github: nonlogicaldev
+" Close/open all folds zm/zr
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"                            Initialising Plugins: 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Plugin Definitions: {{{
+call plug#begin('~/.vim/plugged')
+"===============================================================================
+" Libraries: {{{
+
+Plug 'ingo-library' " Utility library needed for some plugins
+Plug 'tpope/vim-repeat'
+
+" }}}
+" Language Definitions: {{{
+
+Plug 'rust-lang/rust.vim'
+Plug 'tikhomirov/vim-glsl'
+Plug 'raichoo/haskell-vim'
+Plug 'chase/vim-ansible-yaml'
+Plug 'evanmiller/nginx-vim-syntax'
+
+" }}}
+" Colorschemes: {{{
+
+Plug 'altercation/vim-colors-solarized'
+Plug 'nonlogicaldev/vim-jasmine-colortheme'
+Plug 'morhetz/gruvbox'
+
+" }}}
+" Interface Plugins: {{{
+
+Plug 'bling/vim-airline' " A nice replacement for the default status line
+Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
+Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
+
+Plug 'scrooloose/nerdtree'
+Plug 'jistr/vim-nerdtree-tabs'
+
+Plug 'kien/ctrlp.vim'
+Plug 'tomtom/tcomment_vim' " Lets you quickly find files in cwd with fuzzy search
+Plug 'majutsushi/tagbar'
+
+" Making editing colors in vim a little easier
+Plug 'iandoe/vim-osx-colorpicker'
+Plug 'skammer/vim-css-color'
+Plug 'Colorizer'
+
+Plug 'jceb/vim-orgmode'
+Plug 'tpope/vim-speeddating'
+
+" }}}
+" Editor Behavior Engancements: {{{
+
+Plug 'tpope/vim-abolish'
+Plug 'YankRing.vim' " Stores history of yanks and deletes
+Plug 'EnhancedJumps' " Improve jumps (CTRL-I / CTRL-O)
+Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
+Plug 'tpope/vim-surround' " Surround current element with a symbol
+Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
+Plug 'Lokaltog/vim-easymotion' " Visualises increments of jump commands
+Plug 'godlygeek/tabular' " Aligns any delimiter in selected strings
+Plug 'bufkill.vim' " Allows you to kill a buffer without closing current pane
+Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
+
+Plug 'mattn/emmet-vim'  " Super cool way to write html
+Plug 'ragtag.vim' " Helps with html/xml editing
+
+" }}}
+" Connectivity Plugins: {{{
+
+" Terminal integration
+Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
+
+" Dash integration
+Plug 'rizzatti/funcoo.vim'
+Plug 'rizzatti/dash.vim'
+
+" Git Integration
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+
+" CTags Integration
+Plug 'xolox/vim-misc'
+Plug 'xolox/vim-easytags'
+
+" On the fly code checker
+Plug 'scrooloose/syntastic' 
+
+"Plug 'phildawes/racer', { 'do': 'cargo build --release' }
+
+" }}}
+" Snippet Management: {{{
+
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+
+" }}}
+" Code Completers: {{{
+
+Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
+"Plug 'Valloric/YouCompleteMe'
+
+" }}}
+"===============================================================================
+call plug#end() 
+" }}}
+"                               Custom Mappings:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Global Mappings: {{{
+
+let mapleader = " "
+let maplocalleader = "\\"
+
+" Making line selection less finger straining
+noremap <c-space> V 
+
+" select most recently changed text - particularly useful for pastes
+nnoremap <leader>v `[v`]
+nnoremap <leader>V `[V`]
+
+nnoremap <leader><leader>m :cd %:p:h<cr>
+
+" Maks sure that I never open the useless ExMode
+nnoremap Q <nop>
+
+" }}}
+"                              General Settings:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Backup File Settings: {{{
+
+" Setting the backup to a specific folder
+" so that I dont have to fight vim backup files in repositories
+set backupdir=~/.vim/backup
+set backupcopy=yes
+
+set noswapfile      " Don't use swapfile
+set nobackup        " Don't create annoying backup files
+
+" }}}
+" Encoding Settings: {{{
+
+" Choosing the best encoding ever
+set encoding=utf-8
+set fileencoding=utf-8
+
+" Changing grep engine to ack, cause it is 1000 times faster and better
+set grepprg=ack
+
+" }}}
+"                           Vim Behaviour Settings:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Editor Behaviour: {{{
+
+set autowrite       " Automatically save before :next, :make etc.
+
+set backspace=indent,eol,start  " intuitive backspacing.
+set visualbell      " no beeping.
+
+set autoindent      " autoindent if possible
+set smartindent     " and try to be smart about
+set copyindent      " copy the previous indentation on autoindenting
+
+set tabstop=2       " number of spaces a tab counts for
+set shiftwidth=2    " spaces for autoindents
+set softtabstop=2   " just in case
+set shiftround      " makes indenting a multiple of shiftwidth
+set expandtab       " turn a tab into spaces
+set smarttab        " smart tab handling for indenting
+
+set hidden          " allows making buffers hidden even with unsaved changes
+
+set history=1000    " remember more commands and search history
+set undolevels=1000 " use many levels of undo
+
+" }}}
+" Cmd Settings: {{{
+
+set wildmenu        " enhanced command line completion.
+set wildmode=list:longest  " complete files like a shell.
+
+set showcmd         " display incomplete commands.
+set showmode        " display the mode you're in.
+
+set completeopt=menu,menuone,longest
+set switchbuf=useopen,usetab
+
+" }}}
+" Regex Settings: {{{
+
+set gdefault        " default regexes to global
+set ignorecase      " case-insensitive searching.
+set smartcase       " but case-sensitive if expression contains a capital letter.
+
+" }}}
+" Interface settings: {{{
+
+set mouse=a
+
+syntax on           " enable syntax
+set number          " display numbers
+set ruler           " display position in the file
+set title           " show title of the document
+set showmatch       " show matching brackets
+set hlsearch        " highlight search results
+set incsearch       " highlight incremental search results
+set cursorline      " highlight the line with the cursor
+
+set nowrap          " turn off line wrapping.
+
+set splitright      " Split vertical windows right to the current windows
+set splitbelow      " Split horizontal windows below to the current windows
+
+set laststatus=2    " always show statusline
+
+" }}}
+"                              Custom Extensions:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Essay Mode: {{{
+
+" Remap that supper annoying thing that seems to always happen
+command! W w
+func! WordProcessorMode() 
+  " setlocal formatoptions=1 
+  map j gj
+  map k gk
+  setlocal spell spelllang=en_gb
+  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
+  set complete+=s
+  " set formatprg=par
+  setlocal wrap 
+  setlocal linebreak 
+  set nocursorline
+endfu 
+com! WP call WordProcessorMode()
+" }}}
+" Emacs Style Search: {{{
+
+" (Yah yah I know... but that's like the only thing they got right!)
+let &highlight = 0
+nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
+nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
+nnoremap <silent> N :let &hlsearch = 1<CR>N
+nnoremap <silent> n :let &hlsearch = 1<CR>n
+
+" }}}
+" Cutom Fold Text Line: {{{
+
+set foldtext=CustomFoldText()
+func! CustomFoldText()
+  "get first non-blank line
+  let fs = v:foldstart
+  while getline(fs) =~ '^\s*$' | let fs = nextnonblank(fs + 1)
+  endwhile
+  if fs > v:foldend
+    let line = getline(v:foldstart)
+  else
+    let line = substitute(getline(fs), '\t', repeat(' ', &tabstop), 'g')
+  endif
+
+  let w = winwidth(0) - &foldcolumn - (&number ? 8 : 0)
+  let foldSize = 1 + v:foldend - v:foldstart
+  let foldSizeStr = " " . foldSize . " lines "
+  let foldLevelStr = repeat("+--", v:foldlevel)
+  let lineCount = line("$")
+  let foldPercentage = printf("[%.1f", (foldSize*1.0)/lineCount*100) . "%] "
+  let expansionString = repeat(".", w - strwidth(foldSizeStr.line.foldLevelStr.foldPercentage))
+  return line . expansionString . foldSizeStr . foldPercentage . foldLevelStr
+endf
+
+" }}}
+" Diff With Saved State: {{{
+  
+command! DiffSaved call s:DiffWithSaved()
+function! s:DiffWithSaved()
+    let filetype=&ft
+    diffthis
+    vnew | r # | normal! 1Gdd
+    diffthis
+    exe " setlocal bt=nofile bh=wipe nobl noswf ro ft=" . filetype
+endfunction
+
+" }}}
+" Misc Extensions: {{{
+
+" Open the vimrc file
+command! Config e ~/.vimrc
+
+" Word Processor mode for easier markdown handling
+command! WP call s:WordProcessorMode()
+func! s:WordProcessorMode() 
+  " setlocal formatoptions=1 
+  map j gj
+  map k gk
+  setlocal spell spelllang=en_gb
+  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
+  set complete+=s
+  " set formatprg=par
+  setlocal wrap 
+  setlocal linebreak 
+  set nocursorline
+endfu 
+
+
+" }}}
+" Quick List Toggle: {{{
+
+function! GetBufferList()
+  redir =>buflist
+  silent! ls
+  redir END
+  return buflist
+endfunction
+
+nmap <silent> <leader><leader>q :call ToggleList("Quickfix List", 'c')<CR>
+function! ToggleList(bufname, pfx)
+  let buflist = GetBufferList()
+  for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
+    if bufwinnr(bufnum) != -1
+      exec(a:pfx.'close')
+      return
+    endif
+  endfor
+  if a:pfx == 'l' && len(getloclist(0)) == 0
+      echohl ErrorMsg
+      echo "Location List is Empty."
+      return
+  endif
+  let winnr = winnr()
+  exec('botright '.a:pfx.'window')
+  if winnr() != winnr
+    wincmd p
+  endif
+endfunction
+
+" }}}
+" Open Scratch Buffer: {{{
+
+command! ScratchBuf call s:OpenScratch() 
+
+function! s:OpenScratch()
+  botright new
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
+endf
+
+" }}}
+"                           Plugin Confugurations:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" IndentLine Configuration: {{{
+
+let g:indentLine_char = '|'
+let g:indentLine_color_gui = '#4F2528'
+
+" }}}
+" Airline Configuration: {{{
+
+let g:airline#extensions#tabline#buffer_nr_show = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#bufferline#enabled = 0
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+
+" }}}
+" NerdTree Config: {{{
+
+let g:NERDTreeMinimalUI = 1
+let g:nerdtree_tabs_open_on_gui_startup = 0
+
+" NERD tree mappings
+nmap <silent> <leader>m :NERDTreeCWD<cr>
+nmap <silent> <leader>n :NERDTreeTabsToggle<cr>
+
+" }}}
+" Rainbow Paranthesis: {{{
+
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+
+let g:rbpt_colorpairs = [
+    \ ['brown',       'RoyalBlue3'],
+    \ ['Darkblue',    'SeaGreen3'],
+    \ ['darkgray',    'DarkOrchid3'],
+    \ ['darkgreen',   'firebrick3'],
+    \ ['darkcyan',    'RoyalBlue3'],
+    \ ['darkred',     'SeaGreen3'],
+    \ ['darkmagenta', 'DarkOrchid3'],
+    \ ['brown',       'firebrick3'],
+    \ ['gray',        'RoyalBlue3'],
+    \ ['black',       'SeaGreen3'],
+    \ ['darkmagenta', 'DarkOrchid3'],
+    \ ['Darkblue',    'firebrick3'],
+    \ ['darkgreen',   'RoyalBlue3'],
+    \ ['darkcyan',    'SeaGreen3'],
+    \ ['darkred',     'DarkOrchid3'],
+    \ ['red',         'firebrick3'],
+    \ ]
+
+" }}}
+" UltiSnips: {{{
+" ultisnips is missing a setf trigger for snippets on bufenter
+autocmd BufEnter *.snippets setf snippets
+
+" in ultisnips snippet files, we want actual tabs instead of spaces for
+" indents. us will use those tabs and convert them to spaces if expandtab is set when
+" the user wants to insert the snippet.
+autocmd filetype snippets setlocal noexpandtab
+
+function! g:UltiSnips_Complete()
+    call UltiSnips_ExpandSnippet()
+    if g:ulti_expand_res == 0
+        if pumvisible()
+            return "\<Tab>"
+        else
+            call UltiSnips_JumpForwards()
+            if g:ulti_jump_forwards_res == 0
+               return "\<Tab>"
+            endif
+        endif
+    endif
+    return ""
+endfunction
+
+inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
+" au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+"
+" let g:UltiSnipsExpandTrigger="<M-Tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsListSnippets="<c-e>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
+" }}}
+" Ycm Configuration: {{{
+" to avoid problems with arrows
+" let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/cpp/ycm/.ycm_extra_conf.py'
+let g:ycm_key_list_select_completion = ['<M-Tab>']
+inoremap <M-Tab> <NOP>
+"}}}
+" Org Mode Configuration: {{{
+
+
+" }}}
+" YankRing Configuration: {{{
+
+let g:yankring_history_dir = '~/.vim'
+let g:yankring_history_file = 'yankring_history'
+
+" }}}
+"                                Misc Settings:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" GUI Settings: {{{
+
+" Setting Up Colorsheme and fonts
+set background=dark 
+
+if has("gui_running")
+  "colo jasmine-dark-seti
+  colo gruvbox
+  let g:airline_theme='tomorrow'
+  set guifont=DejaVu\ Sans\ Mono\ For\ Powerline:h14
+else
+  colo gruvbox
+endif
+
+" }}}
+" Vim Debug Mappings: {{{
+
+" Print out the highlight groups under cursor [themeing purposes]
+map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+\ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+\ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
+" }}}
+"                          Pretending To Be Sublime:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"{{{
+if has("gui_running")
+  " No toolbars, menu or scrollbars in the GUI
+  set clipboard+=unnamed
+  set vb t_vb=
+  set guioptions-=m  " no menu
+  set guioptions-=l
+  set guioptions-=L
+  set guioptions-=r  " no scrollbar
+  set guioptions-=R
+
+  " Open ctrlp with cmd+p
+  let g:ctrlp_map = '<D-p>'
+
+  " Open goto symbol on current buffer
+  nmap <D-r> :MyCtrlPTag<cr>
+  imap <D-r> <esc>:MyCtrlPTag<cr>
+
+  " Open goto symbol on all buffers
+  nmap <D-R> :CtrlPBufTagAll<cr>
+  imap <D-R> <esc>:CtrlPBufTagAll<cr>
+
+  " Open goto file
+  nmap <D-e> :CtrlP getcwd()<cr>
+  imap <D-e> <esc>:CtrlP getcwd()<cr>
+
+  " Comment lines with cmd+/
+  map  <D-/> :TComment<cr>
+  vmap <D-/> :TComment<cr>gv
+
+  " Indent lines with cmd+[ and cmd+]
+  nmap <D-]> >>
+  nmap <D-[> <<
+  vmap <D-[> <gv
+  vmap <D-]> >gv
+
+  " Open sidebar with cmd+k
+  map <D-k> :NERDTreeTabsToggle<CR>
+
+  " This mapping makes Ctrl-Tab switch between tabs. 
+  " Ctrl-Shift-Tab goes the other way.
+  " noremap <C-Tab> :tabnext<CR>
+  " noremap <C-S-Tab> :tabprev<CR>
+
+  " switch between tabs with cmd+1, cmd+2,..."
+  map <D-1> 1gt
+  map <D-2> 2gt
+  map <D-3> 3gt
+  map <D-4> 4gt
+  map <D-5> 5gt
+  map <D-6> 6gt
+  map <D-7> 7gt
+  map <D-8> 8gt
+  map <D-9> 9gt
+
+  " until we have default MacVim shortcuts this is the only way to use it in
+  " insert mode
+  imap <D-1> <esc>1gt
+  imap <D-2> <esc>2gt
+  imap <D-3> <esc>3gt
+  imap <D-4> <esc>4gt
+  imap <D-5> <esc>5gt
+  imap <D-6> <esc>6gt
+  imap <D-7> <esc>7gt
+  imap <D-8> <esc>8gt
+  imap <D-9> <esc>9gt
+endif
+"}}}
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim:foldmethod=marker

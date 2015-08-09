@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby -wKU
+
+# (g)man -> graphical man
+
+# Opens manual in Preview app instead of command line
+# I got completely mindblown when I discovered this on
+# some stackExchange post. Try it you will fall in love too.
+
+args = ARGV.join(' ')
+
+postscript = `man #{args} >> /dev/null && man -t #{args} | open -f -a Preview`
+

@@ -1,0 +1,8 @@
+# Lightening up the mood
+# Print a random, hopefully interesting, adage.
+if (( $+commands[fortune] )); then
+  if [[ -t 0 || -t 1 ]]; then
+    export FORTUNE="`fortune`"
+    echo $FORTUNE | cowsay -f blank | lolcat
+  fi
+fi

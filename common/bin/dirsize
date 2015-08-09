@@ -1,0 +1,66 @@
+#!/bin/bash
+
+let totalsize=0
+
+for filesize in $(ls -l . | grep "^-" | awk '{print $5}')
+
+do
+  let totalsize=$totalsize+$filesize
+done
+
+#let totalsize=`echo "scale=2;$totalsize/1048576" |bc`
+
+marker=""
+compstring="$totalsize/1048576"
+compresult=`echo $compstring | bc`
+if [[ $totalsize -eq 0 ]]; then
+	compresult="empty"
+elif [[ $totalsize -lt 1024 ]]; then
+	marker="Bytes"
+	compresult=$totalsize
+elif [[ $totalsize -lt 1048576 ]]; then
+	marker="KiB"
+	compstring="$totalsize/1024"
+	compresult=`echo $compstring | bc`
+	if [[ compresult -lt 10 ]]; then
+		compstring="scale=2;$totalsize/1024"
+		compresult=`echo $compstring | bc`
+	elif [[ compresult -lt 100 ]]; then
+		compstring="scale=1;$totalsize/1024"
+		compresult=`echo $compstring | bc`
+	fi
+elif [[ $totalsize -lt 1073741824 ]]; then
+	marker="MiB"
+	compstring="$totalsize/1048576"
+	compresult=`echo $compstring | bc`
+	if [[ compresult -lt 10 ]]; then
+		compstring="scale=2;$totalsize/1048576"
+		compresult=`echo $compstring | bc`
+	elif [[ compresult -lt 100 ]]; then
+		compstring="scale=1;$totalsize/1048576"
+		compresult=`echo $compstring | bc`
+	fi
+elif [[ $totalsize -gt 1073741824 ]]; then
+	marker="GiB"
+	compstring="$totalsize/1073741824"
+	compresult=`echo $compstring | bc`
+	if [[ compresult -lt 10 ]]; then
+		compstring="scale=2;$totalsize/1073741824"
+		compresult=`echo $compstring | bc`
+	elif [[ compresult -lt 100 ]]; then
+		compstring="scale=1;$totalsize/1073741824"
+		compresult=`echo $compstring | bc`
+	fi
+fi
+total_dirs=$(tree -L 1 | awk '/[0-9] directories,/ {print $1}')
+total_files=$(tree -L 1 | awk '/[0-9] directories,/ {print $3}')
+
+if [[ total_files -ne "0" ]]; then
+	output="Dirs:$total_dirs, Files:$total_files Size:$compresult$marker"
+else
+	output="Dirs:$total_dirs"
+fi
+
+
+echo $output
+#echo ""
