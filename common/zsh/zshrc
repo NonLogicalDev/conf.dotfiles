@@ -22,5 +22,4 @@ export PATH="$HOME/Library/Haskell/bin:$PATH"
 export ANSIBLE_NOCOWS=1
 
 # Setting up aliases
-alias vifm='source ~/.vifm/vf'
 alias fuck='sudo $(fc -ln -1)'
