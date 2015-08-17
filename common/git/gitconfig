@@ -1,16 +1,23 @@
-[user]
-  name = NonLogicalDev
-  email = utkin.oleg@me.com
+[include]
+  path = ~/.gitconfig_local
 [alias]
   b = branch
   st = status
   cc = commit
+  cm = commit -m
   co = checkout
   lg = log --oneline -n 10
-  lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
-  cm = commit -m
+  lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+	cca = commit --amend -C HEAD
+  # lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
 [pager]
   lg = false
   lgg = false
 [push]
   default = simple
+[push]
+	default = simple
+[merge]
+	conflictstyle = diff3
+[diff]
+	algorithm = patience
