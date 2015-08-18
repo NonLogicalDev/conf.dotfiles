@@ -23,3 +23,8 @@ export ANSIBLE_NOCOWS=1
 
 # Setting up aliases
 alias fuck='sudo $(fc -ln -1)'
+
+# Local settings
+if [ -e $HOME/.zshrc_local ]; then
+  . $HOME/.zshrc_local
+fi
