@@ -463,7 +463,7 @@ if has("gui_running")
   "colo jasmine-dark-seti
   colo gruvbox
   let g:airline_theme='tomorrow'
-  set guifont=DejaVu\ Sans\ Mono\ For\ Powerline:h14
+  "set guifont=DejaVu\ Sans\ Mono\ For\ Powerline:h14
 else
   colo gruvbox
 endif
