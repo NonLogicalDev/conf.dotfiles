@@ -10,6 +10,7 @@
   lg = log --oneline -n 10
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
   cca = commit --amend -C HEAD
+  cp = cherry-pick
   # lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
 [pager]
   lg = false

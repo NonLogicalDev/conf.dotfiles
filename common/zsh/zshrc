@@ -17,8 +17,7 @@ source ~/.zfunc
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-export PATH="$PATH:/Users/olegutkin/bin"
-export PATH="$HOME/Library/Haskell/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
 export ANSIBLE_NOCOWS=1
 
 # Setting up aliases
