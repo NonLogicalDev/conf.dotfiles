@@ -23,3 +23,10 @@ export NVM_DIR="$HOME/.nvm"
 ## Adding Python Version Manager
 export PBREW_DIR="$HOME/.pythonbrew"
 [[ -s "$PBREW_DIR/etc/bashrc" ]] && source "$PBREW_DIR/etc/bashrc"
+
+## Adding java version manager
+export JVM_DIR="$HOME/.jenv"
+if [[ -x "$(which jenv)" ]]; then
+  export PATH="$JVM_DIR:$PATH"
+  eval "$(jenv init -)"
+fi

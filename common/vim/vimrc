@@ -22,6 +22,9 @@ Plug 'tikhomirov/vim-glsl'
 Plug 'raichoo/haskell-vim'
 Plug 'chase/vim-ansible-yaml'
 Plug 'evanmiller/nginx-vim-syntax'
+Plug 'guns/vim-clojure-static'
+Plug 'guns/vim-clojure-highlight'
+Plug 'tpope/vim-fireplace'
 
 " }}}
 " Colorschemes: {{{
@@ -40,7 +43,8 @@ Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
 Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 
-Plug 'kien/ctrlp.vim'
+"Plug 'kien/ctrlp.vim'
+
 Plug 'tomtom/tcomment_vim' " Lets you quickly find files in cwd with fuzzy search
 Plug 'majutsushi/tagbar'
 
@@ -60,7 +64,6 @@ Plug 'YankRing.vim' " Stores history of yanks and deletes
 Plug 'EnhancedJumps' " Improve jumps (CTRL-I / CTRL-O)
 Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
 Plug 'tpope/vim-surround' " Surround current element with a symbol
-Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
 Plug 'Lokaltog/vim-easymotion' " Visualises increments of jump commands
 Plug 'godlygeek/tabular' " Aligns any delimiter in selected strings
 Plug 'bufkill.vim' " Allows you to kill a buffer without closing current pane
@@ -81,7 +84,7 @@ Plug 'rizzatti/dash.vim'
 
 " Git Integration
 Plug 'tpope/vim-fugitive'
-Plug 'airblade/vim-gitgutter'
+"Plug 'airblade/vim-gitgutter' This thing is a resource hog
 
 " CTags Integration
 Plug 'xolox/vim-misc'
@@ -101,7 +104,7 @@ Plug 'honza/vim-snippets'
 " }}}
 " Code Completers: {{{
 
-Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
+"Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
 "Plug 'Valloric/YouCompleteMe'
 
 " }}}
@@ -376,10 +379,10 @@ nmap <silent> <leader>n :NERDTreeTabsToggle<cr>
 " }}}
 " Rainbow Paranthesis: {{{
 
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
+" au VimEnter * RainbowParenthesesToggle
+" au Syntax * RainbowParenthesesLoadRound
+" au Syntax * RainbowParenthesesLoadSquare
+" au Syntax * RainbowParenthesesLoadBraces
 
 let g:rbpt_colorpairs = [
     \ ['brown',       'RoyalBlue3'],
@@ -411,18 +414,18 @@ autocmd BufEnter *.snippets setf snippets
 autocmd filetype snippets setlocal noexpandtab
 
 function! g:UltiSnips_Complete()
-    call UltiSnips_ExpandSnippet()
-    if g:ulti_expand_res == 0
-        if pumvisible()
-            return "\<Tab>"
-        else
-            call UltiSnips_JumpForwards()
-            if g:ulti_jump_forwards_res == 0
-               return "\<Tab>"
-            endif
-        endif
+  call UltiSnips#ExpandSnippet()
+  if g:ulti_expand_res == 0
+    if pumvisible()
+        return "\<Tab>"
+    else
+      call UltiSnips#JumpForwards()
+      if g:ulti_jump_forwards_res == 0
+        return "\<Tab>"
+      endif
     endif
-    return ""
+  endif
+  return ""
 endfunction
 
 inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
@@ -452,6 +455,21 @@ let g:yankring_history_dir = '~/.vim'
 let g:yankring_history_file = 'yankring_history'
 
 " }}}
+" Ctrl P Config: {{{
+
+noremap <leader><leader>[ :CtrlPBuffer<CR>
+
+" }}}
+" Emmet Config: {{{
+
+imap <C-Tab> <C-y>,
+
+" }}}
+" Tube Terminal Config: {{{
+
+let g:tube_terminal = 'iterm'
+
+" }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " GUI Settings: {{{
@@ -464,6 +482,7 @@ if has("gui_running")
   colo gruvbox
   let g:airline_theme='tomorrow'
   "set guifont=DejaVu\ Sans\ Mono\ For\ Powerline:h14
+  set guifont=Menlo:h14
 else
   colo gruvbox
 endif
