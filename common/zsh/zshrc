@@ -13,6 +13,7 @@ fi
 # Customize to your needs ######################################################
 
 source ~/.zfunc
+source ~/.zdir
 
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
