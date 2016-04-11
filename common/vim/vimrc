@@ -4,7 +4,7 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"                            Initialising Plugins: 
+"                            Initialising Plugins:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Plugin Definitions: {{{
 call plug#begin('~/.vim/plugged')
@@ -25,6 +25,12 @@ Plug 'evanmiller/nginx-vim-syntax'
 Plug 'guns/vim-clojure-static'
 Plug 'guns/vim-clojure-highlight'
 Plug 'tpope/vim-fireplace'
+Plug 'Matt-Deacalion/vim-systemd-syntax'
+
+Plug 'digitaltoad/vim-pug'
+Plug 'jelera/vim-javascript-syntax'
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'stephpy/vim-yaml'
 
 " }}}
 " Colorschemes: {{{
@@ -43,7 +49,7 @@ Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
 Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 
-"Plug 'kien/ctrlp.vim'
+Plug 'kien/ctrlp.vim'
 
 Plug 'tomtom/tcomment_vim' " Lets you quickly find files in cwd with fuzzy search
 Plug 'majutsushi/tagbar'
@@ -88,7 +94,7 @@ Plug 'tpope/vim-fugitive'
 
 " CTags Integration
 Plug 'xolox/vim-misc'
-Plug 'xolox/vim-easytags'
+"Plug 'xolox/vim-easytags'
 
 " On the fly code checker
 Plug 'scrooloose/syntastic' 
@@ -104,7 +110,7 @@ Plug 'honza/vim-snippets'
 " }}}
 " Code Completers: {{{
 
-"Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
+Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
 "Plug 'Valloric/YouCompleteMe'
 
 " }}}
@@ -287,28 +293,6 @@ function! s:DiffWithSaved()
 endfunction
 
 " }}}
-" Misc Extensions: {{{
-
-" Open the vimrc file
-command! Config e ~/.vimrc
-
-" Word Processor mode for easier markdown handling
-command! WP call s:WordProcessorMode()
-func! s:WordProcessorMode() 
-  " setlocal formatoptions=1 
-  map j gj
-  map k gk
-  setlocal spell spelllang=en_gb
-  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
-  set complete+=s
-  " set formatprg=par
-  setlocal wrap 
-  setlocal linebreak 
-  set nocursorline
-endfu 
-
-
-" }}}
 " Quick List Toggle: {{{
 
 function! GetBufferList()
@@ -348,6 +332,40 @@ function! s:OpenScratch()
   botright new
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
 endf
+
+" }}}
+" Arrow Godmode: {{{
+
+" Become a god?
+nnoremap <up> <c-w>+
+nnoremap <down> <c-w>-
+nnoremap <left> <c-w><
+nnoremap <right> <c-w>>
+
+" }}}
+" Misc Extensions: {{{
+
+" Open the vimrc file
+command! Config call s:OpenConfig()
+func! s:OpenConfig()
+  exec "tabedit ~/.vimrc"
+endfu
+
+" Word Processor mode for easier markdown handling
+command! WP call s:WordProcessorMode()
+func! s:WordProcessorMode() 
+  " setlocal formatoptions=1 
+  map j gj
+  map k gk
+  setlocal spell spelllang=en_gb
+  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
+  set complete+=s
+  " set formatprg=par
+  setlocal wrap 
+  setlocal linebreak 
+  set nocursorline
+endfu 
+
 
 " }}}
 "                           Plugin Confugurations:
@@ -483,7 +501,7 @@ if has("gui_running")
   let g:airline_theme='tomorrow'
   "set guifont=DejaVu\ Sans\ Mono\ For\ Powerline:h14
   set guifont=Menlo:h14
-  set transparency=10
+  "set transparency=5
 else
   colo gruvbox
 endif

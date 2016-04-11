@@ -14,6 +14,21 @@ fi
 
 source ~/.zfunc
 source ~/.zdir
+source /Users/nonlogical/torch/install/bin/torch-activate
+
+# Setting up aliases
+alias fuck='sudo $(fc -ln -1)'
+
+# Docker Maching Automation for mac
+function initDockerVM() {
+  if [[ ! -n "$(docker-machine active 2>/dev/null)" ]]; then
+    echo "Starting Default VM..." 
+    docker-machine start default
+  fi
+  echo "Updating ENVironment..."
+  eval "$(docker-machine env default)" 
+  echo "Done"
+}
 
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
@@ -21,8 +36,6 @@ export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export PATH="$HOME/bin:$PATH"
 export ANSIBLE_NOCOWS=1
 
-# Setting up aliases
-alias fuck='sudo $(fc -ln -1)'
 
 # Local settings
 if [ -e $HOME/.zshrc_local ]; then

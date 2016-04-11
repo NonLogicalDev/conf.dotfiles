@@ -14,15 +14,18 @@ fi
 
 ## Adding Ruby Version Manager
 export RVM_DIR="$HOME/.rvm"
-[[ -s "$RVM_DIR/scripts/rvm" ]] && source "$RVM_DIR/scripts/rvm" 
+[[ -s "$RVM_DIR/scripts/rvm" ]] && \
+  source "$RVM_DIR/scripts/rvm" 
 
 ## Adding Node Version Manger
 export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/nvm.sh" ]] && \
+  source "$NVM_DIR/nvm.sh"
 
 ## Adding Python Version Manager
 export PBREW_DIR="$HOME/.pythonbrew"
-[[ -s "$PBREW_DIR/etc/bashrc" ]] && source "$PBREW_DIR/etc/bashrc"
+[[ -s "$PBREW_DIR/etc/bashrc" ]] && \
+  source "$PBREW_DIR/etc/bashrc"
 
 ## Adding java version manager
 export JVM_DIR="$HOME/.jenv"
@@ -30,3 +33,8 @@ if [[ -x "$(which jenv)" ]]; then
   export PATH="$JVM_DIR:$PATH"
   eval "$(jenv init -)"
 fi
+
+## Adding Torch
+export TORCH_DIR="$HOME/torch/install"
+[[ -s  "$TORCH_DIR/bin/torch-activate" ]] && \
+  source "$TORCH_DIR/bin/torch-activate"
