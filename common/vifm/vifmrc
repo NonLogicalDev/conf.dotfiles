@@ -3,5 +3,9 @@ colo solarized-dark
 command Q :execute '!echo %d > ~/.vifm/lastdir' | quit
 command link :execute '!ln -s %d/%f %D'
 
+map o :!open %f<CR>
+
 set vicmd=mvim
 set nofollowlinks
+
+colorscheme Improved
