@@ -14,7 +14,7 @@ fi
 
 source ~/.zfunc
 source ~/.zdir
-source /Users/nonlogical/torch/install/bin/torch-activate
+#source /Users/nonlogical/torch/install/bin/torch-activate
 
 # Setting up aliases
 alias fuck='sudo $(fc -ln -1)'

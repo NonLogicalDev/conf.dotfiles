@@ -116,6 +116,13 @@ Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
 " }}}
 "===============================================================================
 call plug#end() 
+
+" Call PlugInstall on first startup
+if !filereadable(expand("~/.vim/.init"))
+  PlugInstall
+  call system('touch ~/.vim/.init')
+endif
+
 " }}}
 "                               Custom Mappings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -154,7 +161,7 @@ set nobackup        " Don't create annoying backup files
 
 " Choosing the best encoding ever
 set encoding=utf-8
-set fileencoding=utf-8
+" set fileencoding=utf-8
 
 " Changing grep engine to ack, cause it is 1000 times faster and better
 set grepprg=ack
