@@ -35,6 +35,6 @@ if [[ -x "$(which jenv)" ]]; then
 fi
 
 ## Adding Torch
-export TORCH_DIR="$HOME/torch/install"
-[[ -s  "$TORCH_DIR/bin/torch-activate" ]] && \
-  source "$TORCH_DIR/bin/torch-activate"
+# export TORCH_DIR="$HOME/torch/install"
+# [[ -s  "$TORCH_DIR/bin/torch-activate" ]] && \
+#   source "$TORCH_DIR/bin/torch-activate"

@@ -76,4 +76,8 @@ if [[ ! -d "$TMPPREFIX" ]]; then
   mkdir -p "$TMPPREFIX"
 fi
 
+source ~/.profile_corp
+source ~/.profile_go
+source ~/.profile_vs
+
 # vim: ft=zsh

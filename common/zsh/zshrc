@@ -14,10 +14,12 @@ fi
 
 source ~/.zfunc
 source ~/.zdir
-#source /Users/nonlogical/torch/install/bin/torch-activate
+source ~/SHELL_VARS
 
 # Setting up aliases
 alias fuck='sudo $(fc -ln -1)'
+alias godev='boxer v $DBOX'
+alias mux='tmuxinator'
 
 # Docker Maching Automation for mac
 function initDockerVM() {
@@ -29,6 +31,23 @@ function initDockerVM() {
   eval "$(docker-machine env default)" 
   echo "Done"
 }
+
+
+function exists { which $1 &> /dev/null }
+
+if exists percol; then
+    function percol_select_history() {
+        local tac
+        exists gtac && tac="gtac" || { exists tac && tac="tac" || { tac="tail -r" } }
+        BUFFER=$(fc -l -n 1 | eval $tac | percol --query "$LBUFFER")
+        CURSOR=$#BUFFER         # move cursor
+        zle -R -c               # refresh
+    }
+
+    zle -N percol_select_history
+    bindkey '^R' percol_select_history
+fi
+
 
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"

@@ -1,4 +1,9 @@
 # vim: ft=gitconfig
+[user]
+	name = Oleg Utkin
+  email = oleg.utkin@uber.com
+[url "ssh://gitolite@code.uber.internal:2222/"]
+	insteadOf = https://code.uber.internal/
 [include]
   path = ~/.gitconfig_local
 [alias]
@@ -10,6 +15,8 @@
   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
   cca = commit --amend -C HEAD
   cp = cherry-pick
+  ffo = merge --ff-only
+  rb = rebase
   # lg = log --oneline -n 10
   # lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
 [pager]
@@ -19,7 +26,10 @@
   default = simple
 [merge]
   conflictstyle = diff3
+	ff = only
+	tool = vimdiff
 [diff]
   algorithm = patience
+	tool = vimdiff
 [core]
   excludesfile = /Users/oleutkin/.gitignore_global
