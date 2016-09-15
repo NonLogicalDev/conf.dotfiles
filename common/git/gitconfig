@@ -1,9 +1,4 @@
 # vim: ft=gitconfig
-[user]
-	name = Oleg Utkin
-  email = oleg.utkin@uber.com
-[url "ssh://gitolite@code.uber.internal:2222/"]
-	insteadOf = https://code.uber.internal/
 [include]
   path = ~/.gitconfig_local
 [alias]
