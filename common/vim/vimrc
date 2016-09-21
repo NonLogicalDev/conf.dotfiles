@@ -44,21 +44,23 @@ Plug 'altercation/vim-colors-solarized'
 Plug 'nonlogicaldev/vim-jasmine-colortheme'
 Plug 'morhetz/gruvbox'
 Plug 'fatih/molokai'
+Plug 'flazz/vim-colorschemes'
 
 " }}}
 " Interface Plugins: {{{
 
-Plug 'bling/vim-airline' " A nice replacement for the default status line
+"Plug 'bling/vim-airline' " A nice replacement for the default status line
+Plug 'itchyny/lightline.vim' " An even nicer replacement for the default status line
 Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
 Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
 
-Plug 'scrooloose/nerdtree'
-Plug 'jistr/vim-nerdtree-tabs'
+Plug 'scrooloose/nerdtree', {'on':['NERDTreeToggle', 'NERDTreeTabsToggle', 'NERDTreeCWD']}
+Plug 'jistr/vim-nerdtree-tabs', {'on':['NERDTreeTabsToggle']}
 
-Plug 'kien/ctrlp.vim'
+Plug 'kien/ctrlp.vim', {'on':['CtrlPBuffer', 'CtrlPBufTagAll']}
 
-Plug 'tomtom/tcomment_vim' " Lets you quickly find files in cwd with fuzzy search
-Plug 'majutsushi/tagbar'
+Plug 'tomtom/tcomment_vim' " Lets you quickly comment out lines wtih gc
+"kPlug 'majutsushi/tagbar', {'on':['Tagbar','TagbarToggle']}
 
 " Making editing colors in vim a little easier
 Plug 'iandoe/vim-osx-colorpicker'
@@ -81,14 +83,14 @@ Plug 'godlygeek/tabular' " Aligns any delimiter in selected strings
 Plug 'bufkill.vim' " Allows you to kill a buffer without closing current pane
 Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
 
-Plug 'mattn/emmet-vim'  " Super cool way to write html
-Plug 'ragtag.vim' " Helps with html/xml editing
+Plug 'mattn/emmet-vim', {'for':'html'}  " Super cool way to write html 
+Plug 'ragtag.vim', {'for':'xml'} " Helps with html/xml editing
 
 " }}}
 " Connectivity Plugins: {{{
 
 " Terminal integration
-Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
+" Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
 
 " Dash integration
 Plug 'rizzatti/funcoo.vim'
@@ -100,10 +102,10 @@ Plug 'tpope/vim-fugitive'
 
 " CTags Integration
 Plug 'xolox/vim-misc'
-Plug 'xolox/vim-easytags'
+" Plug 'xolox/vim-easytags'
 
 " On the fly code checker
-Plug 'scrooloose/syntastic' 
+" Plug 'scrooloose/syntastic' 
 
 "Plug 'phildawes/racer', { 'do': 'cargo build --release' }
 
