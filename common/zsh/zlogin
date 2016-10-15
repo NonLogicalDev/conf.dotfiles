@@ -1,15 +1,14 @@
 # Lightening up the mood
 # Print a random, hopefully interesting, adage.
 
-
 if (( $+commands[fortune] )); then
   PIPE1="cat"
+  PIPE2="cat"
+
   # DISABLED TILL I FIND A RELIABLE WAY TO INTSALL COWFILES
   # if (($+commands[cowsay])); then
   #   PIPE1="cowsay -f blank"
   # fi
-
-  PIPE2="cat"
   if (($+commands[lolcat])); then
     PIPE2="lolcat"
   fi

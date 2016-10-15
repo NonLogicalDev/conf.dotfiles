@@ -22,14 +22,15 @@ alias godev='boxer v $DBOX'
 alias mux='tmuxinator'
 
 # Docker Maching Automation for mac
-function initDockerVM() {
+function docker-machine-init {
   if [[ ! -n "$(docker-machine active 2>/dev/null)" ]]; then
     echo "Starting Default VM..." 
-    docker-machine start default
+    docker-machine start dev
   fi
   echo "Updating ENVironment..."
-  eval "$(docker-machine env default)" 
+  eval $(docker-machine env dev)
   echo "Done"
+  export dockerhost=$(docker-machine ip dev)
 }
 
 
