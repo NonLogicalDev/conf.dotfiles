@@ -78,6 +78,10 @@ Plug 'jaxbot/semantic-highlight.vim'
 
 Plug 'jaxbot/semantic-highlight.vim'
 
+if has('nvim')
+  Plug 'kassio/neoterm'
+endif
+
 " }}}
 " Editor Behavior Engancements: {{{
 
@@ -251,6 +255,9 @@ set laststatus=2    " always show statusline
 " }}}
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Tmux Style Copy: {{{
+vnoremap <CR> y
+" }}}
 " Essay Mode: {{{
 
 " Remap that supper annoying thing that seems to always happen
@@ -580,11 +587,15 @@ let g:semanticBlacklistOverride = {
 \ }
 " }}}
 " GruvBox: {{{
+
 let g:gruvbox_contrast_light = 'hard'
 let g:gruvbox_contrast_dark = 'hard'
+
 "}}}
 " Clojure Static: {{{
+
 let g:clojure_align_multiline_strings = 1
+
 " }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -615,9 +626,13 @@ if exists("neovim_dot_app")
 endif
 
 set termguicolors
+" }}}
+" NeoVim Settings: {{{
 
-" Neovim stuff
 if has('nvim')
+  tnoremap <C-\><C-[> <C-\><C-n>
+  tnoremap <C-\><C-]> <C-\><C-n>pi
+  
   let g:terminal_color_0  = '#2e3436'
   let g:terminal_color_1  = '#cc0000'
   let g:terminal_color_2  = '#4e9a06'
@@ -635,6 +650,7 @@ if has('nvim')
   let g:terminal_color_14 = '#00f5e9'
   let g:terminal_color_15 = '#eeeeec'
 endif
+
 " }}}
 " Vim Debug Mappings: {{{
 
