@@ -42,5 +42,5 @@
   algorithm = patience
 [core]
   excludesfile = ~/.gitignore_global
-[url "ssh://gitolite@code.uber.internal:2222/"]
-	insteadOf = https://code.uber.internal/
+[url "git@github.com:"]
+	insteadOf = https://github.com/

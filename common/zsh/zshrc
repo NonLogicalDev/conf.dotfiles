@@ -17,6 +17,8 @@ source ~/.zdir
 source ~/SHELL_VARS
 
 # Setting up aliases
+function exists { which $1 &> /dev/null }
+
 alias fuck='sudo $(fc -ln -1)'
 alias godev='boxer v $DBOX'
 alias mux='tmuxinator'
@@ -33,8 +35,21 @@ function docker-machine-init {
   export dockerhost=$(docker-machine ip dev)
 }
 
+function mkvim {
+  SERVERNAME=$1
+  shift
+  mvim --servername $SERVERNAME $@
+}
 
-function exists { which $1 &> /dev/null }
+function uvim {
+  SERVERS=$(mvim --serverlist)
+  if [[ -z $SERVERS ]]; then
+    echo "NO GUI Server is running"
+    mkvim GUI $@
+  else
+    mvim --servername $(echo $SERVERS|percol) --remote $@
+  fi
+}
 
 if exists percol; then
     function percol_select_history() {
@@ -48,7 +63,6 @@ if exists percol; then
     zle -N percol_select_history
     bindkey '^R' percol_select_history
 fi
-
 
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"

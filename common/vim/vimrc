@@ -20,27 +20,27 @@ Plug 'tpope/vim-repeat'
 " }}}
 " Language Definitions: {{{
 
-Plug 'evanmiller/nginx-vim-syntax'
-Plug 'digitaltoad/vim-pug'
+Plug 'digitaltoad/vim-pug' " Jade/Pug templates
 Plug 'MicahElliott/Rocannon'
-Plug 'hdima/python-syntax'
+Plug 'evanmiller/nginx-vim-syntax'
 
-Plug 'fatih/vim-go', {'for':'go'}
-Plug 'rust-lang/rust.vim', {'for':'rust'}
-Plug 'tikhomirov/vim-glsl', {'for':'glsl'}
-Plug 'raichoo/haskell-vim', {'for':'haskell'}
+Plug 'keith/swift.vim',                   { 'for':'swift'          }
+Plug 'hdima/python-syntax',               { 'for':'python'         }
+Plug 'fatih/vim-go',                      { 'for':'go'             }
+Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
+Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
+Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
+Plug 'jelera/vim-javascript-syntax',      { 'for':'javascript'     }
 
-Plug 'jelera/vim-javascript-syntax', {'for':'javascript'}
+Plug 'guns/vim-clojure-static',           { 'for':'clojure'        }
+Plug 'guns/vim-clojure-highlight',        { 'for':'clojure'        }
+Plug 'tpope/vim-fireplace',               { 'for':'clojure'        }
+Plug 'guns/vim-sexp',                     { 'for':'clojure'        }
 
-Plug 'guns/vim-clojure-static', {'for':'clojure'}
-Plug 'guns/vim-clojure-highlight', {'for':'clojure'}
-Plug 'tpope/vim-fireplace', {'for':'clojure'}
-Plug 'guns/vim-sexp', {'for':'clojure'}
-
-Plug 'Matt-Deacalion/vim-systemd-syntax', {'for':'systemd'}
-Plug 'stephpy/vim-yaml', {'for':'yaml'}
-Plug 'chase/vim-ansible-yaml', {'for':'yaml'}
-Plug 'cakebaker/scss-syntax.vim', {'for':['scss', 'sass']}
+Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
+Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
+Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
+Plug 'cakebaker/scss-syntax.vim',         { 'for':['scss', 'sass'] }
 
 " }}}
 " Colorschemes: {{{
@@ -60,7 +60,7 @@ Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
 Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
 
 Plug 'scrooloose/nerdtree', {'on':['NERDTreeToggle', 'NERDTreeTabsToggle', 'NERDTreeCWD']}
-Plug 'jistr/vim-nerdtree-tabs', {'on':['NERDTreeTabsToggle']}
+Plug 'jistr/vim-nerdtree-tabs', {'on':['NERDTreeTabsToggle', 'NerdTreeToggle', 'NERDTreeCWD']}
 
 Plug 'kien/ctrlp.vim', {'on':['CtrlPBuffer', 'CtrlPBufTagAll']}
 
@@ -74,6 +74,8 @@ Plug 'Colorizer'
 
 Plug 'jceb/vim-orgmode'
 Plug 'tpope/vim-speeddating'
+Plug 'jaxbot/semantic-highlight.vim'
+
 Plug 'jaxbot/semantic-highlight.vim'
 
 " }}}
@@ -124,7 +126,7 @@ Plug 'honza/vim-snippets'
 " }}}
 " Code Completers: {{{
 
-Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
+"Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
 Plug 'Valloric/YouCompleteMe'
 
 " }}}
@@ -360,8 +362,8 @@ endf
 " Become a god?
 nnoremap <up> <c-w>+
 nnoremap <down> <c-w>-
-nnoremap <left> <c-w><
-nnoremap <right> <c-w>>
+nnoremap <right> <c-w><
+nnoremap <left> <c-w>>
 
 " }}}
 " Misc Extensions: {{{
@@ -461,18 +463,18 @@ autocmd BufEnter *.snippets setf snippets
 autocmd filetype snippets setlocal noexpandtab
 
 function! g:UltiSnips_Complete()
-  call UltiSnips#ExpandSnippet()
-  if g:ulti_expand_res == 0
-    if pumvisible()
-        return "\<Tab>"
-    else
-      call UltiSnips#JumpForwards()
-      if g:ulti_jump_forwards_res == 0
-        return "\<Tab>"
-      endif
+    call UltiSnips_ExpandSnippet()
+    if g:ulti_expand_res == 0
+        if pumvisible()
+            return "\<Tab>"
+        else
+            call UltiSnips_JumpForwards()
+            if g:ulti_jump_forwards_res == 0
+               return "\<Tab>"
+            endif
+        endif
     endif
-  endif
-  return ""
+    return ""
 endfunction
 
 inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
@@ -579,6 +581,7 @@ let g:semanticBlacklistOverride = {
 " }}}
 " GruvBox: {{{
 let g:gruvbox_contrast_light = 'hard'
+let g:gruvbox_contrast_dark = 'hard'
 "}}}
 " Clojure Static: {{{
 let g:clojure_align_multiline_strings = 1
@@ -588,26 +591,50 @@ let g:clojure_align_multiline_strings = 1
 " GUI Settings: {{{
 
 " Setting Up Colorsheme and fonts
+set nocursorline " improve performance
 set background=dark 
+let g:lightline={'colorscheme': 'seoul256'}
+colo gruvbox
 
 if has("gui_running")
-  set nocursorline
-  "colo jasmine-dark-seti
-  set background=dark
-  set macthinstrokes
-  colo gruvbox
   set macmeta
+  set guifont=menlo:h14
+  set transparency=6
+  set blurradius=10
+  "colo jasmine-dark-seti
+  "set macthinstrokes
   "let g:airline_theme='tomorrow'
-  "set guifont=DejaVu\ Sans\ Mono\ For\ Powerline:h14
-  set guifont=Menlo:h14
-  "set transparency=5
-  let g:lightline={
-        \ 'colorscheme': 'seoul256'
-        \ }
-else
+  "set guifont=dejavu\ sans\ mono\ for\ powerline:h14
   colo gruvbox
+else 
 endif
 
+
+if exists("neovim_dot_app")
+  call MacSetFont("Menlo", 14)
+endif
+
+set termguicolors
+
+" Neovim stuff
+if has('nvim')
+  let g:terminal_color_0  = '#2e3436'
+  let g:terminal_color_1  = '#cc0000'
+  let g:terminal_color_2  = '#4e9a06'
+  let g:terminal_color_3  = '#c4a000'
+  let g:terminal_color_4  = '#3465a4'
+  let g:terminal_color_5  = '#75507b'
+  let g:terminal_color_6  = '#0b939b'
+  let g:terminal_color_7  = '#d3d7cf'
+  let g:terminal_color_8  = '#555753'
+  let g:terminal_color_9  = '#ef2929'
+  let g:terminal_color_10 = '#8ae234'
+  let g:terminal_color_11 = '#fce94f'
+  let g:terminal_color_12 = '#729fcf'
+  let g:terminal_color_13 = '#ad7fa8'
+  let g:terminal_color_14 = '#00f5e9'
+  let g:terminal_color_15 = '#eeeeec'
+endif
 " }}}
 " Vim Debug Mappings: {{{
 
