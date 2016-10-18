@@ -5,6 +5,8 @@
 
 " This line is important, some backwards compatible features break my setup
 set nocompatible 
+let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
+let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
 
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "                            Initialising Plugins:
@@ -255,8 +257,15 @@ set laststatus=2    " always show statusline
 " }}}
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Tmux Style Copy: {{{
+" Pasting With ease: {{{
+ noremap <localleader>p "*p
+ noremap <localleader>P "*P
+ noremap <localleader>y "*y
+ noremap <localleader>Y "*Y
+" }}}
+" Op Op Op Oppa Tmux Style: {{{
 vnoremap <CR> y
+nnoremap <Space> v
 " }}}
 " Essay Mode: {{{
 
@@ -399,7 +408,10 @@ endfu
 
 " }}}
 " Fuck You K: {{{
+
 nmap K <nop> " By default this calls up man command on whaterver is under the cursor
+             " And it is rediculosly slow and buggy if not run from terminal
+
 " }}}
 " TMUX Exec: {{{
 command! -nargs=* TMUXExec call s:TMUXExec(<f-args>)
