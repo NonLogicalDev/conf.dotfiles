@@ -401,6 +401,35 @@ endfu
 " Fuck You K: {{{
 nmap K <nop> " By default this calls up man command on whaterver is under the cursor
 " }}}
+" TMUX Exec: {{{
+command! -nargs=* TMUXExec call s:TMUXExec(<f-args>)
+func! s:TMUXExec(...)
+  let pane_num = a:1
+  let command = a:000[1:-1]
+python << EOF
+import vim
+import subprocess
+pane_num = vim.eval('pane_num')
+command = vim.eval('command')
+subprocess.call(["tmux", "send-keys", "-t", pane_num, "-l", " ".join(command)])
+subprocess.call(["tmux", "send-keys", "-t", pane_num, "Enter"])
+EOF
+endfunc
+
+command! -range -nargs=1 TMUXSend <line1>,<line2>call s:TMUXSend(<f-args>)
+func! s:TMUXSend(pane_num) range
+  let lines=getline(a:firstline, a:lastline)
+python << EOF
+import vim
+import subprocess
+lines = vim.eval('lines')
+pane_num = vim.eval('a:pane_num')
+for line in lines:
+  subprocess.call(["tmux", "send-keys", "-t", pane_num, "-l", line])
+  subprocess.call(["tmux", "send-keys", "-t", pane_num, "Enter"])
+EOF
+endfunc
+" }}}
 "                           Plugin Confugurations:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Highlighter Settings: {{{
