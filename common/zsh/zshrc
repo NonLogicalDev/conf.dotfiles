@@ -24,6 +24,7 @@ alias godev='boxer v $DBOX'
 alias vim='nvim'
 alias tmcs='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
+alias vim='nvim'
 
 # Docker Maching Automation for mac
 function docker-machine-init {

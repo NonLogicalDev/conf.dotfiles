@@ -57,6 +57,7 @@ Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
 Plug 'ClockworkNet/vim-junos-syntax'
 
 "Plug 'phildawes/racer', { 'do': 'cargo build --release' }
+Plug 'vim-ruby/vim-ruby',                 { 'for':'ruby'           }
 
 " }}}
 " Colorschemes: {{{
@@ -291,6 +292,9 @@ set laststatus=2    " always show statusline
  noremap <localleader>[ "*y
  noremap <localleader>{ "*Y
 " }}}
+" Slecting With Ease: {{{
+noremap gA ggVG
+"}}}
 " Op Op Op Oppa Tmux Style: {{{
 vnoremap <CR> y
 nnoremap <Space> v
@@ -741,7 +745,9 @@ let g:clojure_align_multiline_strings = 1
 
 " }}}
 " Deoplete: {{{
+
 let g:deoplete#enable_at_startup = 1
+
 " }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -789,6 +795,11 @@ set termguicolors
 
 if has('nvim')
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
+
+  set ttyfast
+  set lazyredraw
+  "set noshowcmd
+  syntax sync minlines=256
 
   tnoremap <C-\><C-[> <C-\><C-n>
   tnoremap <C-\><C-]> <C-\><C-n>pi
