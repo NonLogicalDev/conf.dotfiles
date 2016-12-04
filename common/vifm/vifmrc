@@ -5,7 +5,7 @@ command link :execute '!ln -s %d/%f %D'
 
 map o :!open %f<CR>
 
-set vicmd=mvim
+set vicmd=nvim
 set nofollowlinks
 
 colorscheme Improved

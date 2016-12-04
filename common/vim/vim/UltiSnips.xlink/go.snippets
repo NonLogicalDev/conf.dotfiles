@@ -1,0 +1,15 @@
+snippet fn "inline function" w
+func(${1:param}) ${2:ret} {
+	$0
+}
+endsnippet
+
+snippet fmt "Fmt default" w
+fmt.${1:Printf}("$2\n"${3:, args})
+endsnippet
+
+snippet stest "Sub Test" b
+t.Run("${1:Description}", func(t *testing.T) {
+	$0
+})
+endsnippet

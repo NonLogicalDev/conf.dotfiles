@@ -12,6 +12,15 @@ let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
 "                            Initialising Plugins:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Plugin Definitions: {{{
+" Autoinstall Vim Plug: {{{
+" vim-plug (https://github.com/junegunn/vim-plug) settings 
+" Automatically install vim-plug and run PlugInstall if vim-plug not found
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall | source $MYVIMRC
+endif
+"}}}
 call plug#begin('~/.vim/plugged')
 "===============================================================================
 " Libraries: {{{
@@ -44,6 +53,11 @@ Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
 Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
 Plug 'cakebaker/scss-syntax.vim',         { 'for':['scss', 'sass'] }
 
+Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
+Plug 'ClockworkNet/vim-junos-syntax'
+
+"Plug 'phildawes/racer', { 'do': 'cargo build --release' }
+
 " }}}
 " Colorschemes: {{{
 
@@ -56,36 +70,40 @@ Plug 'flazz/vim-colorschemes'
 " }}}
 " Interface Plugins: {{{
 
-"Plug 'bling/vim-airline' " A nice replacement for the default status line
+" Graphical Enhancements
 Plug 'itchyny/lightline.vim' " An even nicer replacement for the default status line
-Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
+Plug 'ryanoasis/vim-devicons' " Unleash Graphical awesomeness
 Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
-
-Plug 'scrooloose/nerdtree', {'on':['NERDTreeToggle', 'NERDTreeTabsToggle', 'NERDTreeCWD']}
-Plug 'jistr/vim-nerdtree-tabs', {'on':['NERDTreeTabsToggle', 'NerdTreeToggle', 'NERDTreeCWD']}
-
-Plug 'kien/ctrlp.vim', {'on':['CtrlPBuffer', 'CtrlPBufTagAll']}
-
+Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
+Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
 Plug 'tomtom/tcomment_vim' " Lets you quickly comment out lines wtih gc
-"kPlug 'majutsushi/tagbar', {'on':['Tagbar','TagbarToggle']}
+
+" Adding Navigator to vim
+Plug 'scrooloose/nerdtree'
+Plug 'jistr/vim-nerdtree-tabs'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 
 " Making editing colors in vim a little easier
 Plug 'iandoe/vim-osx-colorpicker'
 Plug 'skammer/vim-css-color'
 Plug 'Colorizer'
 
+" Quick Finders
+Plug 'kien/ctrlp.vim'
+"kPlug 'majutsushi/tagbar', {'on':['Tagbar','TagbarToggle']}
+
+" The Amazing Orgmode (Half as amazing compared to emacs but Eh...)
 Plug 'jceb/vim-orgmode'
 Plug 'tpope/vim-speeddating'
-Plug 'jaxbot/semantic-highlight.vim'
-
-Plug 'jaxbot/semantic-highlight.vim'
 
 if has('nvim')
   Plug 'kassio/neoterm'
+  "Plug 'airblade/vim-gitgutter'
 endif
 
 " }}}
-" Editor Behavior Engancements: {{{
+" Behavior Engancements: {{{
 
 Plug 'tpope/vim-abolish'
 "Plug 'YankRing.vim' " Stores history of yanks and deletes
@@ -97,31 +115,36 @@ Plug 'godlygeek/tabular' " Aligns any delimiter in selected strings
 Plug 'bufkill.vim' " Allows you to kill a buffer without closing current pane
 Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
 
-Plug 'mattn/emmet-vim', {'for':'html'}  " Super cool way to write html 
+Plug 'mattn/emmet-vim', {'for':'html'}  " Super cool way to write html
 Plug 'ragtag.vim', {'for':'xml'} " Helps with html/xml editing
 
 " }}}
 " Connectivity Plugins: {{{
 
-" Terminal integration
-" Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
-
-" Dash integration
+" Dash integration (Documentation Lookup)
 Plug 'rizzatti/funcoo.vim'
 Plug 'rizzatti/dash.vim'
 
 " Git Integration
 Plug 'tpope/vim-fugitive'
-"Plug 'airblade/vim-gitgutter' This thing is a resource hog
+if has('nvim')
+  Plug 'airblade/vim-gitgutter' " This thing is a resource hog (unless you have neovim)
+endif
 
-" CTags Integration
+" CTags Integration 
+" (which would have been useful if I did not discoever Semantic Highlighter)
 Plug 'xolox/vim-misc'
-"Plug 'xolox/vim-easytags'
+Plug 'xolox/vim-easytags'
 
 " On the fly code checker
-" Plug 'scrooloose/syntastic' 
+if has('nvim')
+  Plug 'neomake/neomake'
+else
+  " Plug 'scrooloose/syntastic' " This thing is also a major resource hog
+endif
 
-"Plug 'phildawes/racer', { 'do': 'cargo build --release' }
+" Terminal integration
+"Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
 
 " }}}
 " Snippet Management: {{{
@@ -132,8 +155,15 @@ Plug 'honza/vim-snippets'
 " }}}
 " Code Completers: {{{
 
-"Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
-Plug 'Valloric/YouCompleteMe'
+" Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
+
+" vim-plug
+if has('nvim')
+  Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
+  Plug 'zchee/deoplete-go', { 'do': 'make'}
+else
+  Plug 'Valloric/YouCompleteMe'
+endif
 
 " }}}
 "===============================================================================
@@ -150,11 +180,9 @@ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Global Mappings: {{{
 
-let mapleader = " "
+let mapleader = " " " This is a spaca by the way
 let maplocalleader = "\\"
 
-" Making line selection less finger straining
-noremap <c-space> V 
 
 " select most recently changed text - particularly useful for pastes
 nnoremap <leader>v `[v`]
@@ -258,14 +286,19 @@ set laststatus=2    " always show statusline
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Pasting With ease: {{{
- noremap <localleader>p "*p
- noremap <localleader>P "*P
- noremap <localleader>y "*y
- noremap <localleader>Y "*Y
+ noremap <localleader>] "*p
+ noremap <localleader>} "*P
+ noremap <localleader>[ "*y
+ noremap <localleader>{ "*Y
 " }}}
 " Op Op Op Oppa Tmux Style: {{{
 vnoremap <CR> y
 nnoremap <Space> v
+
+" Making line selection less finger straining 
+" (That would only work if you are not running Mac OS with default language
+" swithching hotkey, thanks Dvorak)
+noremap <C-Space> V 
 " }}}
 " Essay Mode: {{{
 
@@ -293,6 +326,7 @@ nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
 nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
 nnoremap <silent> N :let &hlsearch = 1<CR>N
 nnoremap <silent> n :let &hlsearch = 1<CR>n
+nnoremap <silent> <leader><leader>` :set nohlsearch<CR>
 
 " }}}
 " Cutom Fold Text Line: {{{
@@ -414,6 +448,7 @@ nmap K <nop> " By default this calls up man command on whaterver is under the cu
 
 " }}}
 " TMUX Exec: {{{
+command! -nargs=* Tme call s:TMUXExec(<f-args>)
 command! -nargs=* TMUXExec call s:TMUXExec(<f-args>)
 func! s:TMUXExec(...)
   let pane_num = a:1
@@ -428,6 +463,7 @@ subprocess.call(["tmux", "send-keys", "-t", pane_num, "Enter"])
 EOF
 endfunc
 
+command! -range -nargs=1 Tms <line1>,<line2>call s:TMUXSend(<f-args>)
 command! -range -nargs=1 TMUXSend <line1>,<line2>call s:TMUXSend(<f-args>)
 func! s:TMUXSend(pane_num) range
   let lines=getline(a:firstline, a:lastline)
@@ -444,6 +480,11 @@ endfunc
 " }}}
 "                           Plugin Confugurations:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Abolish: {{{
+
+let g:abolish_save_file = "~/.vim/after/plugin/abolish.vim"
+
+" }}}
 " Highlighter Settings: {{{
 let python_highlight_all = 1
 au FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
@@ -468,10 +509,18 @@ let g:airline_right_sep=''
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeCascadeSingleChildDir = 0
 let g:nerdtree_tabs_open_on_gui_startup = 0
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:webdevicons_enable_ctrlp = 1
+let g:webdevicons_conceal_nerdtree_brackets = 1
+let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
+let g:WebDevIconsUnicodeGlyphDoubleWidth = 1
+let g:DevIconsEnableFoldersOpenClose = 1
+let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exact match
 
 " NERD tree mappings
 nmap <silent> <leader>m :NERDTreeCWD<cr>
 nmap <silent> <leader>n :NERDTreeTabsToggle<cr>
+nmap <silent> <leader>q :NERDTreeFocusToggle<cr>
 
 " }}}
 " Rainbow Paranthesis: {{{
@@ -537,22 +586,53 @@ let g:UltiSnipsEditSplit="vertical"
 
 let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
 " }}}
-" Ycm Configuration: {{{
+" Completer Configuration: {{{
 " to avoid problems with arrows
 " let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/cpp/ycm/.ycm_extra_conf.py'
-let g:ycm_key_list_select_completion = ['<M-Tab>']
-inoremap <M-Tab> <NOP>
-let g:ycm_semantic_triggers =  {
-  \   'c' : ['->', '.'],
-  \   'objc' : ['->', '.'],
-  \   'cpp,objcpp' : ['->', '.', '::'],
-  \   'perl' : ['->'],
-  \   'php' : ['->', '::'],
-  \   'cs,java,javascript,d,vim,ruby,python,perl6,scala,vb,elixir,go' : ['.'],
-  \   'lua' : ['.', ':'],
-  \   'erlang' : [':'],
-  \ }
-nmap <silent> gd :YcmCompleter GoToDeclaration<CR>
+if has('nvim')
+  inoremap <silent><expr> <TAB>
+        \ pumvisible() ? "\<C-n>" :
+        \ <SID>check_back_space() ? "\<TAB>" :
+        \ deoplete#mappings#manual_complete()
+
+  function! s:check_back_space() abort
+    let col = col('.') - 1
+    return !col || getline('.')[col - 1]  =~ '\s'
+  endfunction
+else
+  let g:ycm_key_list_select_completion = ['<M-Tab>']
+  let g:ycm_semantic_triggers =  {
+        \   'c' : ['->', '.'],
+        \   'objc' : ['->', '.'],
+        \   'cpp,objcpp' : ['->', '.', '::'],
+        \   'perl' : ['->'],
+        \   'php' : ['->', '::'],
+        \   'cs,java,javascript,d,vim,ruby,python,perl6,scala,vb,elixir,go' : ['.'],
+        \   'lua' : ['.', ':'],
+        \   'erlang' : [':'],
+        \ }
+  " nmap <silent> gd :YcmCompleter GoToDeclaration<CR>
+  " inoremap <M-Tab> <NOP>
+
+  function! Auto_complete_string()
+    if pumvisible()
+      return "\<C-n>"
+    else
+      return "\<C-x>\<C-o>\<C-r>=Auto_complete_opened()\<CR>"
+    end
+  endfunction
+
+  function! Auto_complete_opened()
+    if pumvisible()
+      return "\<Down>"
+    end
+    return ""
+  endfunction
+
+  inoremap <expr> <Nul> Auto_complete_string()
+  inoremap <expr> <C-q> Auto_complete_string()
+endif
+
 "}}}
 " Org Mode Configuration: {{{
 
@@ -567,6 +647,18 @@ let g:yankring_history_file = 'yankring_history'
 " Ctrl P Config: {{{
 
 noremap <leader><leader>[ :CtrlPBuffer<CR>
+noremap <leader><leader>{ :CtrlPMRUFiles<CR>
+noremap <leader><leader>] :CtrlPBufTagAll<CR>
+noremap <leader><leader>} :CtrlPTag<CR>
+
+let g:ctrlp_buftag_types = {
+      \ 'go' : {
+      \   'bin': '/Users/olegutkin/gocode/bin/gotags',
+      \   'args': '-f -',
+      \ },
+      \ }
+
+
 
 " }}}
 " Emmet Config: {{{
@@ -595,6 +687,15 @@ let g:go_list_type = "quickfix"
 " }}}
 " Easytags: {{{
 let g:easytags_async = 1
+let g:easytags_languages = {
+\   'go': {
+\     'cmd': '/Users/olegutkin/gocode/bin/gotags',
+\       'args': [],
+\       'fileoutput_opt': '-f',
+\       'stdout_opt': '-f-',
+\       'recurse_flag': '-R'
+\   }
+\}
 " }}}
 " Semantic: {{{
 let g:semanticBlacklistOverride = {
@@ -631,6 +732,7 @@ let g:semanticBlacklistOverride = {
 
 let g:gruvbox_contrast_light = 'hard'
 let g:gruvbox_contrast_dark = 'hard'
+let g:gruvbox_improved_strings = 1
 
 "}}}
 " Clojure Static: {{{
@@ -638,14 +740,29 @@ let g:gruvbox_contrast_dark = 'hard'
 let g:clojure_align_multiline_strings = 1
 
 " }}}
+" Deoplete: {{{
+let g:deoplete#enable_at_startup = 1
+" }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Languages: {{{
+
+augroup lang_go
+  autocmd!
+  autocmd BufRead *.go setlocal foldmethod=syntax
+  autocmd BufRead *.go setlocal foldnestmax=2
+  autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
+  autocmd BufWritePost *.go Neomake
+augroup END
+
+" }}}
 " GUI Settings: {{{
 
 " Setting Up Colorsheme and fonts
 set nocursorline " improve performance
 set background=dark 
 let g:lightline={'colorscheme': 'seoul256'}
+set nolazyredraw
 colo gruvbox
 
 if has("gui_running")
@@ -671,6 +788,8 @@ set termguicolors
 " NeoVim Settings: {{{
 
 if has('nvim')
+  let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
+
   tnoremap <C-\><C-[> <C-\><C-n>
   tnoremap <C-\><C-]> <C-\><C-n>pi
   

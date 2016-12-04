@@ -41,6 +41,19 @@
 	tool = vimdiff
   algorithm = patience
 [core]
-  excludesfile = ~/.gitignore_global
+	excludesfile = /Users/olegutkin/.gitignore_global
 [url "git@github.com:"]
 	insteadOf = https://github.com/
+[user]
+	name = Oleg Utkin
+	email = oleg.utkin@uber.com
+[url "ssh://gitolite@code.uber.internal:2222/"]
+	insteadOf = https://code.uber.internal/
+[rerere]
+	enabled = true
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true

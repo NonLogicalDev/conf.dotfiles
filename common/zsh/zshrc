@@ -21,6 +21,8 @@ function exists { which $1 &> /dev/null }
 
 alias fuck='sudo $(fc -ln -1)'
 alias godev='boxer v $DBOX'
+alias vim='nvim'
+alias tmcs='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
 
 # Docker Maching Automation for mac
