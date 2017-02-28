@@ -96,7 +96,7 @@ Plug 'kien/ctrlp.vim'
 
 " The Amazing Orgmode (Half as amazing compared to emacs but Eh...)
 Plug 'jceb/vim-orgmode'
-Plug 'tpope/vim-speeddating'
+" Plug 'tpope/vim-speeddating'
 
 if has('nvim')
   Plug 'kassio/neoterm'
@@ -162,6 +162,7 @@ Plug 'honza/vim-snippets'
 if has('nvim')
   Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
   Plug 'zchee/deoplete-go', { 'do': 'make'}
+  Plug 'zchee/deoplete-clang'
 else
   Plug 'Valloric/YouCompleteMe'
 endif
@@ -303,6 +304,16 @@ nnoremap <Space> v
 " (That would only work if you are not running Mac OS with default language
 " swithching hotkey, thanks Dvorak)
 noremap <C-Space> V 
+" }}}
+" Enable Nice Folds: {{{
+command! Devify call SetUpDevExperience()
+func! SetUpDevExperience()
+  set foldenable
+  set foldmethod=syntax
+  set foldnestmax=1
+  SemanticHighlight
+endf
+
 " }}}
 " Essay Mode: {{{
 
@@ -702,6 +713,8 @@ let g:easytags_languages = {
 \}
 " }}}
 " Semantic: {{{
+autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
+autocmd BufEnter,BufRead,BufWritePost *.py SemanticHighlight
 let g:semanticBlacklistOverride = {
       \ 'go': [
         \ 'break',
@@ -747,7 +760,9 @@ let g:clojure_align_multiline_strings = 1
 " Deoplete: {{{
 
 let g:deoplete#enable_at_startup = 1
-
+let g:go_fmt_experimental = 1
+" let g:deoplete#sources#clang#libclang_path = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
+" let g:deoplete#sources#clang#clang_header = "/Users/olegutkin/.vim/plugged/YouCompleteMe/third_party/ycmd/clang_includes"
 " }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -756,8 +771,7 @@ let g:deoplete#enable_at_startup = 1
 augroup lang_go
   autocmd!
   autocmd BufRead *.go setlocal foldmethod=syntax
-  autocmd BufRead *.go setlocal foldnestmax=2
-  autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
+  autocmd BufRead *.go setlocal foldnestmax=1
   autocmd BufWritePost *.go Neomake
 augroup END
 

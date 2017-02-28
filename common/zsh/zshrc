@@ -38,6 +38,21 @@ function docker-machine-init {
   export dockerhost=$(docker-machine ip dev)
 }
 
+function botch() {
+    TIME=$1
+    shift 1
+    while true; do
+        (echo -en '\033[H'
+            CMD="$@"
+            bash -c "$CMD" | while read LINE; do 
+                echo -n "$LINE"
+                echo -e '\033[0K' 
+            done
+            echo -en '\033[J')
+        sleep $TIME
+    done
+}
+
 function mkvim {
   SERVERNAME=$1
   shift
@@ -65,6 +80,14 @@ if exists percol; then
 
     zle -N percol_select_history
     bindkey '^R' percol_select_history
+
+    function change-directory-find() {
+      SELECTED_DIR=$(find $* | percol)
+      if [[ ! -z "$SELECTED_DIR" ]]; then
+        cd $SELECTED_DIR
+      fi
+    }
+    alias fcd='change-directory-find'
 fi
 
 # I want to install apps where they belong
