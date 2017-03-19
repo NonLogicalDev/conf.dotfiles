@@ -41,7 +41,7 @@ Plug 'fatih/vim-go',                      { 'for':'go'             }
 Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
 Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
 Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
-Plug 'jelera/vim-javascript-syntax',      { 'for':'javascript'     }
+Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
 
 Plug 'guns/vim-clojure-static',           { 'for':'clojure'        }
 Plug 'guns/vim-clojure-highlight',        { 'for':'clojure'        }
@@ -56,7 +56,7 @@ Plug 'cakebaker/scss-syntax.vim',         { 'for':['scss', 'sass'] }
 Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
 Plug 'ClockworkNet/vim-junos-syntax'
 
-"Plug 'phildawes/racer', { 'do': 'cargo build --release' }
+"Plug 'phildawes/racer',                  { 'do': 'cargo build --release' }
 Plug 'vim-ruby/vim-ruby',                 { 'for':'ruby'           }
 
 " }}}
@@ -76,7 +76,7 @@ Plug 'itchyny/lightline.vim' " An even nicer replacement for the default status 
 Plug 'ryanoasis/vim-devicons' " Unleash Graphical awesomeness
 Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
 Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
-Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
+" Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
 Plug 'tomtom/tcomment_vim' " Lets you quickly comment out lines wtih gc
 
 " Adding Navigator to vim
@@ -151,7 +151,7 @@ endif
 " Snippet Management: {{{
 
 Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
+" Plug 'honza/vim-snippets'
 
 " }}}
 " Code Completers: {{{
@@ -163,6 +163,7 @@ if has('nvim')
   Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
   Plug 'zchee/deoplete-go', { 'do': 'make'}
   Plug 'zchee/deoplete-clang'
+  Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 else
   Plug 'Valloric/YouCompleteMe'
 endif
@@ -287,7 +288,10 @@ set laststatus=2    " always show statusline
 " }}}
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Pasting With ease: {{{
+" Make Increment Play Well With TMUX: {{{
+noremap <C-c> <C-a>
+" }}}
+" Pasting With Ease: {{{
  noremap <localleader>] "*p
  noremap <localleader>} "*P
  noremap <localleader>[ "*y
@@ -296,15 +300,6 @@ set laststatus=2    " always show statusline
 " Slecting With Ease: {{{
 noremap gA ggVG
 "}}}
-" Op Op Op Oppa Tmux Style: {{{
-vnoremap <CR> y
-nnoremap <Space> v
-
-" Making line selection less finger straining 
-" (That would only work if you are not running Mac OS with default language
-" swithching hotkey, thanks Dvorak)
-noremap <C-Space> V 
-" }}}
 " Enable Nice Folds: {{{
 command! Devify call SetUpDevExperience()
 func! SetUpDevExperience()
@@ -316,6 +311,9 @@ endf
 
 " }}}
 " Essay Mode: {{{
+" This mode sets lines to wrap and makes j an k go by actual visible lines as
+" opposed to the lines int the files, which makes editing text rather
+" unintuitive.
 
 " Remap that supper annoying thing that seems to always happen
 command! W w
@@ -324,9 +322,9 @@ func! WordProcessorMode()
   map j gj
   map k gk
   setlocal spell spelllang=en_gb
-  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
   set complete+=s
   " set formatprg=par
+  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
   setlocal wrap 
   setlocal linebreak 
   set nocursorline
@@ -414,7 +412,7 @@ endfunction
 " }}}
 " Open Scratch Buffer: {{{
 
-command! ScratchBuf call s:OpenScratch() 
+command! Scratch call s:OpenScratch() 
 
 function! s:OpenScratch()
   botright new
@@ -432,7 +430,7 @@ nnoremap <left> <c-w>>
 
 " }}}
 " Misc Extensions: {{{
-
+ 
 " Open the vimrc file
 command! Config call s:OpenConfig()
 func! s:OpenConfig()
@@ -715,6 +713,8 @@ let g:easytags_languages = {
 " Semantic: {{{
 autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
 autocmd BufEnter,BufRead,BufWritePost *.py SemanticHighlight
+" autocmd BufEnter,BufRead,BufWritePost *.js,*.js SemanticHighlight
+
 let g:semanticBlacklistOverride = {
       \ 'go': [
         \ 'break',
