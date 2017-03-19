@@ -1,3 +1,4 @@
+" vim: ft=vim
 colo solarized-dark
 
 command Q :execute '!echo %d > ~/.vifm/lastdir' | quit
