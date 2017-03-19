@@ -12,9 +12,20 @@ fi
 
 # Customize to your needs ######################################################
 
-source ~/.zfunc
-source ~/.zdir
+# Import all of the local SHELL vars
+if [[ ! -f ~/SHELL_VARS ]]; then
+  touch SHELL_VARS
+fi
 source ~/SHELL_VARS
+
+# Add the frecent directory searcher
+if [[ ! -f ~/.z ]]; then
+  touch ~/.z
+fi
+source ~/.zdir
+
+# Adding all of my amazing functions
+source ~/.zfunc
 
 # Setting up aliases
 function exists { which $1 &> /dev/null }

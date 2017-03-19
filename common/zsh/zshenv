@@ -5,40 +5,64 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
+
+#
+# Easily determine where the zsh is running
+#
+
+function get_platform {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    echo "MAC"
+  elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+    echo "LINUX"
+  elif [[ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]]; then
+    echo "WIN"
+  else
+    echo "UNKNOWN"
+  fi
+}
+
 # Ensure that a non-login, non-interactive shell has a defined environment.
 if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
 fi
 
-# Adding Version Managers to the path
+# Setting up brew
+if [[ $(get_platform) == "LINUX" ]]; then
+  export PATH="$HOME/.linuxbrew/bin:$PATH"
+fi
+
+#######################################################################
+#                 Adding Version Managers to the path                 #
+#######################################################################
+
+## Adding Node Version Manger
+export NVM_DIR="$HOME/.nvm"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  source "$NVM_DIR/nvm.sh"
+fi
 
 ## Adding Ruby Version Manager
 # Installed through brew or apt
-command -v rbenv 2>&1 > /dev/null && \
+if [[ -x "$(which rbenv)" ]]; then
   eval "$(rbenv init -)"
+fi
 
-# export RVM_DIR="$HOME/.rvm"
-# [[ -s "$RVM_DIR/scripts/rvm" ]] && \
-#   source "$RVM_DIR/scripts/rvm" 
-#
-# ## Adding Node Version Manger
-# export NVM_DIR="$HOME/.nvm"
-# [[ -s "$NVM_DIR/nvm.sh" ]] && \
-#   source "$NVM_DIR/nvm.sh"
-#
-# ## Adding Python Version Manager
-# export PBREW_DIR="$HOME/.pythonbrew"
-# [[ -s "$PBREW_DIR/etc/bashrc" ]] && \
-#   source "$PBREW_DIR/etc/bashrc"
-#
-# ## Adding java version manager
-# export JVM_DIR="$HOME/.jenv"
-# if [[ -x "$(which jenv)" ]]; then
-#   export PATH="$JVM_DIR:$PATH"
-#   eval "$(jenv init -)"
-# fi
+## Adding Ruby Version Manager
+# Installed through brew or apt
+if [[ -x "$(which pyenv)" ]]; then
+  eval "$(pyenv init -)"
+fi
+
+# Adding java version manager
+export JVM_DIR="$HOME/.jenv"
+if [[ -x "$(which jenv)" ]]; then
+  export PATH="$JVM_DIR:$PATH"
+  eval "$(jenv init -)"
+fi
 
 ## Adding Torch
 # export TORCH_DIR="$HOME/torch/install"
 # [[ -s  "$TORCH_DIR/bin/torch-activate" ]] && \
 #   source "$TORCH_DIR/bin/torch-activate"
+

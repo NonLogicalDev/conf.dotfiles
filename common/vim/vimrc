@@ -5,8 +5,9 @@
 
 " This line is important, some backwards compatible features break my setup
 set nocompatible 
-let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
-let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
+" let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
+" let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "                            Initialising Plugins:
@@ -65,6 +66,7 @@ Plug 'vim-ruby/vim-ruby',                 { 'for':'ruby'           }
 Plug 'altercation/vim-colors-solarized'
 Plug 'nonlogicaldev/vim-jasmine-colortheme'
 Plug 'morhetz/gruvbox'
+Plug 'nonlogicaldev/gruvbox'
 Plug 'fatih/molokai'
 Plug 'flazz/vim-colorschemes'
 
@@ -183,6 +185,7 @@ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Global Mappings: {{{
 
+set clipboard=unnamedplus
 let mapleader = " " " This is a spaca by the way
 let maplocalleader = "\\"
 
@@ -803,11 +806,12 @@ if exists("neovim_dot_app")
   call MacSetFont("Menlo", 14)
 endif
 
-set termguicolors
 " }}}
 " NeoVim Settings: {{{
 
 if has('nvim')
+  set termguicolors
+
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
 
   set ttyfast

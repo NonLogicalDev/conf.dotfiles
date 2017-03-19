@@ -43,8 +43,6 @@
   algorithm = patience
 [core]
 	excludesfile = /Users/olegutkin/.gitignore_global
-[url "git@github.com:"]
-	insteadOf = https://github.com/
 [user]
 	name = Oleg Utkin
 	email = oleg.utkin@uber.com
@@ -58,3 +56,5 @@
 [mergetool "sourcetree"]
 	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
+# [url "git@github.com:"]
+# 	insteadOf = https://github.com/
