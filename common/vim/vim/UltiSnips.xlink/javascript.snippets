@@ -12,10 +12,8 @@ global !p
 ALWAYS = 'always'
 NEVER = 'never'
 
-
 def get_option(snip, option, default=None):
     return snip.opt('g:ultisnips_javascript["{}"]'.format(option), default)
-
 
 def semi(snip):
     option = get_option(snip, 'semi', ALWAYS)
@@ -28,7 +26,6 @@ def semi(snip):
         ret = ';'
     return ret
 
-
 def space_before_function_paren(snip):
     option = get_option(snip, 'space-before-function-paren', NEVER)
 
@@ -40,7 +37,6 @@ def space_before_function_paren(snip):
         ret = ''
     return ret
 
-
 def keyword_spacing(snip):
     option = get_option(snip, 'keyword-spacing', ALWAYS)
 
@@ -50,7 +46,17 @@ def keyword_spacing(snip):
         ret = ' '
     else:
         ret = ''
+    return ret
+
 endglobal
+
+### CUSTOM >>>
+
+snippet	{} "Code block" i
+{
+	$0
+}
+endsnippet
 
 snippet	/* "comment"
 /**
@@ -58,7 +64,28 @@ snippet	/* "comment"
  */
 endsnippet
 
-### CUSTOM ^^^
+snippet	for "for loop"
+for ($1) {
+	$0
+}
+endsnippet
+
+snippet	fore "for each loop"
+for (let $1 of $2) {
+	$0
+}
+endsnippet
+
+snippet	let "let declaration" w
+let $1 = $0
+endsnippet
+
+snippet	=> "lambda function" i
+($1) => $0
+endsnippet
+
+
+### CUSTOM <<<
 
 ###########################################################################
 #                            TextMate Snippets                            #

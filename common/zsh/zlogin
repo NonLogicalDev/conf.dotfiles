@@ -10,11 +10,11 @@ if (( $+commands[fortune] )); then
   #   PIPE1="cowsay -f blank"
   # fi
   if (($+commands[lolcat])); then
-    PIPE2="lolcat"
+    PIPE2='lolcat -a'
   fi
 
   if [[ -t 0 || -t 1 ]]; then
     export FORTUNE="`fortune`"
-    echo $FORTUNE | $PIPE1 | $PIPE2
+    echo $FORTUNE | $PIPE1 | eval "$PIPE2"
   fi
 fi
