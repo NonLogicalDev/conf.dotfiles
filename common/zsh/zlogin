@@ -10,7 +10,7 @@ if (( $+commands[fortune] )); then
   #   PIPE1="cowsay -f blank"
   # fi
   if (($+commands[lolcat])); then
-    PIPE2='lolcat -a'
+    PIPE2='lolcat'
   fi
 
   if [[ -t 0 || -t 1 ]]; then
