@@ -5,11 +5,9 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
-
 #
 # Easily determine where the zsh is running
 #
-
 function get_platform {
   if [[ "$(uname)" == "Darwin" ]]; then
     echo "MAC"
@@ -37,10 +35,12 @@ fi
 #######################################################################
 
 ## Adding Node Version Manger
-export NVM_DIR="$HOME/.nvm"
-if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-  source "$NVM_DIR/nvm.sh"
-fi
+function init_nvm() {
+  export NVM_DIR="$HOME/.nvm"
+  if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+    source "$NVM_DIR/nvm.sh"
+  fi
+}
 
 ## Adding Ruby Version Manager
 # Installed through brew or apt
@@ -48,7 +48,7 @@ if [[ -x "$(which rbenv)" ]]; then
   eval "$(rbenv init -)"
 fi
 
-## Adding Ruby Version Manager
+## Adding Python Version Manager
 # Installed through brew or apt
 if [[ -x "$(which pyenv)" ]]; then
   eval "$(pyenv init -)"
@@ -65,4 +65,3 @@ fi
 # export TORCH_DIR="$HOME/torch/install"
 # [[ -s  "$TORCH_DIR/bin/torch-activate" ]] && \
 #   source "$TORCH_DIR/bin/torch-activate"
-
