@@ -75,7 +75,6 @@ Plug 'flazz/vim-colorschemes'
 
 " Graphical Enhancements
 Plug 'itchyny/lightline.vim' " An even nicer replacement for the default status line
-Plug 'ryanoasis/vim-devicons' " Unleash Graphical awesomeness
 Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
 Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
 " Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
@@ -83,9 +82,10 @@ Plug 'tomtom/tcomment_vim' " Lets you quickly comment out lines wtih gc
 
 " Adding Navigator to vim
 Plug 'scrooloose/nerdtree'
-Plug 'jistr/vim-nerdtree-tabs'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+" Plug 'jistr/vim-nerdtree-tabs'
+" Plug 'ryanoasis/vim-devicons' " Unleash Graphical awesomeness
+" Plug 'Xuyuanp/nerdtree-git-plugin'
+" Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 
 " Making editing colors in vim a little easier
 Plug 'iandoe/vim-osx-colorpicker'
@@ -159,13 +159,16 @@ Plug 'SirVer/ultisnips'
 " Code Completers: {{{
 
 " Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
+" Plug 'ternjs/tern_for_vim'
+Plug 'flowtype/vim-flow', { 'do': 'npm install -g flow-bin' }
 
 " vim-plug
 if has('nvim')
   Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
   Plug 'zchee/deoplete-go', { 'do': 'make'}
   Plug 'zchee/deoplete-clang'
-  Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+  Plug 'wokalski/autocomplete-flow'
+  " Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 else
   Plug 'Valloric/YouCompleteMe'
 endif
@@ -392,6 +395,7 @@ function! GetBufferList()
 endfunction
 
 nmap <silent> <leader><leader>q :call ToggleList("Quickfix List", 'c')<CR>
+nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
 function! ToggleList(bufname, pfx)
   let buflist = GetBufferList()
   for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
@@ -433,6 +437,8 @@ nnoremap <left> <c-w>>
 
 " }}}
 " Misc Extensions: {{{
+
+imap <C-j> <CR><C-o>O
  
 " Open the vimrc file
 command! Config call s:OpenConfig()
@@ -535,7 +541,15 @@ let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exac
 
 " NERD tree mappings
 nmap <silent> <leader>m :NERDTreeCWD<cr>
-nmap <silent> <leader>n :NERDTreeTabsToggle<cr>
+nmap <silent> <leader>n :ToggleNav<cr>
+command! ToggleNav call s:ToggleNav()
+func! s:ToggleNav()
+  if exists(":NERDTabsTreeToggle")
+    exec ":NERDTreeTabsToggle"
+  else
+    exec ":NERDTreeToggle"
+  endif
+endfu
 nmap <silent> <leader>q :NERDTreeFocusToggle<cr>
 
 " }}}
@@ -669,12 +683,16 @@ noremap <leader><leader>} :CtrlPTag<CR>
 
 let g:ctrlp_buftag_types = {
       \ 'go' : {
-      \   'bin': '/Users/olegutkin/gocode/bin/gotags',
+      \   'bin': 'gotags',
       \   'args': '-f -',
+      \ },
+      \ 'js' : {
+      \   'bin': 'jsctags',
+      \   'args': '-f',
       \ },
       \ }
 
-
+let g:ctrlp_extensions = ['buffertag']
 
 " }}}
 " Emmet Config: {{{
@@ -716,8 +734,31 @@ let g:easytags_languages = {
 " Semantic: {{{
 autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
 autocmd BufEnter,BufRead,BufWritePost *.py SemanticHighlight
-" autocmd BufEnter,BufRead,BufWritePost *.js,*.js SemanticHighlight
+autocmd BufEnter,BufRead,BufWritePost *.jsx,*.js SemanticHighlight
 
+let g:semanticContainedlistOverride = {
+      \ 'javascript': join([
+        \ 'jsFuncCall',
+        \ 'jsVariableDef',
+        \ 'jsOperator',
+        \ 'jsObjectProp',
+        \ 'jsObjectKey',
+        \ 'jsObjectValue',
+        \ 'jsModuleKeyword',
+        \ 'jsIfElseBlock',
+        \ 'jsParenIfElse',
+        \ 'jsRepeatBlock',
+        \ 'jsParenRepeat',
+        \ 'jsFuncBlock',
+        \ 'jsFuncArgs',
+        \ 'jsParen',
+        \ 'jsBracket',
+        \ 'jsGlobalObjects',
+        \ 'jsFutureKeys',
+      \], ","),
+      \ }
+
+      
 let g:semanticBlacklistOverride = {
       \ 'go': [
         \ 'break',
@@ -763,9 +804,21 @@ let g:clojure_align_multiline_strings = 1
 " Deoplete: {{{
 
 let g:deoplete#enable_at_startup = 1
+
 let g:go_fmt_experimental = 1
-" let g:deoplete#sources#clang#libclang_path = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
-" let g:deoplete#sources#clang#clang_header = "/Users/olegutkin/.vim/plugged/YouCompleteMe/third_party/ycmd/clang_includes"
+
+" let g:tern#command = ["tern"]
+" let g:tern#arguments = ["--persistent"]
+" let g:tern_map_keys = 1
+
+let g:deoplete#sources#clang#libclang_path = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
+let g:deoplete#sources#clang#clang_header = "/Users/olegutkin/.vim/plugged/YouCompleteMe/third_party/ycmd/clang_includes"
+
+" }}}
+" Flow: {{{
+
+autocmd BufRead *.js nnoremap <buffer> gd :FlowJumpToDef<CR>
+
 " }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
