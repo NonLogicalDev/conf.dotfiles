@@ -50,6 +50,7 @@ fi
 
 ## Adding Python Version Manager
 # Installed through brew or apt
+export PATH="$HOME/Library/Python/2.7/bin:$PATH"
 if [[ -x "$(which pyenv)" ]]; then
   eval "$(pyenv init -)"
 fi
