@@ -8,5 +8,6 @@ map o :!open %f<CR>
 
 set vicmd=nvim
 set nofollowlinks
+screen
 
 colorscheme Improved

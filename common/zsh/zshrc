@@ -31,7 +31,6 @@ source ~/.zfunc
 function exists { which $1 &> /dev/null }
 
 alias fuck='sudo $(fc -ln -1)'
-alias godev='boxer v $DBOX'
 alias vim='nvim'
 alias tmcs='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
@@ -104,11 +103,12 @@ fi
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-export PATH="$HOME/bin:$PATH"
+path_prepend "$HOME/bin"
 export ANSIBLE_NOCOWS=1
-
 
 # Local settings
 if [ -e $HOME/.zshrc_local ]; then
   . $HOME/.zshrc_local
 fi
+
+path_dedup

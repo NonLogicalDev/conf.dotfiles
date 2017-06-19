@@ -20,6 +20,32 @@ function get_platform {
   fi
 }
 
+#
+# Make path entries unique
+#
+function path_dedup {
+  typeset -U path
+}
+
+function path_append() {
+  for ARG in "$@"
+  do
+    if [ -d "$ARG" ] && [[ ":$PATH:" != *":$ARG:"* ]]; then
+        PATH="${PATH:+"$PATH:"}$ARG"
+    fi
+  done
+}
+
+function path_prepend() {
+  for ((i=$#; i>0; i--)); 
+  do
+    eval "ARG=\${$i}"
+    if [ -d "$ARG" ] && [[ ":$PATH:" != *":$ARG:"* ]]; then
+        PATH="$ARG${PATH:+":$PATH"}"
+    fi
+  done
+}
+
 # Ensure that a non-login, non-interactive shell has a defined environment.
 if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
@@ -35,34 +61,58 @@ fi
 #######################################################################
 
 ## Adding Node Version Manger
-function init_nvm() {
+function init_node {
   export NVM_DIR="$HOME/.nvm"
   if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+    echo "Initializing Node..."
     source "$NVM_DIR/nvm.sh"
+    nvm use node
   fi
 }
 
-## Adding Ruby Version Manager
-# Installed through brew or apt
-if [[ -x "$(which rbenv)" ]]; then
-  eval "$(rbenv init -)"
-fi
+function init_ruby {
+  ## Adding Ruby Version Manager
+  # Installed through brew or apt
+  if [[ -x "$(which rbenv)" ]]; then
+    echo "Initializing Ruby..."
+    eval "$(rbenv init -)"
+  fi
+}
 
-## Adding Python Version Manager
-# Installed through brew or apt
-export PATH="$HOME/Library/Python/2.7/bin:$PATH"
-if [[ -x "$(which pyenv)" ]]; then
-  eval "$(pyenv init -)"
-fi
+function init_python {
+  ## Adding Python Version Manager
+  # Installed through brew or apt
+  path_prepend "$HOME/Library/Python/2.7/bin"
+  if [[ -x "$(which pyenv)" ]]; then
+    echo "Initializing Python..."
+    eval "$(pyenv init -)"
+  fi
+}
 
-# Adding java version manager
-export JVM_DIR="$HOME/.jenv"
-if [[ -x "$(which jenv)" ]]; then
-  export PATH="$JVM_DIR:$PATH"
-  eval "$(jenv init -)"
-fi
+function init_java {
+  # Adding java version manager
+  if [[ -x "$(which jenv)" ]]; then
+    echo "Initializing JVM..."
+    export JVM_DIR="$HOME/.jenv"
+    path_prepend "$JVM_DIR"
+    eval "$(jenv init -)"
+  fi
+}
 
-## Adding Torch
-# export TORCH_DIR="$HOME/torch/install"
-# [[ -s  "$TORCH_DIR/bin/torch-activate" ]] && \
-#   source "$TORCH_DIR/bin/torch-activate"
+function init_lua {
+  ## Adding Torch
+  export TORCH_DIR="$HOME/torch/install"
+  if [[ -s  "$TORCH_DIR/bin/torch-activate" ]]; then
+    echo "Initializing Torch..."
+    source "$TORCH_DIR/bin/torch-activate"
+  fi
+}
+
+function init_full_dev {
+  init_node
+  init_ruby
+  init_python
+  init_java
+  init_lua
+}
+
