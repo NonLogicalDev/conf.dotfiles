@@ -36,17 +36,21 @@ alias tmcs='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
 alias vim='nvim'
 
-# Docker Maching Automation for mac
-function docker-machine-init {
-  if [[ ! -n "$(docker-machine active 2>/dev/null)" ]]; then
-    echo "Starting Default VM..." 
-    docker-machine start dev
-  fi
-  echo "Updating ENVironment..."
-  eval $(docker-machine env dev)
-  echo "Done"
-  export dockerhost=$(docker-machine ip dev)
-}
+if [[ "$PLATFORM" == 'LINUX' ]]; then
+  if exists xdg-open; then
+    export OPEN_CMD=`which xdg-open`
+    function open() {
+      echo $*
+      $OPEN_CMD "$*" & disown
+    }
+  end
+elif [[ "$PLATFORM" == 'MAC' ]]; then
+  export OPEN_CMD=`which open`
+  function open() {
+    echo $*
+    $OPEN_CMD "$*"
+  }
+fi
 
 function botch() {
     TIME=$1
@@ -61,22 +65,6 @@ function botch() {
             echo -en '\033[J')
         sleep $TIME
     done
-}
-
-function mkvim {
-  SERVERNAME=$1
-  shift
-  mvim --servername $SERVERNAME $@
-}
-
-function uvim {
-  SERVERS=$(mvim --serverlist)
-  if [[ -z $SERVERS ]]; then
-    echo "NO GUI Server is running"
-    mkvim GUI $@
-  else
-    mvim --servername $(echo $SERVERS|percol) --remote $@
-  fi
 }
 
 if exists percol; then
@@ -99,6 +87,25 @@ if exists percol; then
     }
     alias fcd='change-directory-find'
 fi
+
+# MOVED AWAY FROM USING MVIM
+# --------------------------
+# function mkvim {
+#   SERVERNAME=$1
+#   shift
+#   mvim --servername $SERVERNAME $@
+# }
+#
+# function uvim {
+#   SERVERS=$(mvim --serverlist)
+#   if [[ -z $SERVERS ]]; then
+#     echo "NO GUI Server is running"
+#     mkvim GUI $@
+#   else
+#     mvim --servername $(echo $SERVERS|percol) --remote $@
+#   fi
+# }
+# --------------------------
 
 # I want to install apps where they belong
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"

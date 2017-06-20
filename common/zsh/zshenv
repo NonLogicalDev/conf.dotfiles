@@ -20,6 +20,8 @@ function get_platform {
   fi
 }
 
+export PLATFORM=`get_platform`
+
 #
 # Make path entries unique
 #

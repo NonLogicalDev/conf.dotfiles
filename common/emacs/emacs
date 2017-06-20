@@ -1,0 +1,145 @@
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(package-initialize)
+
+;; =============================================================================
+;; Custom.EL Hooks (THIS IS SET AUTOMATICALLY)
+;; =============================================================================
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("d29231b2550e0d30b7d0d7fc54a7fb2aa7f47d1b110ee625c1a56b30fea3be0f" default)))
+ '(global-linum-mode t)
+ '(indent-tabs-mode nil)
+ '(inhibit-startup-screen t)
+ '(package-selected-packages
+   (quote
+    (tabbar evil-org neotree rainbow-delimiters rainbow-identifiers auto-complete gruvbox-theme evil)))
+ '(tab-width 4)
+ '(truncate-lines t)
+ '(whitespace-style
+   (quote
+    (face trailing tabs indentation::space space-after-tab::tab space-after-tab::space space-after-tab tab-mark))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(linum ((t (:background "color-239" :foreground "white")))))
+
+;; =============================================================================
+;; Default settings
+;; =============================================================================
+
+;; REQUIRES
+(require 'whitespace)
+
+;; EDITOR SETTINGS
+(setq-default indent-tabs-mode nil)
+
+;; SETTINGS
+(menu-bar-mode -1)
+(windmove-default-keybindings)
+(show-paren-mode 1)
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+(unless window-system
+  (xterm-mouse-mode))
+
+;; KEYBINDINGS
+
+(define-prefix-command 'window-op)
+(global-set-key (kbd "C-w") 'window-op)
+
+(global-set-key (kbd "C-w <up>") (lambda () (interactive) (enlarge-window 10)))
+(global-set-key (kbd "C-w <down>") (lambda () (interactive) (enlarge-window -10)))
+(global-set-key (kbd "C-w <left>") (lambda () (interactive) (enlarge-window-horizontally 10)))
+(global-set-key (kbd "C-w <right>") (lambda () (interactive) (enlarge-window-horizontally -10)))
+
+(global-set-key (kbd "C-w j>") (lambda () (interactive) (windmove-down)))
+(global-set-key (kbd "C-w k>") (lambda () (interactive) (windmove-up)))
+(global-set-key (kbd "C-w h>") (lambda () (interactive) (windmove-left)))
+(global-set-key (kbd "C-w l>") (lambda () (interactive) (windmove-right)))
+
+(unless window-system
+  (global-set-key (kbd "<mouse-4>") 'scroll-down-line)
+  (global-set-key (kbd "<mouse-5>") 'scroll-up-line))
+
+;; =============================================================================
+;; Initiating Third Party Pacakages
+;; =============================================================================
+
+;; REQUIRES
+(require 'evil)
+
+;; SETTINGS
+(evil-mode 1)
+(load-theme 'gruvbox)
+(ac-config-default)
+
+(add-hook 'org-mode-hook 'evil-org-mode)
+(add-hook 'prog-mode-hook 'rainbow-identifiers-mode)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+
+;; EVIL KEYBINDINGS
+(eval-after-load "evil-maps"
+  (define-key evil-motion-state-map [down-mouse-1] nil))
+
+(eval-after-load 'neotree 
+  (global-set-key (kbd "C-x p") 'neotree-toggle))
+
+(add-hook 'neotree-mode-hook
+          (lambda ()
+            (define-key evil-normal-state-local-map (kbd "TAB") 'neotree-enter)
+            (define-key evil-normal-state-local-map (kbd "SPC") 'neotree-quick-look)
+            (define-key evil-normal-state-local-map (kbd "RET") 'neotree-enter)
+            (define-key evil-normal-state-local-map (kbd "q") 'neotree-hide)
+            (define-key evil-normal-state-local-map (kbd "r") 'neotree-refresh)
+            (define-key evil-normal-state-local-map (kbd "cd") 'neotree-change-root)
+            ))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (define-key evil-normal-state-local-map (kbd "TAB") 'org-cycle)
+            (define-key evil-insert-state-local-map (kbd "RET") 'org-return-indent)
+            ))
+
+(define-key evil-normal-state-map (kbd "gc") 'comment-dwim)
+(define-key evil-visual-state-map (kbd "gc") 'comment-dwim)
+
+;; ;; =============================================================================
+;; Hooks
+;; =============================================================================
+
+;; Linum Hook to determine line length
+(unless window-system
+  (add-hook 'linum-before-numbering-hook
+            (lambda ()
+              (setq-local linum-format-fmt
+                          (let ((w (length
+                                    (number-to-string
+                                     (count-lines (point-min) (point-max))))))
+                            (concat "%" (number-to-string w) "d"))))))
+
+(defun linum-format-func (line)
+  (concat
+   (propertize (format linum-format-fmt line) 'face 'linum)
+   (propertize " " 'face 'mode-line)
+   " "))
+
+(unless window-system
+  (setq linum-format 'linum-format-func))
+
+;; =============================================================================
+;; Custom Functions
+;; =============================================================================
+(defun open-config ()
+  (interactive)
+  (find-file "~/.emacs"))
