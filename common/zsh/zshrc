@@ -12,6 +12,8 @@ fi
 
 # Customize to your needs ######################################################
 
+function exists { which $1 &> /dev/null }
+
 # Import all of the local SHELL vars
 if [[ ! -f ~/SHELL_VARS ]]; then
   touch SHELL_VARS
@@ -27,28 +29,48 @@ source ~/.zdir
 # Adding all of my amazing functions
 source ~/.zfunc
 
+# Location Aliases
+
+alias gogz='cd ~/.groundzero'
+alias godot='cd ~/.groundzero/dotfiles'
+alias godoc='cd ~/Documents'
+alias gonote='cd ~/Documents/Notes'
+
 # Setting up aliases
-function exists { which $1 &> /dev/null }
 
 alias fuck='sudo $(fc -ln -1)'
 alias vim='nvim'
 alias tmcs='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
-alias vim='nvim'
+alias rmr='rmf'
+alias cdb='cd +1'
+
+function cdvim() {
+  cd $1
+  vim .
+}
+
+if exists tree; then
+  function lst() {
+    tree -L 2 -C $* | less
+  }
+fi
+
+if exists nvim; then
+  alias vim='nvim'
+fi
 
 if [[ "$PLATFORM" == 'LINUX' ]]; then
   if exists xdg-open; then
     export OPEN_CMD=`which xdg-open`
     function open() {
-      echo $*
-      $OPEN_CMD "$*" & disown
+      $OPEN_CMD $* & disown
     }
-  end
+  fi
 elif [[ "$PLATFORM" == 'MAC' ]]; then
   export OPEN_CMD=`which open`
   function open() {
-    echo $*
-    $OPEN_CMD "$*"
+    $OPEN_CMD $*
   }
 fi
 
