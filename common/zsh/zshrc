@@ -140,4 +140,5 @@ if [ -e $HOME/.zshrc_local ]; then
   . $HOME/.zshrc_local
 fi
 
+## Deduplicating the path
 path_dedup

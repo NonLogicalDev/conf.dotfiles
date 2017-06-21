@@ -110,11 +110,19 @@ function init_lua {
   fi
 }
 
+function init_iterm_integration {
+  if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
+    echo "Initializing iTerm..."
+    source "${HOME}/.iterm2_shell_integration.zsh"
+  fi
+}
+
 function init_full_dev {
   init_node
   init_ruby
   init_python
   init_java
   init_lua
+  init_iterm_integration
 }
 
