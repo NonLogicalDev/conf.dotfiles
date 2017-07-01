@@ -2,7 +2,7 @@ local module = {}
 
 local TIMEOUT = 5
 
-local modal = hs.hotkey.modal.new('ctrl', 'space')
+local modal = hs.hotkey.modal.new({'ctrl', 'alt'}, 'space')
 
 function modal:entered()
     alertStyle = {
@@ -40,7 +40,7 @@ function module.bindMultiple(mod, key, pressedFn, releasedFn, repeatFn)
 end
 
 module.bind('', 'escape', module.exit)
-module.bind('ctrl', 'space', module.exit)
+module.bind({'ctrl', 'alt'}, 'space', module.exit)
 
 module.bind('', 'd', hs.toggleConsole)
 module.bind('', 'r', hs.reload)

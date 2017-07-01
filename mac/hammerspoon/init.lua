@@ -4,6 +4,10 @@ qa = require("menu_bar")
 
 require("window_manager")
 
+prefix.bind('', 'c', hs.toggleConsole)
+prefix.bind('', 'r', hs.reload)
+
+
 -- qa = {}
 -- qa.menu = {
 --   { title = "Work Utils", 

@@ -40,10 +40,14 @@ alias gonote='cd ~/Documents/Notes'
 
 alias fuck='sudo $(fc -ln -1)'
 alias vim='nvim'
-alias tmcs='tmux show-buffer | pbcopy'
+alias tmsave='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
 alias rmr='rmf'
 alias cdb='cd +1'
+
+if [[ "$PLATFORM" == 'MAC' ]]; then
+  alias tmpaste='tmux saveb - | pbcopy'
+fi
 
 function cdvim() {
   cd $1
