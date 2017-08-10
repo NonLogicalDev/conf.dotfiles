@@ -8,6 +8,13 @@ hs.hotkey.bind({'ctrl', 'alt'}, "\\", function()
   end)
 end)
 
+prefix.bind('', "\\", function() 
+  hs.hints.style = 'vimperator'
+  hs.hints.windowHints(nil, function(selWin) 
+    selWin:focus()
+  end)
+end)
+
 prefix.bind('', "h", function() 
   local win = hs.window.focusedWindow()
   if win == nil then return end
@@ -35,7 +42,7 @@ end)
 function showGridAllScreens(grid)
   local conf = {}
   local allScreens = hs.screen.allScreens()
-  if #allScreens > 1 then
+  if #allScreens >= 1 then
     local otherscreen = nil
     index = 1
     for i,screen in ipairs(allScreens) do
@@ -60,10 +67,22 @@ end)
 
 prefix.bind('', "f", function() 
   showGridAllScreens( {
-    "aaabbbbbcccc",
+    "aaaabbbbbccc",
   })
 end)
 
+prefix.bind('', "b", function() 
+  showGridAllScreens( {
+    "abc",
+    "abc",
+  })
+end)
+
+prefix.bind('', "v", function() 
+  showGridAllScreens( {
+    "aaaabbbbb",
+  })
+end)
 
 -- border = nil
 -- prevWindow = nil

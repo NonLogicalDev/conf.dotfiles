@@ -22,16 +22,37 @@ function qa.update()
   qa.bar:setMenu(qa.menu)
 end
 
+function menu_LangSwitch(code)
+  return function()
+    if code == "EN" then
+      hs.keycodes.setLayout("U.S.")
+    elseif code == "RU" then
+      hs.keycodes.setLayout("Russian - Phonetic")
+    end
+  end
+end
+
 qa.menu = {
-  qa.mkmenu("Quick Actions"),
+  qa.mkmenu("Languages", {
+    qa.mkmenu("English", menu_LangSwitch("EN")),
+    qa.mkmenu("Russian", menu_LangSwitch("RU")),
+  }),
   qa.mkmenu("-"),
-  qa.mkmenu("Utils")
+  qa.mkmenu("Exit")
 }
 qa.update()
 
 prefix.bind({}, 'q', function() 
   local p = hs.screen.mainScreen():frame().center
   qa.bar:popupMenu(p)
+end)
+
+prefix.bind({}, 'n', function() 
+  menu_LangSwitch("EN")()
+end)
+
+prefix.bind({}, 'm', function() 
+  menu_LangSwitch("RU")()
 end)
 
 return qa
