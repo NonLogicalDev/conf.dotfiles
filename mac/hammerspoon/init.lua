@@ -1,12 +1,105 @@
-prefix = require("prefix")
-utils = require("utils")
-qa = require("menu_bar")
+local utils = require("utils")
+local prefix = require("prefix")
+local tmgrid = require("tmgrid")
+local qa = require("menubar")
 
-require("window_manager")
+------------------------------------------------------------------------
+--                            Helper Utils                            --
+------------------------------------------------------------------------
+
+function langSwitch(code) -- {{{
+  return function()
+    if code == "EN" then
+      hs.keycodes.setLayout("U.S.")
+    elseif code == "RU" then
+      hs.keycodes.setLayout("Russian - Phonetic")
+    end
+  end
+end -- }}}
+
+local ggrid = nil
+
+function bindGrid(key, grid, screens) -- {{{
+  local uGrid = {}
+  for k,v in pairs(grid) do
+    uGrid[k] = string.reverse(v)
+  end
+
+  prefix.bind('', key, function() 
+    if not(ggrid and ggrid.active == true) then
+      ggrid = tmgrid.showGrid(grid, hs.screen.allScreens())
+    end
+  end)
+
+  prefix.bind('shift', key, function() 
+    if not(ggrid and ggrid.active == true) then
+      ggrid = tmgrid.showGrid(uGrid, hs.screen.allScreens())
+    end
+  end)
+end -- }}}
+
+function winSelect() -- {{{
+  -- hs.hints.style = 'vimperator'
+  hs.hints.windowHints(nil, function(selWin) 
+    selWin:focus()
+  end)
+end -- }}}
+
+------------------------------------------------------------------------
+--                           Configuration                            --
+------------------------------------------------------------------------
 
 prefix.bind('', 'c', hs.toggleConsole)
 prefix.bind('', 'r', hs.reload)
 
+qa.setMenu({
+  qa.mkmenu("Languages", {
+    qa.mkmenu("English", langSwitch("EN")),
+    qa.mkmenu("Russian", langSwitch("RU")),
+  }),
+  qa.mkmenu("-"),
+  qa.mkmenu("Exit")
+}).update()
+
+prefix.bind({}, 'q', function() 
+  local p = hs.screen.mainScreen():frame().center
+  qa.bar:popupMenu(p)
+end)
+
+prefix.bind({}, 'n', function() 
+  menu_LangSwitch("EN")()
+end)
+
+prefix.bind({}, 'm', function() 
+  menu_LangSwitch("RU")()
+end)
+
+hs.hotkey.bind({'ctrl', 'alt'}, "\\", function() 
+  winSelect()
+end)
+
+prefix.bind('', "\\", function() 
+  winSelect()
+end)
+
+bindGrid("g", {
+  "aab",
+  "aab",
+  "aac"
+})
+
+bindGrid("f", {
+  "aaaabbbbbccc",
+})
+
+bindGrid("b", {
+  "abc",
+  "abc",
+})
+
+bindGrid("v", {
+  "aaabbbbb",
+})
 
 -- qa = {}
 -- qa.menu = {

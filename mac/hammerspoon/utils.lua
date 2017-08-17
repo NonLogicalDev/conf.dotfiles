@@ -37,4 +37,57 @@ function utils.has_value (tab, val)
     return false
 end
 
+function utils.windowBorderEnable()
+-- border = nil
+-- prevWindow = nil
+--
+-- excludedApps = {
+--   "Alfred 3",
+--   "Bartender 2",
+--   "1Password mini"
+-- }
+--
+-- function drawBorder()
+--   if border then
+--     border:delete()
+--   end
+--
+--   local win = hs.window.focusedWindow()
+--   if win == nil then return end
+--
+--   local winAppName = win:application():name()
+--   if utils.has_value(excludedApps, winAppName) then
+--     return
+--   end
+--
+--   local s = 10
+--   local f = win:frame()
+--   local fx = f.x -- - s/2
+--   local fy = f.y -- - s/2
+--   local fw = f.w -- + s
+--   local fh = f.h -- + s
+--
+--   border = hs.drawing.rectangle(hs.geometry.rect(fx, fy, fw, fh))
+--   border:setStrokeWidth(s)
+--   border:setStrokeColor({["red"]=0.75,["blue"]=0.0,["green"]=0.0,["alpha"]=0.80})
+--   border:setFillColor({["red"]=0.75,["blue"]=0.0,["green"]=0.0,["alpha"]=0.05})
+--   border:setRoundedRectRadii(5.0, 5.0)
+--   border:setStroke(true):setFill(false)
+--   border:setLevel("floating")
+--   border:show()
+--
+--   prevWindow = win
+-- end
+--
+-- drawBorder()
+--
+-- windows = hs.window.filter.new(nil)
+-- windows:subscribe(hs.window.filter.windowFocused, function () drawBorder() end)
+-- windows:subscribe(hs.window.filter.windowUnfocused, function () drawBorder() end)
+-- windows:subscribe(hs.window.filter.windowMoved, function () drawBorder() end)
+
+-- This is a catch all case just in case
+-- hs.timer.new(0.5, function() drawBorder() end):start()
+end
+
 return utils

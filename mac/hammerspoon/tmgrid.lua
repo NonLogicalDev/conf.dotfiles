@@ -1,97 +1,108 @@
--- local drawing = require "hs.drawing"
--- local screen = require "hs.screen"
--- local window = require "hs.window"
+-- Grid Module
+------------------------------------------------------------------------
+local Grid = {}
+Grid.__index = Grid
+------------------------------------------------------------------------
 
-function len(t)
-  count = 0
-  if type(t) == 'table' then
-    for k,v in pairs(t) do
-      count = count + 1
+local frames = nil
+
+-- Module Methods
+------------------------------------------------------------------------
+function Grid.showGrid(grid, screens) -- {{{
+  local conf = {}
+  local allScreens = screens
+  if #allScreens >= 1 then
+    local otherscreen = nil
+    index = 1
+    for i,screen in ipairs(allScreens) do
+      table.insert(conf, { 
+        ['screen'] = screen, ['prefix'] = index,
+        ['grid'] = grid
+      })
+      index = index + 1
     end
-  elseif type(t) == 'string' then
-    count = string.len(t)
   end
 
-  return count
-end
+  return Grid.renderGrid(conf)
+end -- }}}
+------------------------------------------------------------------------
 
-function drawRect(text,rect,borderWidth)
-  local borderColor = {
-    ["red"]   = 1,
-    ["blue"]  = 1,
-    ["green"] = 1,
-    ["alpha"] = 0.80
-  }
-  local fillColor = {
-    ["red"]   = 0.0,
-    ["blue"]  = 0.0,
-    ["green"] = 0.0,
-    ["alpha"] = 0.5
-  }
-  local textColor = {
-    ["red"]   = 0.1,
-    ["blue"]  = 0.1,
-    ["green"] = 0.1,
-    ["alpha"] = 1
-  }
+-- Constructor Methods
+------------------------------------------------------------------------
+function Grid.renderGrid(init_grid)  -- {{{
+  local self = setmetatable({}, Grid)
+  local maps = {}
 
-  local f = rect
-  local s = borderWidth
+  local prefixBindings = {}
+  table.insert(prefixBindings, hs.hotkey.bind({}, "escape", function()
+    self:kill()
+  end))
+  for i,map in ipairs(init_grid) do
+    local tiles = _constructGrid(map.grid, map.prefix, map.screen)
+    self:genCtxBindings(prefixBindings,  map.prefix, tiles)
 
-  local fx = f.x - s/2
-  local fy = f.y - s/2
-  local fw = f.w + s
-  local fh = f.h + s
+    maps[i] = {
+      ['tiles'] = tiles
+    }
+  end
 
+  self.maps = maps
+  self.prefixBindings = prefixBindings
+  self.active = true
 
-  frame = hs.drawing.rectangle(rect)
+  return self
+end -- }}}
+------------------------------------------------------------------------
 
-  frame:setStrokeWidth(borderWidth)
-  frame:setStrokeColor(borderColor)
-  frame:setFillColor(fillColor)
+-- Instance Methods
+------------------------------------------------------------------------
+function Grid.genCtxBindings(self, prefixBindings, prefix, tiles) -- {{{
+  table.insert(prefixBindings, hs.hotkey.bind({}, ""..prefix, function()
+    local ctxBindings = {}
+    _deleteBindingList(self.ctxBindings)
 
-  -- frame:setRoundedRectRadii(5.0, 5.0)
+    for ti,tile in ipairs(tiles) do
+      table.insert(ctxBindings, hs.hotkey.bind({}, tile.hint, function()
+        tile.fn()
+        self:kill()
+      end))
+    end
 
-  frame:setStroke(true):setFill(true)
+    self.ctxBindings = ctxBindings
+  end))
+end -- }}}
 
-  frame:setLevel("floating")
-  frame:show()
+function Grid.kill(self) -- {{{
+  if not self.maps then
+    return
+  end
 
-  local ts = 40
-  local htf = {w=150,h=150}
+  for i,map in ipairs(self.maps) do
+    for i,tile in ipairs(map.tiles) do
+      _deleteRect(tile.frame)
+    end
+  end
+  self.maps = nil
+  self.active = false
 
-  htf.x = f.x + f.w/2 - htf.w/2 
-  htf.y = f.y + f.h/2 - htf.h/2
-  
+  _deleteBindingList(self.prefixBindings)
+  self.prefixBindings = {}
 
-  text = hs.drawing.text(htf, text)
-  text:setTextSize(ts)
-  text:setTextFont('Lucida Grande')
-  text:setTextStyle({
-    ['alignment'] = 'center'
-  })
+  _deleteBindingList(self.ctxBindings)
+  self.ctxBindings = {}
+end -- }}}
+------------------------------------------------------------------------
 
-  text:show()
-
-  return {
-    ['frame'] = frame,
-    ['text'] = text
-  }
-end
-
-function deleteRect(rect)
-  rect.frame:delete()
-  rect.text:delete()
-end
-
-function constructGrid(hintrows, prefix, screen)
+-- Private Utility Functions
+------------------------------------------------------------------------
+function _constructGrid(hintrows, prefix, screen) -- {{{
   grid = {}
 
-  local rez_y = len(hintrows)
-  local rez_x = len(hintrows[1])
+  local rez_y = _len(hintrows)
+  local rez_x = _len(hintrows[1])
 
   for i,row in ipairs(hintrows) do
-    for j = 1, len(row) do
+    for j = 1, _len(row) do
       local char = string.sub(row, j, j)
 
       if grid[char] ==  nil then
@@ -137,7 +148,7 @@ function constructGrid(hintrows, prefix, screen)
     local rect = hs.geometry.rect(fx,fy,fw,fh)
     tile = {
       ['hint'] = key,
-      ['frame'] = drawRect(hint, rect, 5),
+      ['frame'] = _drawRect(hint, rect, 5),
       ['fn'] = function()
         local w = hs.window.focusedWindow()
         w:setFrame(rect)
@@ -149,14 +160,9 @@ function constructGrid(hintrows, prefix, screen)
   end
 
   return tiles
-end
+end -- }}}
 
-local frames = nil
-
-local Grid = {}
-Grid.__index = Grid
-
-function deleteBindingList(l)
+function _deleteBindingList(l) -- {{{
   print("-- clreaing out list")
   print(l)
   if l then
@@ -165,63 +171,88 @@ function deleteBindingList(l)
       binding:delete()
     end
   end
-end
+end -- }}}
 
-function Grid.renderGrid(init_grid) 
-  local self = setmetatable({}, Grid)
-  local maps = {}
-
-  local prefixBindings = {}
-  table.insert(prefixBindings, hs.hotkey.bind({}, "escape", function()
-    self:kill()
-  end))
-  for i,map in ipairs(init_grid) do
-    local tiles = constructGrid(map.grid, map.prefix, map.screen)
-    self:genCtxBindings(prefixBindings,  map.prefix, tiles)
-
-    maps[i] = {
-      ['tiles'] = tiles
-    }
-  end
-
-  self.maps = maps
-  self.prefixBindings = prefixBindings
-  return self
-end
-
-
-function Grid.genCtxBindings(self, prefixBindings, prefix, tiles)
-  table.insert(prefixBindings, hs.hotkey.bind({}, ""..prefix, function()
-    local ctxBindings = {}
-    deleteBindingList(self.ctxBindings)
-
-    for ti,tile in ipairs(tiles) do
-      table.insert(ctxBindings, hs.hotkey.bind({}, tile.hint, function()
-        tile.fn()
-        self:kill()
-      end))
+function _len(t) -- {{{
+  count = 0
+  if type(t) == 'table' then
+    for k,v in pairs(t) do
+      count = count + 1
     end
-
-    self.ctxBindings = ctxBindings
-  end))
-end
-
-function Grid.kill(self)
-  if not self.maps then
-    return
+  elseif type(t) == 'string' then
+    count = string.len(t)
   end
 
-  for i,map in ipairs(self.maps) do
-    for i,tile in ipairs(map.tiles) do
-      deleteRect(tile.frame)
-    end
-  end
-  self.maps = nil
+  return count
+end -- }}}
 
-  deleteBindingList(self.prefixBindings)
-  self.prefixBindings = {}
-  deleteBindingList(self.ctxBindings)
-  self.ctxBindings = {}
-end
+function _drawRect(text,rect,borderWidth) -- {{{
+  local borderColor = {
+    ["red"]   = 1,
+    ["blue"]  = 1,
+    ["green"] = 1,
+    ["alpha"] = 0.80
+  }
+  local fillColor = {
+    ["red"]   = 0.0,
+    ["blue"]  = 0.0,
+    ["green"] = 0.0,
+    ["alpha"] = 0.5
+  }
+  local textColor = {
+    ["red"]   = 0.1,
+    ["blue"]  = 0.1,
+    ["green"] = 0.1,
+    ["alpha"] = 1
+  }
+
+  local f = rect
+  local s = borderWidth
+
+  local fx = f.x - s/2
+  local fy = f.y - s/2
+  local fw = f.w + s
+  local fh = f.h + s
+
+  local ts = 40
+  local htf = {w=150,h=150}
+
+  htf.x = f.x + f.w/2 - htf.w/2 
+  htf.y = f.y + f.h/2 - htf.h/2
+
+
+  -- Drawing frame
+  local frame = hs.drawing.rectangle(rect)
+
+  -- frame:setRoundedRectRadii(5.0, 5.0)
+  frame:setStrokeWidth(borderWidth)
+  frame:setStrokeColor(borderColor)
+  frame:setFillColor(fillColor)
+  frame:setStroke(true):setFill(true)
+
+  frame:setLevel("floating")
+  frame:show()
+
+  -- Drawing text
+  local text = hs.drawing.text(htf, text)
+  text:setTextSize(ts)
+  text:setTextFont('Lucida Grande')
+  text:setTextStyle({
+    ['alignment'] = 'center'
+  })
+
+  text:show()
+
+  return {
+    ['frame'] = frame,
+    ['text'] = text
+  }
+end -- }}}
+
+function _deleteRect(rect) -- {{{
+  rect.frame:delete()
+  rect.text:delete()
+end -- }}}
+------------------------------------------------------------------------
 
 return Grid
