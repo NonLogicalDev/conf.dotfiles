@@ -67,11 +67,11 @@ prefix.bind({}, 'q', function()
 end)
 
 prefix.bind({}, 'n', function() 
-  menu_LangSwitch("EN")()
+  langSwitch("EN")()
 end)
 
 prefix.bind({}, 'm', function() 
-  menu_LangSwitch("RU")()
+  langSwitch("RU")()
 end)
 
 hs.hotkey.bind({'ctrl', 'alt'}, "\\", function() 
