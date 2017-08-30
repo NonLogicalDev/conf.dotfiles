@@ -1,6 +1,7 @@
 #######################################################################
 #                         Usefull Functions                           #
 #######################################################################
+# vim: foldmethod=syntax foldlevel=1 foldnestmax=1
 
 # Simple Gitignore Generator
 function gi() {

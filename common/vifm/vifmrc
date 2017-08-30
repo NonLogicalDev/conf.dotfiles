@@ -5,6 +5,7 @@ command Q :execute '!echo %d > ~/.vifm/lastdir' | quit
 command link :execute '!ln -s %d/%f %D'
 
 map o :!open %f<CR>
+map O :!qlmanage -p %f > /dev/null 2>/dev/null &<CR>
 
 set vicmd=nvim
 set nofollowlinks

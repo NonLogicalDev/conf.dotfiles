@@ -129,6 +129,13 @@ function init_iterm_integration {
   fi
 }
 
+function init_basic_dev {
+  init_iterm_integration
+  init_ruby
+  init_python
+  init_java
+}
+
 function init_full_dev {
   init_node
   init_ruby

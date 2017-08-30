@@ -35,6 +35,8 @@ Plug 'tpope/vim-repeat'
 Plug 'digitaltoad/vim-pug' " Jade/Pug templates
 Plug 'MicahElliott/Rocannon'
 Plug 'evanmiller/nginx-vim-syntax'
+Plug 'rkennedy/vim-delphi'
+Plug 'aklt/plantuml-syntax'
 
 Plug 'keith/swift.vim',                   { 'for':'swift'          }
 Plug 'hdima/python-syntax',               { 'for':'python'         }
@@ -831,7 +833,21 @@ augroup lang_go
   autocmd BufWritePost *.go Neomake
 augroup END
 
+
 " }}}
+" File Type Aliases: {{{
+
+" Substitute the ZSH file format to SH cause highlighting is better
+autocmd BufRead * call s:ftZSHtoSH()
+function s:ftZSHtoSH()
+  if &filetype == "zsh"
+    setlocal filetype=sh
+  endif
+endfunction
+
+" autocmd BufRead * call AliasZSH()
+
+"}}}
 " GUI Settings: {{{
 
 " Setting Up Colorsheme and fonts
