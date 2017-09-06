@@ -52,19 +52,19 @@ end -- }}}
 prefix.bind('', 'c', hs.toggleConsole)
 prefix.bind('', 'r', hs.reload)
 
-qa.setMenu({
-  qa.mkmenu("Languages", {
-    qa.mkmenu("English", langSwitch("EN")),
-    qa.mkmenu("Russian", langSwitch("RU")),
-  }),
-  qa.mkmenu("-"),
-  qa.mkmenu("Exit")
-}).update()
-
-prefix.bind({}, 'q', function() 
-  local p = hs.screen.mainScreen():frame().center
-  qa.bar:popupMenu(p)
-end)
+-- qa.setMenu({
+--   qa.mkmenu("Languages", {
+--     qa.mkmenu("English", langSwitch("EN")),
+--     qa.mkmenu("Russian", langSwitch("RU")),
+--   }),
+--   qa.mkmenu("-"),
+--   qa.mkmenu("Exit")
+-- }).update()
+--
+-- prefix.bind({}, 'q', function() 
+--   local p = hs.screen.mainScreen():frame().center
+--   qa.bar:popupMenu(p)
+-- end)
 
 prefix.bind({}, 'n', function() 
   langSwitch("EN")()

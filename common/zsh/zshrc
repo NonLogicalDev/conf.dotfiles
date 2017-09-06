@@ -48,6 +48,7 @@ alias cdb='cd +1'
 alias jet.go='open -a Gogland\ 1.0\ EAP'
 alias jet.java='open -a IntelliJ\ IDEA'
 alias jet.py='open -a PyCharm'
+alias jet.js='open -a WebStorm'
 
 if [[ "$PLATFORM" == 'MAC' ]]; then
   alias tmpaste='tmux saveb - | pbcopy'
