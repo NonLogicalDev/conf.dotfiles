@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+import argparse
+import time
+import re
+from functools import partial
+from subprocess import run
+
+EDITOR = os.environ.get('EDITOR','vim')
+PREFIX=os.environ['HOME']
+FOLDER_PATH="MEMO"
+OUT_FOLDER=os.path.join(PREFIX, FOLDER_PATH)
+
+def log(level, msg):
+    print("{}: {}".format(level, msg))
+
+def fuzzyfinder(user_input, collection):
+    suggestions = []
+    pattern = '.*'.join(user_input)   # Converts 'djm' to 'd.*j.*m'
+    regex = re.compile(pattern)  # Compiles a regex.
+    for item in collection:
+        match = regex.search(item)   # Checks if the current item matches the regex.
+        if match:
+            suggestions.append(item)
+    return suggestions
+
+def main():
+    p = argparse.ArgumentParser(description='memorizer')
+    p.add_argument('--fsearch', help='fuzzy search memos for autocomplete')
+
+    sp = p.add_subparsers(help='commands', dest='cmd')
+
+    list_cmd = sp.add_parser('list', aliases=['l'], help='list memos')
+
+    tree_cmd = sp.add_parser('tree', aliases=['t'], help='list memos as a tree')
+
+    read_cmd = sp.add_parser('read', aliases=['r'], help='read memo')
+    read_cmd.add_argument('file', help="filename to read")
+
+    edit_cmd = sp.add_parser('edit', aliases=['e'], help='edit memo')
+    edit_cmd.add_argument('file', help="filename to edit")
+    edit_cmd.add_argument('-c', help="cmd to open with")
+
+    write_cmd = sp.add_parser('write', aliases=['w'], help='write memo')
+    write_cmd.add_argument('file', help="filename to write")
+    write_cmd.add_argument('-f', help="force write", action='store_true')
+
+    append_cmd = sp.add_parser('append', aliases=['a'], help='append memo')
+    append_cmd.add_argument('file', help="filename to write")
+    append_cmd.add_argument('-s', help="separator")
+
+    rm_cmd = sp.add_parser('delete', aliases=['d'], help='remove memo or folder')
+    rm_cmd.add_argument('file', help="filename to write")
+
+    args = p.parse_args(sys.argv[1:])
+
+    if (args.fsearch is not None):
+        fsearch(args.fsearch)
+        sys.exit(0)
+
+    if (args.cmd in ['list', 'l']):
+        print("\n".join(mlist()))
+    elif (args.cmd in ['tree', 't']):
+        treefy(mlist(), os.sep)
+    elif (args.cmd in ['write', 'w']):
+        write(args.file, force=args.f)
+    elif (args.cmd in ['append', 'a']):
+        write(args.file, True, args.s)
+    elif (args.cmd in ['read', 'r']):
+        read(args.file)
+    elif (args.cmd in ['delete', 'd']):
+        delete(args.file)
+    elif (args.cmd in ['edit', 'e']):
+        edit(args.file, args.c)
+
+def ensure_folder(dir_path):
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    elif not os.path.isdir(dir_path):
+        log("ERROR", "Location '{}' is not a folder".format(dir_path))
+        os.exit(1)
+
+def mlist(include_trash=False, include_folders=False):
+    filelist = []
+    for root, dirs, files in os.walk(OUT_FOLDER):
+        if root == OUT_FOLDER:
+            continue
+        cp = os.path.commonprefix([OUT_FOLDER, root]) + os.sep
+        root_path = root.replace(cp, "")
+        if include_folders:
+            filelist.append("{}{}".format(root_path, os.sep))
+        if not '.trash' in root_path and not include_trash:
+            for file in files:
+                filelist.append(os.path.join(root_path, file))
+    return filelist
+
+
+def treefy(l, sep):
+    ls = sorted(l)
+    tree = {}
+
+    for item in ls:
+        tree_cur = tree
+        for path_c in item.split(sep):
+            tree_cur[path_c] = tree_cur.get(path_c, {})
+            tree_cur = tree_cur[path_c]
+
+    print_subtree(tree, 0)
+
+def print_subtree(subtree, level):
+    if len(subtree) == 0:
+        return
+    for k in sorted(subtree.keys()):
+        if k is None:
+            continue
+        pre = ""
+        if level > 0:
+            pre = "└── "
+        print("{}{}{}".format(" " * level, pre, k))
+        print_subtree(subtree[k], level + 1)
+
+def fsearch(string, include_trash=False):
+    files = mlist(include_trash, True)
+    for file in fuzzyfinder(string, files):
+        print(file)
+
+
+def write(file, append=False, separator=None, force=False):
+    ensure_folder(OUT_FOLDER)
+    file_path = os.path.join(OUT_FOLDER, file)
+    folder_path = os.path.dirname(file_path)
+    ensure_folder(folder_path)
+
+    mode = 'w+'
+    if append:
+        mode = 'a'
+
+    if os.path.exists(file_path) and not (append or force):
+        log("ERROR", "Memo exists refusing to write")
+        sys.exit(1)
+
+    with open(file_path, mode) as out_file:
+        if separator is not None:
+            out_file.write("\n")
+            out_file.write(separator)
+            out_file.write("\n\n")
+
+        for chunk in iter(partial(sys.stdin.read, 512), ''):
+            out_file.write(chunk)
+
+        log("INFO", "MEMO WRITTEN...")
+
+
+def read(file):
+    file_path = os.path.join(OUT_FOLDER, file)
+    if os.path.exists(file_path):
+        if os.path.isdir(file_path):
+            pass
+        else:
+            with open(file_path, 'r') as in_file:
+                print(in_file.read())
+
+def delete(file):
+    file_del_path = os.path.join(os.path.join(OUT_FOLDER, ".trash"), file)
+    folder_del_path = os.path.dirname(file_del_path)
+
+    timestamp = int(time.time())
+    file_del_path = "{}.{}".format(file_del_path, timestamp)
+
+    file_path = os.path.join(OUT_FOLDER, file)
+
+    if os.path.exists(file_path):
+        ensure_folder(folder_del_path)
+        os.rename(file_path, file_del_path)
+        log("INFO", "MEMO TRASHED...")
+
+
+def edit(file, editor=None):
+    ensure_folder(OUT_FOLDER)
+    file_path = os.path.join(OUT_FOLDER, file)
+    folder_path = os.path.dirname(file_path)
+    ensure_folder(folder_path)
+
+    if editor is None:
+        editor = EDITOR
+
+    run("{} '{}'".format(editor, file_path), shell=True)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(1)

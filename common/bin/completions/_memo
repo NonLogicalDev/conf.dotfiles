@@ -1,0 +1,77 @@
+#compdef memo
+
+# _alternative "dirs:user directories:($usrdirs)"\
+#              'opts:comma separated opts:{_values -s , a b c}'
+# contains() {
+#     string="$1"
+#     substring="$2"
+#     if test "${string#*$substring}" != "$string"
+#     then
+#         return 0    # $substring is in $string
+#     else
+#         return 1    # $substring is not in $string
+#     fi
+# }
+
+function __memo_fuzz() {
+  local arg=$1
+  if [[ $arg == '' ]]; then
+    arg='.'
+  fi
+  memo --fsearch $arg
+}
+
+function __memo_list() {
+  memo list
+}
+
+function _memo() {
+  local curcontext="$curcontext" state line
+  typeset -A opt_args
+
+  _arguments \
+    - 'c_options' \
+    '--fsearch[fuzzy search]' \
+    - 'commands' \
+    '(-):command:->command' \
+    '(-)*::options:->options' \
+
+  case $state in
+    (command)
+      local -a subcommands
+      subcommands=(
+        'list:list memos'
+        'tree:list memos as a tree'
+        'read:read memo'
+        'write:write memo'
+        'append:append memo'
+        'edit:edit memo'
+        'delete:delete memo'
+      )
+      _describe -t commands 'commands' subcommands
+      ;;
+    (options)
+      local files=($(__memo_fuzz '.'))
+      local flist=($(__memo_list))
+      case $line[1] in
+        (r|read)
+          _arguments ":memos:($flist)"
+          ;;
+        (e|edit)
+          _arguments ":memos:($flist)"
+          ;;
+        (w|write)
+          _arguments ":memos:($flist)" "-f[force]::" 
+          ;;
+        (a|append)
+          _arguments ":memos:($flist)" "-s[separator]::"
+          ;;
+        (d|delete)
+          _arguments ":memos:($files)" "-s[separator]:sep"
+          ;;
+      esac
+      ;;
+  esac
+}
+
+_memo "$@"
