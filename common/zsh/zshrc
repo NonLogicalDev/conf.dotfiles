@@ -52,6 +52,11 @@ if [[ -f ${HOME}/.zfunc ]]; then
   source ${HOME}/.zfunc
 fi
 
+if [[ -d ${HOME}/.zplugins ]]; then
+  for plugin in ${HOME}/.zplugins/**/*.plugin.zsh; do
+    source $plugin
+  done
+fi
 
 #######################################################################
 #                               Aliases                               #
@@ -116,26 +121,6 @@ elif [[ "$PLATFORM" == 'MAC' ]]; then
   function open() {
     $OPEN_CMD $*
   }
-fi
-
-if exists fzf; then
-    function percol_select_history() {
-        local tac
-        exists gtac && tac="gtac" || { exists tac && tac="tac" || { tac="tail -r" } }
-        BUFFER=$(fc -l -n 1  | eval $tac | fzf --query "$LBUFFER")
-        CURSOR=$#BUFFER         # move cursor
-        zle -R -c               # refresh
-    }
-    zle -N percol_select_history
-    bindkey '^R' percol_select_history
-
-    alias fcd='change-directory-find'
-    function change-directory-find() {
-      SELECTED_DIR=$(find $* | percol)
-      if [[ ! -z "$SELECTED_DIR" ]]; then
-        cd $SELECTED_DIR
-      fi
-    }
 fi
 
 # MOVED AWAY FROM USING MVIM
