@@ -49,7 +49,7 @@ end -- }}}
 --                           Configuration                            --
 ------------------------------------------------------------------------
 
-prefix.bind('', 'c', hs.toggleConsole)
+prefix.bind('', '`', hs.toggleConsole)
 prefix.bind('', 'r', hs.reload)
 
 -- qa.setMenu({
@@ -99,6 +99,12 @@ bindGrid("b", {
 
 bindGrid("v", {
   "aaabbbbb",
+})
+
+bindGrid("c", {
+  "bbbbbaaa",
+  "bbbbbaaa",
+  "bbbbbccc", 
 })
 
 -- qa = {}

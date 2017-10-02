@@ -5,32 +5,57 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
-export fpath=($HOME/bin/completions $fpath)
+export fpath=(${HOME}/bin/completions $fpath)
 
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
+function exists { which $1 &> /dev/null }
 
 # Customize to your needs ######################################################
 
-function exists { which $1 &> /dev/null }
 
-# Import all of the local SHELL vars
-if [[ ! -f ~/SHELL_VARS ]]; then
-  touch SHELL_VARS
+# Set up env VARIABLES
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+export ANSIBLE_NOCOWS=1
+export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
+
+
+#######################################################################
+#                               Imports                               #
+#######################################################################
+
+# Import Local evn VARIABLES
+if [[ ! -f ${HOME}/SHELL_VARS ]]; then
+  touch ${HOME}/SHELL_VARS
 fi
-source ~/SHELL_VARS
+source ${HOME}/SHELL_VARS
+
+# Import Local settings
+if [[ ! -f ${HOME}/.zshrc_local ]]; then
+  touch ${HOME}/.zshrc_local
+fi
+source ${HOME}/.zshrc_local
 
 # Add the frecent directory searcher
-if [[ ! -f ~/.z ]]; then
-  touch ~/.z
+if [[ ! -f ${HOME}/.z ]]; then
+  touch ${HOME}/.z
 fi
-source ~/.zdir
+if [[ -f ${HOME}/.zdir ]]; then
+  source ${HOME}/.zdir
+fi
 
 # Adding all of my amazing functions
-source ~/.zfunc
+if [[ -f ${HOME}/.zfunc ]]; then
+  source ${HOME}/.zfunc
+fi
+
+
+#######################################################################
+#                               Aliases                               #
+#######################################################################
 
 # Location Aliases
 
@@ -38,6 +63,8 @@ alias gogz='cd ~/.groundzero'
 alias godot='cd ~/.groundzero/dotfiles'
 alias godoc='cd ~/Documents'
 alias gonote='cd ~/Documents/Notes'
+
+alias scurl='curl --cert $CU_CERT'
 
 # Setting up aliases
 
@@ -56,6 +83,11 @@ alias jet.js='open -a WebStorm'
 if [[ "$PLATFORM" == 'MAC' ]]; then
   alias tmpaste='tmux saveb - | pbcopy'
 fi
+
+
+#######################################################################
+#                              Functions                              #
+#######################################################################
 
 function cdvim() {
   cd $1
@@ -86,40 +118,24 @@ elif [[ "$PLATFORM" == 'MAC' ]]; then
   }
 fi
 
-function botch() {
-    TIME=$1
-    shift 1
-    while true; do
-        (echo -en '\033[H'
-            CMD="$@"
-            bash -c "$CMD" | while read LINE; do 
-                echo -n "$LINE"
-                echo -e '\033[0K' 
-            done
-            echo -en '\033[J')
-        sleep $TIME
-    done
-}
-
-if exists percol; then
+if exists fzf; then
     function percol_select_history() {
         local tac
         exists gtac && tac="gtac" || { exists tac && tac="tac" || { tac="tail -r" } }
-        BUFFER=$(fc -l -n 1 | eval $tac | percol --query "$LBUFFER")
+        BUFFER=$(fc -l -n 1  | eval $tac | fzf --query "$LBUFFER")
         CURSOR=$#BUFFER         # move cursor
         zle -R -c               # refresh
     }
-
     zle -N percol_select_history
     bindkey '^R' percol_select_history
 
+    alias fcd='change-directory-find'
     function change-directory-find() {
       SELECTED_DIR=$(find $* | percol)
       if [[ ! -z "$SELECTED_DIR" ]]; then
         cd $SELECTED_DIR
       fi
     }
-    alias fcd='change-directory-find'
 fi
 
 # MOVED AWAY FROM USING MVIM
@@ -141,16 +157,21 @@ fi
 # }
 # --------------------------
 
-# I want to install apps where they belong
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-
-path_prepend "$HOME/bin"
-export ANSIBLE_NOCOWS=1
-
-# Local settings
-if [ -e $HOME/.zshrc_local ]; then
-  . $HOME/.zshrc_local
-fi
+function botch() {
+    TIME=$1
+    shift 1
+    while true; do
+        (echo -en '\033[H'
+            CMD="$@"
+            bash -c "$CMD" | while read LINE; do 
+                echo -n "$LINE"
+                echo -e '\033[0K' 
+            done
+            echo -en '\033[J')
+        sleep $TIME
+    done
+}
 
 ## Deduplicating the path
+path_prepend "$HOME/bin"
 path_dedup

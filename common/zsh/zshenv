@@ -75,6 +75,30 @@ fi
 #                 Adding Version Managers to the path                 #
 #######################################################################
 
+function init_iterm_integration {
+  if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
+    echo "Initializing iTerm..."
+    source "${HOME}/.iterm2_shell_integration.zsh"
+  fi
+}
+
+## Adding ASDF Version Manger
+function init_asdf {
+  export ASDF_DIR="$(brew --prefix asdf)"
+
+  source "$ASDF_DIR/asdf.sh"
+  source "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
+
+  declare -a plugins=(
+    "ruby"
+    "python"
+    "lua"
+  )
+  for plug in "${plugins[@]}"; do
+    asdf plugin-add $plug &> /dev/null
+  done
+}
+
 ## Adding Node Version Manger
 function init_node {
   export NVM_DIR="$HOME/.nvm"
@@ -85,28 +109,9 @@ function init_node {
   fi
 }
 
-function init_ruby {
-  ## Adding Ruby Version Manager
-  # Installed through brew or apt
-  if [[ -x "$(which rbenv)" ]]; then
-    echo "Initializing Ruby..."
-    eval "$(rbenv init -)"
-  fi
-}
-
-function init_python {
-  ## Adding Python Version Manager
-  # Installed through brew or apt
-  path_prepend "$HOME/Library/Python/2.7/bin"
-  if [[ -x "$(which pyenv)" ]]; then
-    echo "Initializing Python..."
-    eval "$(pyenv init -)"
-  fi
-}
-
+## Adding Java Version Manger
 function init_java {
-  # Adding java version manager
-  if [[ -x "$(which jenv)" ]]; then
+  if [[ ! -z "$(command -v jenv)" ]]; then
     echo "Initializing JVM..."
     export JVM_DIR="$HOME/.jenv"
     path_prepend "$JVM_DIR"
@@ -114,35 +119,15 @@ function init_java {
   fi
 }
 
-function init_lua {
-  ## Adding Torch
-  export TORCH_DIR="$HOME/torch/install"
-  if [[ -s  "$TORCH_DIR/bin/torch-activate" ]]; then
-    echo "Initializing Torch..."
-    source "$TORCH_DIR/bin/torch-activate"
-  fi
-}
-
-function init_iterm_integration {
-  if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
-    echo "Initializing iTerm..."
-    source "${HOME}/.iterm2_shell_integration.zsh"
-  fi
-}
-
 function init_basic_dev {
   init_iterm_integration
-  init_ruby
-  init_python
+
+  init_asdf
   init_java
 }
 
 function init_full_dev {
+  init_basic_dev
   init_node
-  init_ruby
-  init_python
-  init_java
-  init_lua
-  init_iterm_integration
 }
 
