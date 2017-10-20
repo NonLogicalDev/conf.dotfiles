@@ -1,0 +1,61 @@
+# vim: ft=gitconfig
+[alias]
+  f = fetch
+  b = branch
+  st = status
+  co = checkout
+
+  lg = log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+  lgg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+  lgd = !git lg -n 100 HEAD..
+  lgdu = !git lg -n 100 HEAD..$(git upstream)
+
+  cc = commit
+  cm = commit -m
+  cca = commit --amend -C HEAD
+  cp = cherry-pick
+
+  pull = pull --ff-only
+  ffo = merge --ff-only
+  rb = rebase
+  rbu = !git rebase $(git upstream)
+
+  diffc = diff --cached
+
+  untrack = update-index --assume-unchanged
+  track = update-index --no-assume-unchanged
+
+  untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
+  upstream = !git rev-parse --abbrev-ref $(git symbolic-ref --short HEAD)@{upstream} 
+
+  # lg = log --oneline -n 10
+  # lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
+[pager]
+  lg = false
+  lg = false
+[push]
+  default = simple
+[merge]
+	ff = only
+	tool = vimdiff
+  conflictstyle = diff3
+[diff]
+	tool = vimdiff
+  algorithm = patience
+[core]
+	excludesfile = /Users/olegutkin/.gitignore_global
+[user]
+	name = Oleg Utkin
+  email = oleg.utkin@uber.com
+[tig "color"]
+  cursor = green black
+  title-focus = green black
+  title-blur = white black
+[rerere]
+	enabled = true
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
