@@ -21,6 +21,7 @@ function exists { which $1 &> /dev/null }
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export ANSIBLE_NOCOWS=1
 export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
+export FZFZ_EXCLUDE_PATTERN='.git/|env/'
 
 
 #######################################################################

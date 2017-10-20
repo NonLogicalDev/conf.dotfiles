@@ -26,7 +26,7 @@ call plug#begin('~/.vim/plugged')
 "===============================================================================
 " Libraries: {{{
 
-Plug 'ingo-library' " Utility library needed for some plugins
+Plug 'vim-scripts/ingo-library' " Utility library needed for some plugins
 Plug 'tpope/vim-repeat'
 
 " }}}
@@ -92,7 +92,7 @@ Plug 'scrooloose/nerdtree'
 " Making editing colors in vim a little easier
 Plug 'iandoe/vim-osx-colorpicker'
 Plug 'skammer/vim-css-color'
-Plug 'Colorizer'
+Plug 'vim-scripts/Colorizer'
 
 " Quick Finders
 Plug 'kien/ctrlp.vim'
@@ -112,16 +112,16 @@ endif
 
 Plug 'tpope/vim-abolish'
 "Plug 'YankRing.vim' " Stores history of yanks and deletes
-Plug 'EnhancedJumps' " Improve jumps (CTRL-I / CTRL-O)
+Plug 'vim-scripts/EnhancedJumps' " Improve jumps (CTRL-I / CTRL-O)
 Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
 Plug 'tpope/vim-surround' " Surround current element with a symbol
 Plug 'Lokaltog/vim-easymotion' " Visualises increments of jump commands
 Plug 'godlygeek/tabular' " Aligns any delimiter in selected strings
-Plug 'bufkill.vim' " Allows you to kill a buffer without closing current pane
+Plug 'vim-scripts/bufkill.vim' " Allows you to kill a buffer without closing current pane
 Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
 
 Plug 'mattn/emmet-vim', {'for':'html'}  " Super cool way to write html
-Plug 'ragtag.vim', {'for':'xml'} " Helps with html/xml editing
+Plug 'vim-scripts/ragtag.vim', {'for':'xml'} " Helps with html/xml editing
 
 " }}}
 " Connectivity Plugins: {{{
@@ -133,7 +133,7 @@ Plug 'rizzatti/dash.vim'
 " Git Integration
 Plug 'tpope/vim-fugitive'
 if has('nvim')
-  Plug 'airblade/vim-gitgutter' " This thing is a resource hog (unless you have neovim)
+  "Plug 'airblade/vim-gitgutter' " This thing is a resource hog (unless you have neovim)
 endif
 
 " CTags Integration 
@@ -190,7 +190,7 @@ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Global Mappings: {{{
 
-set clipboard=unnamedplus
+"set clipboard=unnamedplus
 let mapleader = " " " This is a spaca by the way
 let maplocalleader = "\\"
 
@@ -923,7 +923,7 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 "{{{
 if has("gui_running")
   " No toolbars, menu or scrollbars in the GUI
-  set clipboard+=unnamed
+  "set clipboard+=unnamed
   set vb t_vb=
   set guioptions-=m  " no menu
   set guioptions-=l
