@@ -44,9 +44,6 @@
   algorithm = patience
 [core]
   excludesfile = ~/.gitignore_global
-[user]
-  name = Oleg Utkin
-  email = oleg.utkin@uber.com
 [tig "color"]
   cursor = green black
   title-focus = green black
