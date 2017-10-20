@@ -43,7 +43,7 @@
 	tool = vimdiff
   algorithm = patience
 [core]
-	excludesfile = /Users/olegutkin/.gitignore_global
+	excludesfile = ~/.gitignore_global
 [user]
 	name = Oleg Utkin
   email = oleg.utkin@uber.com
