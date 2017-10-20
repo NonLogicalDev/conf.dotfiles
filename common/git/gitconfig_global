@@ -36,26 +36,26 @@
 [push]
   default = simple
 [merge]
-	ff = only
-	tool = vimdiff
+  ff = only
+  tool = vimdiff
   conflictstyle = diff3
 [diff]
-	tool = vimdiff
+  tool = vimdiff
   algorithm = patience
 [core]
-	excludesfile = ~/.gitignore_global
+  excludesfile = ~/.gitignore_global
 [user]
-	name = Oleg Utkin
+  name = Oleg Utkin
   email = oleg.utkin@uber.com
 [tig "color"]
   cursor = green black
   title-focus = green black
   title-blur = white black
 [rerere]
-	enabled = true
+  enabled = true
 [difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
+  cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+  path = 
 [mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
+  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+  trustExitCode = true
