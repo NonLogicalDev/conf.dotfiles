@@ -8,7 +8,7 @@ local frames = nil
 
 -- Module Methods
 ------------------------------------------------------------------------
-function Grid.showGrid(grid, screens) -- {{{
+function Grid.showGrid(grid, screens, action_fun) -- {{{
   local conf = {}
   local allScreens = screens
   if #allScreens >= 1 then
@@ -23,13 +23,13 @@ function Grid.showGrid(grid, screens) -- {{{
     end
   end
 
-  return Grid.renderGrid(conf)
+  return Grid.renderGrid(conf, action_fun)
 end -- }}}
 ------------------------------------------------------------------------
 
 -- Constructor Methods
 ------------------------------------------------------------------------
-function Grid.renderGrid(init_grid)  -- {{{
+function Grid.renderGrid(init_grid, action_fun)  -- {{{
   local self = setmetatable({}, Grid)
   local maps = {}
 
@@ -38,7 +38,7 @@ function Grid.renderGrid(init_grid)  -- {{{
     self:kill()
   end))
   for i,map in ipairs(init_grid) do
-    local tiles = _constructGrid(map.grid, map.prefix, map.screen)
+    local tiles = _constructGrid(map.grid, map.prefix, map.screen, action_fun)
     self:genCtxBindings(prefixBindings,  map.prefix, tiles)
 
     maps[i] = {
@@ -95,7 +95,7 @@ end -- }}}
 
 -- Private Utility Functions
 ------------------------------------------------------------------------
-function _constructGrid(hintrows, prefix, screen) -- {{{
+function _constructGrid(hintrows, prefix, screen, action_fun) -- {{{
   grid = {}
 
   local rez_y = _len(hintrows)
@@ -149,10 +149,13 @@ function _constructGrid(hintrows, prefix, screen) -- {{{
     tile = {
       ['hint'] = key,
       ['frame'] = _drawRect(hint, rect, 5),
-      ['fn'] = function()
-        local w = hs.window.focusedWindow()
-        w:setFrame(rect)
+      ['fn'] = function() 
+        action_fun(rect, hint)
       end
+      -- function()
+      --   local w = hs.window.focusedWindow()
+      --   w:setFrame(rect)
+      -- end
     } 
 
     tiles[i] = tile

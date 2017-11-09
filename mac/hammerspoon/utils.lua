@@ -1,5 +1,11 @@
 utils = {}
 
+function utils.length(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
 function utils.urlencode(str)
   if (str) then
     str = string.gsub (str, "\n", "\r\n")

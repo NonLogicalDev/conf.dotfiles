@@ -28,6 +28,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'vim-scripts/ingo-library' " Utility library needed for some plugins
 Plug 'tpope/vim-repeat'
+Plug 'Shougo/unite.vim'
 
 " }}}
 " Language Definitions: {{{
@@ -84,6 +85,8 @@ Plug 'tomtom/tcomment_vim' " Lets you quickly comment out lines wtih gc
 
 " Adding Navigator to vim
 Plug 'scrooloose/nerdtree'
+"Plug 'Shougo/vimfiler.vim'
+
 " Plug 'jistr/vim-nerdtree-tabs'
 " Plug 'ryanoasis/vim-devicons' " Unleash Graphical awesomeness
 " Plug 'Xuyuanp/nerdtree-git-plugin'
@@ -545,7 +548,7 @@ let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exac
 nmap <silent> <leader>m :NERDTreeCWD<cr>
 nmap <silent> <leader>n :ToggleNav<cr>
 command! ToggleNav call s:ToggleNav()
-func! s:ToggleNav()
+func! s:ToggleNav() 
   if exists(":NERDTabsTreeToggle")
     exec ":NERDTreeTabsToggle"
   else
@@ -553,6 +556,7 @@ func! s:ToggleNav()
   endif
 endfu
 nmap <silent> <leader>q :NERDTreeFocusToggle<cr>
+"nmap <silent> <leader>n :VimFilerExplorer<CR>
 
 " }}}
 " Rainbow Paranthesis: {{{
