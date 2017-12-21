@@ -9,7 +9,6 @@ else
     REVERSER='tac'
 fi
 
-
 __fzfz() {
     if (($+FZFZ_EXCLUDE_PATTERN)); then
         EXCLUDER="egrep -v '$FZFZ_EXCLUDE_PATTERN'"
@@ -59,7 +58,6 @@ __fzfz() {
     done
     echo
 }
-
 fzfz-file-widget() {
     RES=$(eval echo "$(__fzfz)")
     LBUFFER="${LBUFFER}$RES"
@@ -71,16 +69,40 @@ fzfz-file-widget() {
 zle     -N   fzfz-file-widget
 bindkey '^G' fzfz-file-widget
 
-__fzfz_dir() {
+__fzfz_file() {
     REMOVE_FIRST="tail -n +2"
     LIMIT_LENGTH="head -n $(($FZFZ_SUBDIR_LIMIT+1))"
 
     SUBDIRS="{ ack -l '^' }"
 
     FZF_COMMAND='fzf -e --tiebreak=index -m --preview="cat {} | head -$LINES"'
-
     local COMMAND="{ $SUBDIRS ; } | $FZF_COMMAND"
+    eval "$COMMAND" | while read item; do
+        printf '\"%s\" ' "$item"
+    done
+    echo
+}
+fzfz-file-all-widget() {
+    RES=$(eval echo "$(__fzfz_file)")
+    LBUFFER="${LBUFFER}$RES"
+    local ret=$?
+    zle redisplay
+    typeset -f zle-line-init >/dev/null && zle zle-line-init
+    return $ret
+}
+zle     -N   fzfz-file-all-widget
+bindkey '^F' fzfz-file-all-widget
 
+
+__fzfz_dir() {
+    REMOVE_FIRST="tail -n +2"
+    LIMIT_LENGTH="head -n $(($FZFZ_SUBDIR_LIMIT+1))"
+
+    EXCL='-path "*/.git/*" -o -path "*/.git"'
+    SUBDIRS="find . $EXCL -prune -o -type d -print"
+
+    FZF_COMMAND='fzf -e --tiebreak=index -m --preview="cat {} | head -$LINES"'
+    local COMMAND="{ $SUBDIRS ; } | $FZF_COMMAND"
     eval "$COMMAND" | while read item; do
         printf '\"%s\" ' "$item"
     done
@@ -95,5 +117,5 @@ fzfz-file-dir-widget() {
     return $ret
 }
 zle     -N   fzfz-file-dir-widget
-bindkey '^F' fzfz-file-dir-widget
+bindkey '^H' fzfz-file-dir-widget
 

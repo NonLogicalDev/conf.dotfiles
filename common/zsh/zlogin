@@ -10,6 +10,7 @@ if (( $+commands[fortune] )); then
   #   # PIPE1="cowsay -f ~/.groundzero/configs/common/files/cowsay/blank.cow"
   #   PIPE1="cowsay"
   # fi
+
   if (($+commands[lolcat])); then
     PIPE2='lolcat'
   fi

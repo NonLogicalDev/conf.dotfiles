@@ -22,6 +22,8 @@ function get_platform {
 
 export PLATFORM=`get_platform`
 export EDITOR=nvim
+IGNOREOF=10
+set -o ignoreeof
 
 #
 # Make path entries unique

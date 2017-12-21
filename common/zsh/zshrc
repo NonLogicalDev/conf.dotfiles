@@ -5,24 +5,26 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
-export fpath=(${HOME}/bin/completions $fpath)
-
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
+if [ -f  ${HOME}/bin/completions ]; then
+  export fpath=(${HOME}/bin/completions $fpath)
 fi
 
 function exists { which $1 &> /dev/null }
 
 # Customize to your needs ######################################################
 
-
 # Set up env VARIABLES
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export ANSIBLE_NOCOWS=1
+
+# Plugin VARIABLES
 export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
 export FZFZ_EXCLUDE_PATTERN='.git/|env/'
-
 
 #######################################################################
 #                               Imports                               #
@@ -53,6 +55,7 @@ if [[ -f ${HOME}/.zfunc ]]; then
   source ${HOME}/.zfunc
 fi
 
+# Adding all my zsh plugins
 if [[ -d ${HOME}/.zplugins ]]; then
   for plugin in ${HOME}/.zplugins/**/*.plugin.zsh; do
     source $plugin
@@ -63,32 +66,35 @@ fi
 #                               Aliases                               #
 #######################################################################
 
-# Location Aliases
-
-alias gogz='cd ~/.groundzero'
-alias godot='cd ~/.groundzero/dotfiles'
-alias godoc='cd ~/Documents'
-alias gonote='cd ~/Documents/Notes'
-
 alias scurl='curl --cert $CU_CERT'
 
 # Setting up aliases
 
-alias fuck='sudo $(fc -ln -1)'
-alias vim='nvim'
-alias tmsave='tmux show-buffer | pbcopy'
-alias mux='tmuxinator'
 alias rmr='rmf'
+alias fuck='sudo $(fc -ln -1)'
 alias cdb='cd +1'
 
-alias jet.go='open -a Gogland\ 1.0\ EAP'
-alias jet.java='open -a IntelliJ\ IDEA'
-alias jet.py='open -a PyCharm'
-alias jet.js='open -a WebStorm'
+alias tmsave='tmux show-buffer | pbcopy'
+alias mux='tmuxinator'
+
+if exists 'nvim'; then
+  alias vim='nvim'
+fi
 
 if [[ "$PLATFORM" == 'MAC' ]]; then
   alias tmpaste='tmux saveb - | pbcopy'
+
+  alias jet.go='open -a GoLand\ 1.0\ EAP'
+  alias jet.java='open -a IntelliJ\ IDEA'
+  alias jet.py='open -a PyCharm'
+  alias jet.js='open -a WebStorm'
 fi
+
+# Location Aliases
+alias go.gz='cd ~/.groundzero'
+alias go.dot='cd ~/.groundzero/dotfiles'
+alias go.doc='cd ~/Documents'
+alias go.note='cd ~/Documents/Notes'
 
 
 #######################################################################
@@ -96,8 +102,7 @@ fi
 #######################################################################
 
 function cdvim() {
-  cd $1
-  vim .
+  cd $1 && vim .
 }
 
 if exists tree; then
@@ -161,3 +166,4 @@ function botch() {
 ## Deduplicating the path
 path_prepend "$HOME/bin"
 path_dedup
+brew analytics off 2>&1 >/dev/null

@@ -93,7 +93,7 @@ end -- }}}
 -- Global Mappings
 
 prefix.bind('', '`', hs.toggleConsole)
-prefix.bind('', 'u', hs.reload)
+prefix.bind('', '\\', hs.reload)
 
 prefix.bind('', 'y', windowYank)
 prefix.bind('', 'p', windowPut)
@@ -110,11 +110,38 @@ end)
 
 -- Window Manager
 
-hs.hotkey.bind({'ctrl', 'alt'}, "\\", function() 
-  winSelect()
-end)
+bindGrid("q", {
+  "abc",
+  "abc",
+})
 
-prefix.bind('', "\\", function() 
+bindGrid("w", {
+  "aaaabbbbbccc",
+})
+
+bindGrid("e", {
+  "bbbbbaaa",
+  "bbbbbaaa",
+  "bbbbbccc", 
+})
+
+bindGrid("r", {
+  "aaaaabbb",
+})
+
+bindGrid("t", {
+  "bbbbbaaa",
+  "bbbbbaaa",
+  "bbbbbaaa",
+  "bbbbbccc", 
+  "bbbbbccc", 
+})
+
+bindGrid("y", {
+  "aaaaaaabbb",
+})
+
+hs.hotkey.bind({'ctrl', 'alt'}, "\\", function() 
   winSelect()
 end)
 
@@ -127,33 +154,6 @@ prefix.bind({'shift'}, "/", function()
     w:setFrame(rect)
   end
 end)
-
-bindGrid("t", {
-  "bbbbbaaa",
-  "bbbbbaaa",
-  "bbbbbaaa",
-  "bbbbbccc", 
-  "bbbbbccc", 
-})
-
-bindGrid("r", {
-  "aaaaabbb",
-})
-
-bindGrid("e", {
-  "bbbbbaaa",
-  "bbbbbaaa",
-  "bbbbbccc", 
-})
-
-bindGrid("w", {
-  "aaaabbbbbccc",
-})
-
-bindGrid("q", {
-  "abc",
-  "abc",
-})
 
 -- bindGrid("g", {
 --   "aab",
