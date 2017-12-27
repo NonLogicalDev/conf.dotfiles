@@ -827,6 +827,11 @@ let g:deoplete#sources#clang#clang_header = "/Users/olegutkin/.vim/plugged/YouCo
 autocmd BufRead *.js nnoremap <buffer> gd :FlowJumpToDef<CR>
 
 " }}}
+" Surround: {{{
+
+let g:surround_115 = "\1surround: \1\r\1\1""
+
+" }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Languages: {{{
