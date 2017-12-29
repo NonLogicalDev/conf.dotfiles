@@ -1,4 +1,8 @@
 # vim: ft=gitconfig
+[user]
+  name = "Oleg Utkin"
+  email = "oleg.utkin@uber.com"
+
 [include]
   path = ~/.gitconfig_global
 [url "ssh://code.uber.internal/"]
