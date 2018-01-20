@@ -18,9 +18,15 @@ function langSwitch(code) -- {{{
   end
 end -- }}}
 
+function setFrame(w, f) -- {{{
+  w:setFrame(f, 0)
+end -- }}}
+
 local ggrid = nil
 local windowYankBuffer = nil
 local windowMap = {}
+
+local windowSizeStep = 300
 
 function bindGrid(key, grid, screens) -- {{{
   local uGrid = {}
@@ -31,7 +37,7 @@ function bindGrid(key, grid, screens) -- {{{
   local winSizeFun = function(rect, hint)
     local w = hs.window.focusedWindow()
     windowMap[w:id()] = rect
-    w:setFrame(rect)
+    setFrame(w, rect)
   end
 
   prefix.bind('', key, function() 
@@ -98,6 +104,11 @@ prefix.bind('', '\\', hs.reload)
 prefix.bind('', 'y', windowYank)
 prefix.bind('', 'p', windowPut)
 
+prefix.bind('shift', '=', function() 
+  local w = hs.window.focusedWindow()
+  w:close()
+end)
+
 -- Language Manager
 
 prefix.bind({}, 'n', function() 
@@ -107,6 +118,49 @@ end)
 prefix.bind({}, 'm', function() 
   langSwitch("RU")()
 end)
+
+
+prefix.bind({}, 'up', function() 
+  local w = hs.window.focusedWindow()
+  local f = w:frame()
+  local hStep = windowSizeStep / 2.0
+
+  f.y = f.y - 2 * hStep
+  f.h = f.h + 2 * hStep
+
+  setFrame(w, f)
+end) 
+
+prefix.bind({}, 'down', function() 
+  local w = hs.window.focusedWindow()
+  local f = w:frame()
+  local hStep = windowSizeStep / 2.0
+
+  f.h = f.h + 2 * hStep
+
+  setFrame(w, f)
+end) 
+
+prefix.bind({}, 'left', function() 
+  local w = hs.window.focusedWindow()
+  local f = w:frame()
+  local hStep = windowSizeStep / 2.0
+
+  f.x = f.x - 2 * hStep
+  f.w = f.w + 2 * hStep
+
+  setFrame(w, f)
+end) 
+
+prefix.bind({}, 'right', function() 
+  local w = hs.window.focusedWindow()
+  local f = w:frame()
+  local hStep = windowSizeStep / 2.0
+
+  f.w = f.w + 2 * hStep
+
+  setFrame(w, f)
+end) 
 
 -- Window Manager
 
@@ -151,7 +205,7 @@ prefix.bind({'shift'}, "/", function()
   if rect == nil then
     print("Window lacks rect info")
   else
-    w:setFrame(rect)
+    setFrame(w, rect)
   end
 end)
 
