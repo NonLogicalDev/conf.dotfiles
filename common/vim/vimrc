@@ -308,6 +308,20 @@ set laststatus=2    " always show statusline
 " }}}
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Tab Navigation Simplified: {{{
+nmap <C-w>1 1gt
+nmap <C-w>2 2gt
+nmap <C-w>3 3gt
+nmap <C-w>4 4gt
+nmap <C-w>5 5gt
+nmap <C-w>6 6gt
+nmap <C-w>7 7gt
+nmap <C-w>8 8gt
+nmap <C-w>9 9gt
+
+nmap <C-w><Tab> :tabnext<CR>
+nmap <C-w><S-Tab> :tabprev<CR>
+" }}}
 " Make Increment Play Well With TMUX: {{{
 noremap <C-c> <C-a>
 " }}}

@@ -1,14 +1,17 @@
 " vim: ft=vim
 colo solarized-dark
+colorscheme Improved
 
-command Q :execute '!echo %d > ~/.vifm/lastdir' | quit
-command link :execute '!ln -s %d/%f %D'
+set vicmd=vim
+set nofollowlinks
+screen
+
+filextype *.pdf, *.jpg 
+      \ {View in default OSX app} 
+      \ open %c
 
 map o :!open %f<CR>
 map O :!qlmanage -p %f > /dev/null 2>/dev/null &<CR>
 
-set vicmd=nvim
-set nofollowlinks
-screen
-
-colorscheme Improved
+command Q :execute '!echo %d > ~/.vifm/lastdir' | quit
+command link :execute '!ln -s %d/%f %D'

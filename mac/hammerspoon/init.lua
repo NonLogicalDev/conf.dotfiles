@@ -3,6 +3,14 @@ local prefix = require("prefix")
 local tmgrid = require("tmgrid")
 local qa = require("menubar")
 
+------------------------------------------------------------------------
+--                             Variables                              --
+------------------------------------------------------------------------
+
+local ggrid = nil
+local windowYankBuffer = nil
+local windowMap = {}
+local windowSizeStep = 300
 
 ------------------------------------------------------------------------
 --                            Helper Utils                            --
@@ -22,11 +30,10 @@ function setFrame(w, f) -- {{{
   w:setFrame(f, 0)
 end -- }}}
 
-local ggrid = nil
-local windowYankBuffer = nil
-local windowMap = {}
-
-local windowSizeStep = 300
+function resizeFocusedWindow(fn)
+  local w = hs.window.focusedWindow()
+  setFrame(w, fn(w:frame()))
+end
 
 function bindGrid(key, grid, screens) -- {{{
   local uGrid = {}
@@ -90,7 +97,6 @@ function windowPut() -- {{{
     local screen_num = tonumber(string.sub(hint, 0, 1))
     w:moveToScreen(scs[screen_num])
   end)
-
 end -- }}}
 ------------------------------------------------------------------------
 --                           Configuration                            --
@@ -119,47 +125,36 @@ prefix.bind({}, 'm', function()
   langSwitch("RU")()
 end)
 
+-- Window Sizer
 
 prefix.bind({}, 'up', function() 
-  local w = hs.window.focusedWindow()
-  local f = w:frame()
-  local hStep = windowSizeStep / 2.0
-
-  f.y = f.y - 2 * hStep
-  f.h = f.h + 2 * hStep
-
-  setFrame(w, f)
+  resizeFocusedWindow(function(f)
+    f.y = f.y - windowSizeStep
+    f.h = f.h + windowSizeStep
+    return f
+  end)
 end) 
 
 prefix.bind({}, 'down', function() 
-  local w = hs.window.focusedWindow()
-  local f = w:frame()
-  local hStep = windowSizeStep / 2.0
-
-  f.h = f.h + 2 * hStep
-
-  setFrame(w, f)
+  resizeFocusedWindow(function(f)
+    f.h = f.h + windowSizeStep
+    return f
+  end)
 end) 
 
 prefix.bind({}, 'left', function() 
-  local w = hs.window.focusedWindow()
-  local f = w:frame()
-  local hStep = windowSizeStep / 2.0
-
-  f.x = f.x - 2 * hStep
-  f.w = f.w + 2 * hStep
-
-  setFrame(w, f)
+  resizeFocusedWindow(function(f)
+    f.x = f.x - windowSizeStep
+    f.w = f.w + windowSizeStep
+    return f
+  end)
 end) 
 
 prefix.bind({}, 'right', function() 
-  local w = hs.window.focusedWindow()
-  local f = w:frame()
-  local hStep = windowSizeStep / 2.0
-
-  f.w = f.w + 2 * hStep
-
-  setFrame(w, f)
+  resizeFocusedWindow(function(f)
+    f.w = f.w + windowSizeStep
+    return f
+  end)
 end) 
 
 -- Window Manager
@@ -174,26 +169,49 @@ bindGrid("w", {
 })
 
 bindGrid("e", {
-  "bbbbbaaa",
-  "bbbbbaaa",
-  "bbbbbccc", 
+  "bbbbbbaaaa",
+  "bbbbbbaaaa",
+  "bbbbbbcccc", 
 })
 
 bindGrid("r", {
-  "aaaaabbb",
+  "aaaaaabbbb",
 })
 
 bindGrid("t", {
-  "bbbbbaaa",
-  "bbbbbaaa",
-  "bbbbbaaa",
-  "bbbbbccc", 
-  "bbbbbccc", 
+  "aaaaaabbbb",
+  "aaaaaabbbb",
+  "aaaaaabbbb",
+  "aaaaaacccc", 
+  "aaaaaacccc", 
 })
 
 bindGrid("y", {
-  "aaaaaaabbb",
+  "aaaaaabbbb",
 })
+
+-- hs.hotkey.bind({'ctrl', 'alt'}, "=", function() 
+--   local screens = hs.screen.allScreens()
+--
+--   local rotations = {
+--     [722475280] = 0,
+--     [722496271] = 0,
+--   }
+--
+--   for i, screen  in ipairs(screens) do
+--     local screen_id = screen:id()
+--     if not(rotations[screen_id] == nil) then
+--       screen:rotate(rotations[screen_id])
+--     end
+--   end
+--
+--   for i, screen  in ipairs(hs.screen.allScreens()) do
+--     print("Name:" .. screen:name())
+--     print("ID:" .. tostring(screen:id()))
+--     print("Rotation:" .. tostring(screen:rotate()))
+--     print("-------------")
+--   end
+-- end)
 
 hs.hotkey.bind({'ctrl', 'alt'}, "\\", function() 
   winSelect()
