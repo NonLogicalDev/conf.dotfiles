@@ -7,7 +7,9 @@
 
   lg = log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
   lgg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+
   lgd = !git lg -n 100 HEAD..
+  lgud = !git lg -n 100 $(git upstream)..HEAD
   lgdu = !git lg -n 100 HEAD..$(git upstream)
 
   cc = commit
@@ -31,7 +33,6 @@
   # lg = log --oneline -n 10
   # lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
 [pager]
-  lg = false
   lg = false
 [push]
   default = simple

@@ -26,6 +26,10 @@ export ANSIBLE_NOCOWS=1
 export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
 export FZFZ_EXCLUDE_PATTERN='.git/|env/'
 
+# Setting up vim settings
+export TERM_ITALICS='true'
+export NVIM_TUI_ENABLE_TRUE_COLOR=1
+
 #######################################################################
 #                               Imports                               #
 #######################################################################
@@ -167,3 +171,5 @@ function botch() {
 path_prepend "$HOME/bin"
 path_dedup
 brew analytics off 2>&1 >/dev/null
+
+export PATH=/Users/oleg.utkin/.local/bin/luna-studio:$PATH

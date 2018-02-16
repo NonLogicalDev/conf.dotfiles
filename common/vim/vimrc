@@ -7,7 +7,6 @@
 set nocompatible 
 " let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
 " let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
-let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 
 if filereadable("/usr/local/bin/python2")
@@ -530,6 +529,11 @@ endfunc
 " }}}
 "                           Plugin Confugurations:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" EasyMotion: {{{
+
+" =[
+
+" }}}
 " Abolish: {{{
 
 let g:abolish_save_file = "~/.vim/after/plugin/abolish.vim"
@@ -912,12 +916,12 @@ endif
 
 if has('nvim')
   set termguicolors
-
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
 
   set ttyfast
-  set lazyredraw
-  "set noshowcmd
+  set noshowcmd
+  set nolazyredraw
+
   syntax sync minlines=256
 
   tnoremap <C-\><C-[> <C-\><C-n>
