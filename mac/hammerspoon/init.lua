@@ -1,5 +1,5 @@
 local utils = require("utils")
-local prefix = require("prefix")
+local modal = require("modal")
 local tmgrid = require("tmgrid")
 local qa = require("menubar")
 
@@ -16,41 +16,57 @@ local windowSizeStep = 300
 --                               KeyMap                               --
 ------------------------------------------------------------------------
 
+local lastEvent = nil
+
 function init_keymap() -- {{{
-  print("STARTING")
+  -- Setting up prefix
+
+  prefix = modal.make({'ctrl', 'alt'}, 'space', " P")
+
+  prefix:bind('', 'escape', function()
+    prefix:exit() 
+  end)
+
+
+  prefix:bind({'ctrl', 'alt'}, 'space', function() 
+    prefix:exit()
+  end)
+
+  prefix:bind('', 'd', hs.toggleConsole)
+  prefix:bind('', 'r', hs.reload)
 
   -- Global Mappings
 
-  prefix.bind({}, '`', hs.toggleConsole)
-  prefix.bind({}, '\\', hs.reload)
+  hs.hotkey.bind({'ctrl', 'alt'}, 'return', openTerminal)
+
+  prefix:bind({}, '`', hs.toggleConsole)
+  prefix:bind({}, '\\', hs.reload)
 
   -- Language Manager
 
-  prefix.bind({}, 'n', langSwitch("U.S."))
-  prefix.bind({}, 'm', langSwitch("Russian - Phonetic"))
+  prefix:bind({}, 'n', langSwitch("U.S."))
+  prefix:bind({}, 'm', langSwitch("Russian - Phonetic"))
 
   -- Grid Window Manager
+  binder = function(mods, key, fn)
+    prefix:bind(mods, key, fn)
+  end
 
-  -- bindGrid(prefix, "q", {
-  --   "abc",
-  --   "abc",
-  -- })
-
-  bindGrid(prefix, "w", {
+  bindGrid(binder, "w", {
     "aaaabbbbbccc",
   })
 
-  bindGrid(prefix, "e", {
+  bindGrid(binder, "e", {
     "bbbbbbaaaa",
     "bbbbbbaaaa",
     "bbbbbbcccc", 
   })
 
-  bindGrid(prefix, "r", {
+  bindGrid(binder, "r", {
     "aaaaaabbbb",
   })
 
-  bindGrid(prefix, "t", {
+  bindGrid(binder, "t", {
     "aaaaaabbbb",
     "aaaaaabbbb",
     "aaaaaabbbb",
@@ -58,24 +74,29 @@ function init_keymap() -- {{{
     "aaaaaacccc", 
   })
 
-  bindGrid(prefix, "y", {
+  bindGrid(binder, "y", {
     "aaaaaabbbb",
+  })
+
+  bindGrid(binder, "u", {
+    "abc",
+    "abc",
   })
 
   -- Window operations
   
   hs.hotkey.bind({'ctrl', 'alt'}, "\\", winSelect)
   
-  prefix.bind({}, "q", winRestoreFrame)
-  prefix.bind({'shift'}, "q", winSaveFrameAll)
+  prefix:bind({}, "q", winRestoreFrame)
+  prefix:bind({'shift'}, "q", winSaveFrameAll)
 
-  prefix.bind({}, 'h', hs.window.focusWindowWest)
-  prefix.bind({}, 'j', hs.window.focusWindowSouth)
-  prefix.bind({}, 'k', hs.window.focusWindowNorth)
-  prefix.bind({}, 'l', hs.window.focusWindowEast)
+  prefix:bind({}, 'h', hs.window.focusWindowWest)
+  prefix:bind({}, 'j', hs.window.focusWindowSouth)
+  prefix:bind({}, 'k', hs.window.focusWindowNorth)
+  prefix:bind({}, 'l', hs.window.focusWindowEast)
 
   --# Expand a window vertically
-  prefix.bind({}, 'p', resizeFocusedWindow(function(w,s,f)
+  prefix:bind({}, 'p', resizeFocusedWindow(function(w,s,f)
     f.y = 0
     f.h = s:frame()._h
     return f
@@ -85,27 +106,27 @@ function init_keymap() -- {{{
   
   local winSizeMult = 0.2
 
-  prefix.bind({'shift'}, 'h', resizeFocusedWindow(function(w,s,f)
+  prefix:bind({'shift'}, 'h', resizeFocusedWindow(function(w,s,f)
       local step = winSizeMult * s:frame()._w
       f.x = f.x - step
       f.w = f.w + step
       return f
   end))
 
-  prefix.bind({'shift'}, 'j', resizeFocusedWindow(function(w,s,f)
+  prefix:bind({'shift'}, 'j', resizeFocusedWindow(function(w,s,f)
       local step = winSizeMult * s:frame()._h
       f.h = f.h + windowSizeStep
       return f
   end))
 
-  prefix.bind({'shift'}, 'k', resizeFocusedWindow(function(w,s,f)
+  prefix:bind({'shift'}, 'k', resizeFocusedWindow(function(w,s,f)
     local step = winSizeMult * s:frame()._h
     f.y = f.y - step
     f.h = f.h + step
     return f
   end))
 
-  prefix.bind({'shift'}, 'l', resizeFocusedWindow(function(w,s,f)
+  prefix:bind({'shift'}, 'l', resizeFocusedWindow(function(w,s,f)
       local step = winSizeMult * s:frame()._w
       f.w = f.w + step
       return f
@@ -167,13 +188,13 @@ function bindGrid(pfx, key, grid, screens) -- {{{
     winSavePosition(w, true)
   end
 
-  pfx.bind('', key, function() 
+  pfx('', key, function() 
     if not(ggrid and ggrid.active == true) then
       ggrid = tmgrid.showGrid(grid, hs.screen.allScreens(), winSizeFun)
     end
   end)
 
-  pfx.bind('shift', key, function() 
+  pfx('shift', key, function() 
     if not(ggrid and ggrid.active == true) then
       ggrid = tmgrid.showGrid(uGrid, hs.screen.allScreens(), winSizeFun)
     end
@@ -200,6 +221,27 @@ end
 
 function winRestoreFrame()
   winLoadPosition(hs.window.focusedWindow(), true)
+end
+
+function openTerminal()
+  local status = nil
+  if status == nil then
+    status = hs.application.open('kitty')
+  end
+  if status == nil then
+    status = hs.application.open('iTerm')
+    -- iTerm seems to be having problems and always returns nil
+    if hs.window.focusedWindow():application():name() == 'iTerm2' then
+      status = true
+    end
+  end
+  if status == nil then
+    status = hs.application.open('Terminal')
+    print(status)
+  end
+  if status == nil then
+    hs.notify.show('Terminal', 'Error', 'Could not launch any terminal.')
+  end
 end
 
 ------------------------------------------------------------------------
@@ -357,6 +399,29 @@ end
 -- end
 --
 --
+
+-- Welp that did not work out =[
+-- Focus Follows mouse is incredibly hard to implement
+--
+-- local mouseMoved = false
+-- local activeWindow = nil
+--
+-- hs.eventtap.new({hs.eventtap.event.types['mouseMoved']}, function(e)
+--   mouseMoved = true
+-- end):start()
+--
+-- hs.timer.doEvery(0.1, function() 
+--   if mouseMoved then
+--     local my_pos = hs.geometry.new(hs.mouse.getAbsolutePosition())
+--     local my_screen = hs.mouse.getCurrentScreen()
+--
+--     window = hs.fnutils.find(hs.window.orderedWindows(), function(w)
+--       return my_screen == w:screen() and my_pos:inside(w:frame())
+--     end)
+--     print(hs.inspect(window, 2), mouseMoved)
+--     -- mouseMoved = false
+--   end
+-- end)
 
 ------------------------------------------------------------------------
 --                                INIT                                --
