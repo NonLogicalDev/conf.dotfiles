@@ -39,6 +39,15 @@ function init_keymap() -- {{{
 
   hs.hotkey.bind({'ctrl', 'alt'}, 'return', openTerminal)
 
+  function sendKeyStroke(mods, key)
+    return function()
+      hs.eventtap.keyStroke(mods, key)
+    end
+  end
+
+  -- hs.hotkey.bind({'ctrl', 'shift'}, '[', sendKeyStroke({'cmd', 'shift'}, '['))
+  -- hs.hotkey.bind({'ctrl', 'shift'}, ']', sendKeyStroke({'cmd', 'shift'}, ']'))
+
   prefix:bind({}, '`', hs.toggleConsole)
   prefix:bind({}, '\\', hs.reload)
 

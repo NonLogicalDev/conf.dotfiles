@@ -3,6 +3,9 @@
 #######################################################################
 # vim: foldmethod=syntax foldlevel=1 foldnestmax=1
 
+function exists { which $1 &> /dev/null }
+function binpath { type -a $1 | grep 'is \/' | perl -pe 's/.*?is\s*//g' }
+
 # Simple Gitignore Generator
 function gi() {
   curl -L -s https://www.gitignore.io/api/$@ 
@@ -78,10 +81,15 @@ function fs() {
 	fi;
 }
 
+
 # Use Git’s colored diff when available
-hash git &>/dev/null;
-if [ $? -eq 0 ]; then
-	function diff() {
+if exists colordiff; then
+  local dpath="$(binpath diff)"
+  function cdiff() {
+		$dpath -Naur "$@" | colordiff;
+	}
+elif exists git; then
+	function cdiff() {
 		git diff --no-index --color-words "$@";
 	}
 fi;
