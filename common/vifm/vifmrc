@@ -1,6 +1,6 @@
 " vim: ft=vim
 colo solarized-dark
-colorscheme Improved
+colorscheme modern
 
 set vicmd=vim
 set nofollowlinks

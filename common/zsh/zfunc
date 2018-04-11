@@ -3,6 +3,13 @@
 #######################################################################
 # vim: foldmethod=syntax foldlevel=1 foldnestmax=1
 
+function dbranch() {
+  local p="$(pwd)"
+  while [[ $p != '/' ]]; do
+    echo $p
+    p="$(dirname $p)"
+  done
+}
 function exists { which $1 &> /dev/null }
 function binpath { type -a $1 | grep 'is \/' | perl -pe 's/.*?is\s*//g' }
 

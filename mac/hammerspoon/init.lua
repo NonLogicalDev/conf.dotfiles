@@ -27,7 +27,6 @@ function init_keymap() -- {{{
     prefix:exit() 
   end)
 
-
   prefix:bind({'ctrl', 'alt'}, 'space', function() 
     prefix:exit()
   end)
@@ -39,17 +38,18 @@ function init_keymap() -- {{{
 
   hs.hotkey.bind({'ctrl', 'alt'}, 'return', openTerminal)
 
-  function sendKeyStroke(mods, key)
-    return function()
-      hs.eventtap.keyStroke(mods, key)
-    end
-  end
-
-  -- hs.hotkey.bind({'ctrl', 'shift'}, '[', sendKeyStroke({'cmd', 'shift'}, '['))
-  -- hs.hotkey.bind({'ctrl', 'shift'}, ']', sendKeyStroke({'cmd', 'shift'}, ']'))
 
   prefix:bind({}, '`', hs.toggleConsole)
-  prefix:bind({}, '\\', hs.reload)
+
+  -- prefix:bind({}, '\\', hs.reload)
+
+  -- function sendKeyStroke(mods, key)
+  --   return function()
+  --     hs.eventtap.keyStroke(mods, key)
+  --   end
+  -- end
+  -- hs.hotkey.bind({'ctrl', 'shift'}, '[', sendKeyStroke({'cmd', 'shift'}, '['))
+  -- hs.hotkey.bind({'ctrl', 'shift'}, ']', sendKeyStroke({'cmd', 'shift'}, ']'))
 
   -- Language Manager
 
@@ -61,14 +61,13 @@ function init_keymap() -- {{{
     prefix:bind(mods, key, fn)
   end
 
+
   bindGrid(binder, "w", {
     "aaaabbbbbccc",
   })
 
   bindGrid(binder, "e", {
-    "bbbbbbaaaa",
-    "bbbbbbaaaa",
-    "bbbbbbcccc", 
+    "ab",
   })
 
   bindGrid(binder, "r", {
@@ -84,7 +83,8 @@ function init_keymap() -- {{{
   })
 
   bindGrid(binder, "y", {
-    "aaaaaabbbb",
+    "ab",
+    "cd",
   })
 
   bindGrid(binder, "u", {
@@ -92,12 +92,19 @@ function init_keymap() -- {{{
     "abc",
   })
 
+  prefix:bind({}, "[", function()
+    swapScreens() 
+  end)
+
   -- Window operations
-  
+
   hs.hotkey.bind({'ctrl', 'alt'}, "\\", winSelect)
-  
+
   prefix:bind({}, "q", winRestoreFrame)
-  prefix:bind({'shift'}, "q", winSaveFrameAll)
+  prefix:bind({'shift'}, "q", winRestoreFrameAll)
+
+  prefix:bind({}, ']', winSaveFrame)
+  prefix:bind({'shift'}, "]", winSaveFrameAll)
 
   prefix:bind({}, 'h', hs.window.focusWindowWest)
   prefix:bind({}, 'j', hs.window.focusWindowSouth)
@@ -112,7 +119,7 @@ function init_keymap() -- {{{
   end))
 
   -- Window Sizer
-  
+
   local winSizeMult = 0.2
 
   prefix:bind({'shift'}, 'h', resizeFocusedWindow(function(w,s,f)
@@ -146,6 +153,13 @@ end -- }}}
 ------------------------------------------------------------------------
 --                            Helper Utils                            --
 ------------------------------------------------------------------------
+
+function gridShow(grid, screens, winSizeFun, colorFunc)
+  if not(ggrid and ggrid.active == true) then
+    ggrid = tmgrid.showGrid(grid, screens, winSizeFun, colorFunc)
+  end
+end
+
 function langSwitch(code) -- {{{
   return function()
     hs.keycodes.setLayout(code)
@@ -153,8 +167,48 @@ function langSwitch(code) -- {{{
   end
 end -- }}}
 
+function openTerminal()
+  local status = nil
+  if status == nil then
+    status = hs.application.open('kitty')
+  end
+  if status == nil then
+    status = hs.application.open('iTerm')
+    -- iTerm seems to be having problems and always returns nil
+    if hs.window.focusedWindow():application():name() == 'iTerm2' then
+      status = true
+    end
+  end
+  if status == nil then
+    status = hs.application.open('Terminal')
+    print(status)
+  end
+  if status == nil then
+    hs.notify.show('Terminal', 'Error', 'Could not launch any terminal.')
+  end
+end
+
+------------------------------------------------------------------------
+--                       Window Manager Helpers                       --
+------------------------------------------------------------------------
+
 function winSetFrame(w, f) -- {{{
   w:setFrame(f, 0)
+end -- }}}
+
+function resizeFocusedWindow(fn)
+  return function()
+    local w = hs.window.focusedWindow()
+    local s = w:screen()
+    winSetFrame(w, fn(w, s, w:frame()))
+  end
+end
+
+function winSelect() -- {{{
+  -- hs.hints.style = 'vimperator'
+  hs.hints.windowHints(nil, function(selWin) 
+    selWin:focus()
+  end)
 end -- }}}
 
 function winSavePosition(w, notify) -- {{{
@@ -177,12 +231,118 @@ function winLoadPosition(w, notify) -- {{{
   end
 end -- }}}
 
-function resizeFocusedWindow(fn)
-  return function()
-    local w = hs.window.focusedWindow()
-    local s = w:screen()
-    winSetFrame(w, fn(w, s, w:frame()))
+function winSaveFrame()
+  winSavePosition(hs.window.focusedWindow(), true)
+end
+
+function winSaveFrameAll()
+  for i, win in pairs(hs.window.allWindows()) do
+    winSavePosition(win, false)
   end
+  hs.notify.show("Window Position (ALL)", "Success", "Window position saved...")
+end
+
+function winRestoreFrame()
+  winLoadPosition(hs.window.focusedWindow(), true)
+end
+
+function winRestoreFrameAll()
+  for i, win in pairs(hs.window.allWindows()) do
+    winLoadPosition(win, true)
+  end
+end
+
+function reframeWindow(src_frame, dest_frame, win)
+  local wf = win:frame()
+
+  local sf = src_frame
+  local df = src_frame
+
+  local tf = hs.geometry.rect(0,0,0,0)
+
+  local width_ratio = 1 -- df.w / sf.w
+  local height_ratio = 1 -- df.h / sf.h
+  
+  tf.x1 = df.x1 + ((wf.x1  -  sf.x1) * width_ratio)
+  tf.y1 = df.y1 + ((wf.y1  -  sf.y1) * height_ratio)
+  tf.x2 = df.x1 + ((wf.x2  -  sf.x1) * width_ratio)
+  tf.y2 = df.y1 + ((wf.y2  -  sf.y1) * height_ratio)
+
+  print("SET FRAME:")
+  print(win, win:frame(), tf)
+
+  winSetFrame(win, tf)
+end
+
+function swapScreenWindows(screen_a, screen_b)
+  local screen_a_id = screen_a:id()
+  local screen_b_id = screen_b:id()
+
+  local screen_a_rect = screen_a:frame()
+  local screen_b_rect = screen_b:frame()
+
+  local screen_a_wins = {}
+  local screen_b_wins = {}
+
+  for i, win in pairs(hs.window.allWindows()) do
+    local w_screen = win:screen()
+
+    if w_screen:id() == screen_a_id then
+      table.insert(screen_a_wins, win)
+    end
+
+    if w_screen:id() == screen_b_id then
+      table.insert(screen_b_wins, win)
+    end
+  end
+
+  for i, win in pairs(screen_a_wins) do
+    reframeWindow(screen_a:frame(), screen_b:frame(), win)
+  end
+  -- for i, win in pairs(screen_b_wins) do
+  --   reframeWindow(screen_b:frame(), screen_a:frame(), win)
+  -- end
+
+  print("ScreenSwap", "", ("s1:"..#screen_a_wins) .. " " .. ("s2:"..#screen_b_wins))
+end
+
+function swapScreens() -- {{{
+  local screens = hs.screen.allScreens()
+
+  local screen2i = {}
+  local screenid2s = {}
+
+  for i, screen in pairs(screens) do
+    screen2i[screen:id()] = i
+    screenid2s[screen:id()] = screen
+  end
+
+  gridShow({'a'}, screens, function(rect, hint, screen_id_a)
+    -- Selected First Screen
+    ggrid = nil
+
+    local i = screen2i[screen_id_a]
+    hs.notify.show("Screen Selected", "", "#"..i)
+    
+    colorFunc = function(c_screen_id)
+      local screen_num = screen2i[c_screen_id]
+      if screen_num == i then
+        return {
+          ['bcolor'] = {
+            ["red"]   = 1.0,
+            ["blue"]  = 0.0,
+            ["green"] = 0.0,
+            ["alpha"] = 0.80
+          }
+        }
+      end
+      return {}
+    end
+    gridShow({'a'}, screens, function(rect, hint, screen_id_b)
+      -- Selected second screen
+      swapScreenWindows(screenid2s[screen_id_a], screenid2s[screen_id_b])
+    end, colorFunc)
+  end)
 end
 
 function bindGrid(pfx, key, grid, screens) -- {{{
@@ -191,67 +351,38 @@ function bindGrid(pfx, key, grid, screens) -- {{{
     uGrid[k] = string.reverse(v)
   end
 
-  local winSizeFun = function(rect, hint)
+  local winSizeFun = function(rect, hint, screen)
     local w = hs.window.focusedWindow()
     winSetFrame(w, rect)
     winSavePosition(w, true)
   end
 
+  -- colorConf = {
+  --   ['bcolor'] = {
+  --     ["red"]   = 1,
+  --     ["blue"]  = 0,
+  --     ["green"] = 0,
+  --     ["alpha"] = 0.80
+  --   }
+  -- }
+  -- colorConf2 = {
+  --   ['bcolor'] = {
+  --     ["red"]   = 0,
+  --     ["blue"]  = 1,
+  --     ["green"] = 0,
+  --     ["alpha"] = 0.80
+  --   }
+  -- }
+
   pfx('', key, function() 
-    if not(ggrid and ggrid.active == true) then
-      ggrid = tmgrid.showGrid(grid, hs.screen.allScreens(), winSizeFun)
-    end
+    gridShow(grid, hs.screen.allScreens(), winSizeFun)
   end)
 
   pfx('shift', key, function() 
-    if not(ggrid and ggrid.active == true) then
-      ggrid = tmgrid.showGrid(uGrid, hs.screen.allScreens(), winSizeFun)
-    end
+    gridShow(uGrid, hs.screen.allScreens(), winSizeFun)
   end)
 end -- }}}
 
-function winSelect() -- {{{
-  -- hs.hints.style = 'vimperator'
-  hs.hints.windowHints(nil, function(selWin) 
-    selWin:focus()
-  end)
-end -- }}}
-
-
-function winSaveFrameAll()
-  for i, win in pairs(hs.window.allWindows()) do
-    winSavePosition(win, false)
-  end
-end
-
-function winSaveFrame()
-  winSavePosition(hs.window.focusedWindow(), true)
-end
-
-function winRestoreFrame()
-  winLoadPosition(hs.window.focusedWindow(), true)
-end
-
-function openTerminal()
-  local status = nil
-  if status == nil then
-    status = hs.application.open('kitty')
-  end
-  if status == nil then
-    status = hs.application.open('iTerm')
-    -- iTerm seems to be having problems and always returns nil
-    if hs.window.focusedWindow():application():name() == 'iTerm2' then
-      status = true
-    end
-  end
-  if status == nil then
-    status = hs.application.open('Terminal')
-    print(status)
-  end
-  if status == nil then
-    hs.notify.show('Terminal', 'Error', 'Could not launch any terminal.')
-  end
-end
 
 ------------------------------------------------------------------------
 --                              CHUNKWM                               --
@@ -431,6 +562,31 @@ end
 --     -- mouseMoved = false
 --   end
 -- end)
+
+-- keyTimes = {}
+--
+-- hs.eventtap.new({hs.eventtap.event.types['keyDown'], hs.eventtap.event.types['keyUp']}, function(e)
+-- if not(e == nil) then
+--   local etype = e:getType()
+--   local ekey = e:getKeyCode()
+--   local etime = hs.timer.absoluteTime() 
+--   
+--   if etype == hs.eventtap.event.types['keyDown'] then
+--     if keyTimes[ekey] ~= nil then
+--       keyTimes[ekey] = etime
+--     end
+--   elseif etype == hs.eventtap.event.types['keyUp'] then
+--     local etimelapse = keyTimes[ekey]
+--
+--     if not(etimelaps == nil) then
+--       print(etime - keyTimes[ekey])
+--       keyTimes[ekey] = nil
+--     end
+--   end
+-- end
+--
+-- return false, e
+-- end):start()
 
 ------------------------------------------------------------------------
 --                                INIT                                --

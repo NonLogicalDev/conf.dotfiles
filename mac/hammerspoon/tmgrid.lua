@@ -8,15 +8,28 @@ local frames = nil
 
 -- Module Methods
 ------------------------------------------------------------------------
-function Grid.showGrid(grid, screens, action_fun) -- {{{
+function Grid.showGrid(grid, screens, action_fun, colorFunc) -- {{{
   local conf = {}
+
+  local ccolorFunc = colorFunc
+  if ccolorFunc == nil then
+    print("$$$$$$$$$$$$$$ No Color function")
+    ccolorFunc = function(screen)
+      return {}
+    end
+  else
+    print("$$$$$$$$$$$$$$ Color function given")
+  end
+
   local allScreens = screens
   if #allScreens >= 1 then
-    local otherscreen = nil
     index = 1
     for i,screen in ipairs(allScreens) do
       table.insert(conf, { 
-        ['screen'] = screen, ['prefix'] = index,
+        ['colorFunc'] = ccolorFunc,
+
+        ['screen'] = screen,
+        ['prefix'] = index,
         ['grid'] = grid
       })
       index = index + 1
@@ -29,7 +42,7 @@ end -- }}}
 
 -- Constructor Methods
 ------------------------------------------------------------------------
-function Grid.renderGrid(init_grid, action_fun)  -- {{{
+function Grid.renderGrid(init_grid, action_fun, borderColor)  -- {{{
   local self = setmetatable({}, Grid)
   local maps = {}
 
@@ -37,10 +50,9 @@ function Grid.renderGrid(init_grid, action_fun)  -- {{{
   table.insert(prefixBindings, hs.hotkey.bind({}, "escape", function()
     self:kill()
   end))
-  for i,map in ipairs(init_grid) do
-    local tiles = _constructGrid(map.grid, map.prefix, map.screen, action_fun)
-    self:genCtxBindings(prefixBindings,  map.prefix, tiles)
-
+  for i, map in ipairs(init_grid) do
+    local tiles = _constructGrid(map, action_fun)
+    self:genCtxBindings(prefixBindings, map.prefix, tiles)
     maps[i] = {
       ['tiles'] = tiles
     }
@@ -61,10 +73,10 @@ function Grid.genCtxBindings(self, prefixBindings, prefix, tiles) -- {{{
     local ctxBindings = {}
     _deleteBindingList(self.ctxBindings)
 
-    for ti,tile in ipairs(tiles) do
+    for ti, tile in ipairs(tiles) do
       table.insert(ctxBindings, hs.hotkey.bind({}, tile.hint, function()
-        tile.fn()
         self:kill()
+        tile.fn()
       end))
     end
 
@@ -95,8 +107,50 @@ end -- }}}
 
 -- Private Utility Functions
 ------------------------------------------------------------------------
-function _constructGrid(hintrows, prefix, screen, action_fun) -- {{{
+function _constructGrid(conf, action_fun) -- {{{
   grid = {}
+
+  hintrows = conf.grid
+  prefix = conf.prefix
+  screen = conf.screen
+
+  -- Colors
+  
+  local cconf = {}
+
+  if not(conf.colorFunc == nil) then
+    cconf = conf.colorFunc(screen:id())
+  end
+
+  local borderColor = {
+    ["red"]   = 1,
+    ["blue"]  = 1,
+    ["green"] = 1,
+    ["alpha"] = 0.80
+  }
+  if not(cconf.bcolor == nil) then
+    borderColor = cconf.bcolor
+  end
+
+  local fillColor = {
+    ["red"]   = 0.0,
+    ["blue"]  = 0.0,
+    ["green"] = 0.0,
+    ["alpha"] = 0.5
+  }
+  if not(cconf.fcolor == nil) then
+    fillColor = cconf.fcolor
+  end
+
+  local textColor = {
+    ["red"]   = 0.1,
+    ["blue"]  = 0.1,
+    ["green"] = 0.1,
+    ["alpha"] = 1
+  }
+  if not(cconf.tcolor == nil) then
+    textColor = cconf.tcolor
+  end
 
   local rez_y = _len(hintrows)
   local rez_x = _len(hintrows[1])
@@ -146,11 +200,13 @@ function _constructGrid(hintrows, prefix, screen, action_fun) -- {{{
 
     local hint = ""..prefix..key
     local rect = hs.geometry.rect(fx,fy,fw,fh)
+    local screen_id = screen:id()
+
     tile = {
       ['hint'] = key,
-      ['frame'] = _drawRect(hint, rect, 5),
-      ['fn'] = function() 
-        action_fun(rect, hint)
+      ['frame'] = _drawRect(hint, rect, 5, borderColor, fillColor, textColor),
+      ['fn'] = function()
+        action_fun(rect, hint, screen_id)
       end
       -- function()
       --   local w = hs.window.focusedWindow()
@@ -189,26 +245,7 @@ function _len(t) -- {{{
   return count
 end -- }}}
 
-function _drawRect(text,rect,borderWidth) -- {{{
-  local borderColor = {
-    ["red"]   = 1,
-    ["blue"]  = 1,
-    ["green"] = 1,
-    ["alpha"] = 0.80
-  }
-  local fillColor = {
-    ["red"]   = 0.0,
-    ["blue"]  = 0.0,
-    ["green"] = 0.0,
-    ["alpha"] = 0.5
-  }
-  local textColor = {
-    ["red"]   = 0.1,
-    ["blue"]  = 0.1,
-    ["green"] = 0.1,
-    ["alpha"] = 1
-  }
-
+function _drawRect(text,rect,borderWidth,borderColor, fillColor, textColor) -- {{{
   local f = rect
   local s = borderWidth
 

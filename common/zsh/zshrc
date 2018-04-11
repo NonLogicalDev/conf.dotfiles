@@ -74,6 +74,7 @@ alias scurl='curl --cert $CU_CERT'
 
 # Setting up aliases
 
+alias grepl='grep --line-buffered'
 alias rmr='rmf'
 alias fuck='sudo $(fc -ln -1)'
 alias cdb='cd +1'
@@ -88,7 +89,7 @@ fi
 if [[ "$PLATFORM" == 'MAC' ]]; then
   alias tmpaste='tmux saveb - | pbcopy'
 
-  alias jet.go='open -a GoLand\ 1.0\ EAP'
+  alias jet.go='open -a GoLand'
   alias jet.java='open -a IntelliJ\ IDEA'
   alias jet.py='open -a PyCharm'
   alias jet.js='open -a WebStorm'
@@ -104,6 +105,12 @@ alias go.note='cd ~/Documents/Notes'
 #######################################################################
 #                              Functions                              #
 #######################################################################
+
+if exists "fzf"; then
+  function cdp {
+    cd $(dbranch | fzf)
+  }
+fi
 
 function cdvim() {
   cd $1 && vim .

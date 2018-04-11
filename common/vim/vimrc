@@ -163,12 +163,6 @@ endif
 "Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
 
 " }}}
-" Snippet Management: {{{
-
-Plug 'SirVer/ultisnips'
-" Plug 'honza/vim-snippets'
-
-" }}}
 " Code Completers: {{{
 
 " Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
@@ -622,26 +616,27 @@ autocmd BufEnter *.snippets setf snippets
 " the user wants to insert the snippet.
 autocmd filetype snippets setlocal noexpandtab
 
-function! g:UltiSnips_Complete()
-    call UltiSnips_ExpandSnippet()
-    if g:ulti_expand_res == 0
-        if pumvisible()
-            return "\<Tab>"
-        else
-            call UltiSnips_JumpForwards()
-            if g:ulti_jump_forwards_res == 0
-               return "\<Tab>"
-            endif
-        endif
-    endif
-    return ""
-endfunction
+" function! g:UltiSnips_Complete()
+"     call UltiSnips_ExpandSnippet()
+"     if g:ulti_expand_res == 0
+"         if pumvisible()
+"             return "\<Tab>"
+"         else
+"             call UltiSnips_JumpForwards()
+"             if g:ulti_jump_forwards_res == 0
+"                return "\<Tab>"
+"             endif
+"         endif
+"     endif
+"     return ""
+" endfunction
+"
+" inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
 
-inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
 " au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
 "
-" let g:UltiSnipsExpandTrigger="<M-Tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsExpandTrigger="<C-Space>"
+let g:UltiSnipsJumpForwardTrigger="<M-Space>"
 let g:UltiSnipsListSnippets="<c-e>"
 
 " If you want :UltiSnipsEdit to split your window.
@@ -653,47 +648,47 @@ let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
 " to avoid problems with arrows
 " let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/cpp/ycm/.ycm_extra_conf.py'
 if has('nvim')
-  inoremap <silent><expr> <TAB>
-        \ pumvisible() ? "\<C-n>" :
-        \ <SID>check_back_space() ? "\<TAB>" :
-        \ deoplete#mappings#manual_complete()
+  " inoremap <silent><expr> <TAB>
+  "       \ pumvisible() ? "\<C-n>" :
+  "       \ <SID>check_back_space() ? "\<TAB>" :
+  "       \ deoplete#mappings#manual_complete()
 
-  function! s:check_back_space() abort
-    let col = col('.') - 1
-    return !col || getline('.')[col - 1]  =~ '\s'
-  endfunction
+  " function! s:check_back_space() abort
+  "   let col = col('.') - 1
+  "   return !col || getline('.')[col - 1]  =~ '\s'
+  " endfunction
 else
-  let g:ycm_key_list_select_completion = ['<M-Tab>']
-  let g:ycm_semantic_triggers =  {
-        \   'c' : ['->', '.'],
-        \   'objc' : ['->', '.'],
-        \   'cpp,objcpp' : ['->', '.', '::'],
-        \   'perl' : ['->'],
-        \   'php' : ['->', '::'],
-        \   'cs,java,javascript,d,vim,ruby,python,perl6,scala,vb,elixir,go' : ['.'],
-        \   'lua' : ['.', ':'],
-        \   'erlang' : [':'],
-        \ }
-  " nmap <silent> gd :YcmCompleter GoToDeclaration<CR>
-  " inoremap <M-Tab> <NOP>
-
-  function! Auto_complete_string()
-    if pumvisible()
-      return "\<C-n>"
-    else
-      return "\<C-x>\<C-o>\<C-r>=Auto_complete_opened()\<CR>"
-    end
-  endfunction
-
-  function! Auto_complete_opened()
-    if pumvisible()
-      return "\<Down>"
-    end
-    return ""
-  endfunction
-
-  inoremap <expr> <Nul> Auto_complete_string()
-  inoremap <expr> <C-q> Auto_complete_string()
+  " let g:ycm_key_list_select_completion = ['<M-Tab>']
+  " let g:ycm_semantic_triggers =  {
+  "       \   'c' : ['->', '.'],
+  "       \   'objc' : ['->', '.'],
+  "       \   'cpp,objcpp' : ['->', '.', '::'],
+  "       \   'perl' : ['->'],
+  "       \   'php' : ['->', '::'],
+  "       \   'cs,java,javascript,d,vim,ruby,python,perl6,scala,vb,elixir,go' : ['.'],
+  "       \   'lua' : ['.', ':'],
+  "       \   'erlang' : [':'],
+  "       \ }
+  " " nmap <silent> gd :YcmCompleter GoToDeclaration<CR>
+  " " inoremap <M-Tab> <NOP>
+  "
+  " function! Auto_complete_string()
+  "   if pumvisible()
+  "     return "\<C-n>"
+  "   else
+  "     return "\<C-x>\<C-o>\<C-r>=Auto_complete_opened()\<CR>"
+  "   end
+  " endfunction
+  "
+  " function! Auto_complete_opened()
+  "   if pumvisible()
+  "     return "\<Down>"
+  "   end
+  "   return ""
+  " endfunction
+  "
+  " inoremap <expr> <Nul> Auto_complete_string()
+  " inoremap <expr> <C-q> Auto_complete_string()
 endif
 
 "}}}
