@@ -9,11 +9,16 @@ set nocompatible
 " let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
 
 
-if filereadable("/usr/local/bin/python2")
+if filereadable("/usr/local/opt/asdf/shims/python2")
+  let g:python_host_prog = '/usr/local/opt/asdf/shims/python2'
+elseif filereadable("/usr/local/bin/python2")
   let g:python_host_prog = '/usr/local/bin/python2'
 endif
-if filereadable("/usr/local/bin/python3")
-    let g:python3_host_prog = '/usr/local/bin/python3'
+
+if filereadable("/usr/local/opt/asdf/shims/python3")
+  let g:python3_host_prog = '/usr/local/opt/asdf/shims/python3'
+elseif filereadable("/usr/local/bin/python3")
+  let g:python3_host_prog = '/usr/local/bin/python3'
 endif
 
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

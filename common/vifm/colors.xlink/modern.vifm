@@ -47,7 +47,8 @@
 highlight clear
 
 highlight Win cterm=none ctermfg=white ctermbg=None
-highlight Border cterm=none ctermfg=None ctermbg=None
+
+highlight Border cterm=none ctermfg=None ctermbg=black
 highlight JobLine cterm=bold,reverse ctermfg=black ctermbg=white
 highlight StatusLine cterm=bold ctermfg=black ctermbg=white
 
