@@ -21,7 +21,7 @@ function module.make(mods, key, msg)
       radius = 0,
     }
     modal.alertId = hs.alert.show(msg, alertStyle, 9999)
-    module.startTimeout()
+    module.startTimeout(modal)
   end
 
   function modal:exited()
@@ -40,7 +40,8 @@ function Modal.exit(self)
 end
 
 function Modal.bind(self, mod, key, fn)
-  self.modal:bind(mod, key, nil, function() fn(); self:exit() end)
+  m = self.modal
+  self.modal:bind(mod, key, nil, function() fn(); m:exit() end)
 end
 
 function Modal.bindMultiple(self, mod, key, pressedFn, releasedFn, repeatFn)
@@ -51,9 +52,9 @@ end
 --                             Utilities                              --
 ------------------------------------------------------------------------
 
-function module.startTimeout()
+function module.startTimeout(modal)
   tm.timer = hs.timer.doAfter(TIMEOUT, function()
-    module.exit()
+    modal:exit()
   end)
 end
 

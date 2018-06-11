@@ -47,7 +47,7 @@ Plug 'Shougo/unite.vim'
 
 Plug 'digitaltoad/vim-pug' " Jade/Pug templates
 Plug 'MicahElliott/Rocannon'
-Plug 'evanmiller/nginx-vim-syntax'
+Plug 'chr4/nginx.vim'
 Plug 'rkennedy/vim-delphi'
 Plug 'aklt/plantuml-syntax'
 
@@ -81,7 +81,7 @@ Plug 'vim-ruby/vim-ruby',                 { 'for':'ruby'           }
 
 Plug 'altercation/vim-colors-solarized'
 Plug 'nonlogicaldev/vim-jasmine-colortheme'
-Plug 'morhetz/gruvbox'
+"Plug 'morhetz/gruvbox'
 Plug 'nonlogicaldev/gruvbox'
 Plug 'fatih/molokai'
 Plug 'flazz/vim-colorschemes'
@@ -173,6 +173,8 @@ endif
 " Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
 " Plug 'ternjs/tern_for_vim'
 Plug 'flowtype/vim-flow', { 'do': 'npm install -g flow-bin' }
+
+Plug 'SirVer/ultisnips'
 
 " vim-plug
 if has('nvim')
@@ -621,25 +623,24 @@ autocmd BufEnter *.snippets setf snippets
 " the user wants to insert the snippet.
 autocmd filetype snippets setlocal noexpandtab
 
-" function! g:UltiSnips_Complete()
-"     call UltiSnips_ExpandSnippet()
-"     if g:ulti_expand_res == 0
-"         if pumvisible()
-"             return "\<Tab>"
-"         else
-"             call UltiSnips_JumpForwards()
-"             if g:ulti_jump_forwards_res == 0
-"                return "\<Tab>"
-"             endif
-"         endif
-"     endif
-"     return ""
-" endfunction
-"
-" inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
+function! g:UltiSnips_Complete()
+    call UltiSnips#ExpandSnippet()
+    if g:ulti_expand_res == 0
+        if pumvisible()
+            return "\<Tab>"
+        else
+            call UltiSnips#JumpForwards()
+            if g:ulti_jump_forwards_res == 0
+               return "\<Tab>"
+            endif
+        endif
+    endif
+    return ""
+endfunction
 
-" au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
-"
+inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
+au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+
 let g:UltiSnipsExpandTrigger="<C-Space>"
 let g:UltiSnipsJumpForwardTrigger="<M-Space>"
 let g:UltiSnipsListSnippets="<c-e>"
@@ -826,7 +827,7 @@ let g:semanticBlacklistOverride = {
 
 let g:gruvbox_contrast_light = 'hard'
 let g:gruvbox_contrast_dark = 'hard'
-let g:gruvbox_improved_strings = 1
+let g:gruvbox_improved_strings = 0
 
 "}}}
 " Clojure Static: {{{

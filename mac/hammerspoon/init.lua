@@ -18,6 +18,29 @@ local windowSizeStep = 300
 
 local lastEvent = nil
 
+
+local timer_conf = {}
+function config_timer(_name, _seconds)
+  if not(timer_conf[_name] == nil) then
+    timer_conf[_name]:stop()
+  end
+
+  if _seconds > 0 then
+    timer_conf[_name] = hs.timer.doAfter(_seconds, function()
+      print("Tiiiiiimmmmmmeeeerrrrr!", _name)
+    end)
+  else
+    timer_conf[_name] = nil
+  end
+end
+
+function show_timer(_name, _seconds)
+  if not(timer_conf[_name] == nil) then
+    return timer_conf[_name]:nextTrigger()
+  end
+  return nil
+end
+
 function init_keymap() -- {{{
   -- Setting up prefix
 
@@ -32,7 +55,26 @@ function init_keymap() -- {{{
   end)
 
   prefix:bind('', 'd', hs.toggleConsole)
-  prefix:bind('', 'r', hs.reload)
+  prefix:bind('', 'f', hs.reload)
+
+
+  function focusApp(appName)
+    return function()
+      status = hs.application.open(appName)
+      if status == nil then
+        hs.notify.show('FocusApp', 'Error', 'Could not launch app ' + appName + '.')
+      end
+    end
+  end
+
+  prefix:bind('', '1', focusApp("Wunderlist"))
+  prefix:bind('', '2', focusApp("Mail"))
+  prefix:bind('', '3', focusApp("uChat"))
+  prefix:bind('', '4', focusApp("Firefox"))
+
+  prefix:bind('', '0', function() 
+    print(hs.window.focusedWindow():application():name())
+  end)
 
   -- Global Mappings
 
@@ -169,9 +211,9 @@ end -- }}}
 
 function openTerminal()
   local status = nil
-  if status == nil then
-    status = hs.application.open('kitty')
-  end
+  -- if status == nil then
+  --   status = hs.application.open('kitty')
+  -- end
   if status == nil then
     status = hs.application.open('iTerm')
     -- iTerm seems to be having problems and always returns nil
@@ -205,7 +247,9 @@ function resizeFocusedWindow(fn)
 end
 
 function winSelect() -- {{{
-  -- hs.hints.style = 'vimperator'
+  hs.hints.style = 'vimperator'
+  hs.hints.titleMaxSize = 10
+  -- hs.hints.showTitleThresh = 2
   hs.hints.windowHints(nil, function(selWin) 
     selWin:focus()
   end)
@@ -256,21 +300,21 @@ function reframeWindow(src_frame, dest_frame, win)
   local wf = win:frame()
 
   local sf = src_frame
-  local df = src_frame
+  local df = dest_frame
 
-  local tf = hs.geometry.rect(0,0,0,0)
 
-  local width_ratio = 1 -- df.w / sf.w
-  local height_ratio = 1 -- df.h / sf.h
+  local width_ratio = df.w / sf.w
+  local height_ratio = df.h / sf.h
   
-  tf.x1 = df.x1 + ((wf.x1  -  sf.x1) * width_ratio)
-  tf.y1 = df.y1 + ((wf.y1  -  sf.y1) * height_ratio)
-  tf.x2 = df.x1 + ((wf.x2  -  sf.x1) * width_ratio)
-  tf.y2 = df.y1 + ((wf.y2  -  sf.y1) * height_ratio)
+  tf_x1 = df.x1 + ((wf.x1  -  sf.x1) * width_ratio)
+  tf_y1 = df.y1 + ((wf.y1  -  sf.y1) * height_ratio)
+  tf_x2 = df.x1 + ((wf.x2  -  sf.x1) * width_ratio)
+  tf_y2 = df.y1 + ((wf.y2  -  sf.y1) * height_ratio)
 
-  print("SET FRAME:")
-  print(win, win:frame(), tf)
+  local tf = hs.geometry.rect(tf_x1,tf_y1,tf_x2-tf_x1,tf_y2-tf_y1)
 
+  -- print("SET FRAME:")
+  -- print(win, win:frame(), tf)
   winSetFrame(win, tf)
 end
 
@@ -299,9 +343,9 @@ function swapScreenWindows(screen_a, screen_b)
   for i, win in pairs(screen_a_wins) do
     reframeWindow(screen_a:frame(), screen_b:frame(), win)
   end
-  -- for i, win in pairs(screen_b_wins) do
-  --   reframeWindow(screen_b:frame(), screen_a:frame(), win)
-  -- end
+  for i, win in pairs(screen_b_wins) do
+    reframeWindow(screen_b:frame(), screen_a:frame(), win)
+  end
 
   print("ScreenSwap", "", ("s1:"..#screen_a_wins) .. " " .. ("s2:"..#screen_b_wins))
 end

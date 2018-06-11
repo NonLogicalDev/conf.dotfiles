@@ -2,8 +2,9 @@
 --
 -- qa = {}
 -- qa.funcs = {}
+--
 -- qa.bar = hs.menubar.new()
--- qa.title = "QQ"
+-- qa.title = "[*]"
 --
 -- function qa.mkmenu(title, ...)
 --   local arg = {...}

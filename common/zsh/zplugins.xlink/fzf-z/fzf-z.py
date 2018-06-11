@@ -18,16 +18,19 @@ def main_args():
 
 
 def main(args, parser):
-    if args.command == 'parent-dirs':
-        DirOps.list_parent_dirs()
-    elif args.command == 'parent-files':
-        DirOps.list_parent_files()
-    elif args.command == 'content-dirs':
-        DirOps.list_content_dirs()
-    elif args.command == 'content-files':
-        DirOps.list_content_files()
-    else:
-        parser.print_help()
+    try:
+        if args.command == 'parent-dirs':
+            DirOps.list_parent_dirs()
+        elif args.command == 'parent-files':
+            DirOps.list_parent_files()
+        elif args.command == 'content-dirs':
+            DirOps.list_content_dirs()
+        elif args.command == 'content-files':
+            DirOps.list_content_files()
+        else:
+            parser.print_help()
+    except IOError:
+        pass
 
 
 class DirOps:
@@ -46,16 +49,21 @@ class DirOps:
         return '"{}"'.format(cls.designate_dir(path))
 
     @staticmethod
-    def find(dir, args):
-        find_args = ['find', dir]
+    def cmdrun(cmd):
+        out = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        #out.wait()
+        while True:
+            line = out.stdout.readline()
+            if line != '':
+                yield line.strip()
+            else:
+                break
+
+    @classmethod
+    def find(cls, dir, args):
+        find_args = ['find', '-L', dir]
         find_args.extend(args)
-        out = subprocess.Popen(find_args, stdout=subprocess.PIPE)
-        out.wait()
-        out_dirs = []
-        for line in out.stdout.readlines():
-            line = line.strip()
-            out_dirs.append(line)
-        return out_dirs
+        return cls.cmdrun(find_args)
 
     @classmethod
     def list_parent_dirs(cls):
@@ -108,13 +116,14 @@ class DirOps:
     @classmethod
     def list_content_files(cls):
         cwd = os.getcwd()
-        files = cls.find(cwd, [
-            # Exclude Git Folders
-            '-path', '*/.git/*', '-path', '*/.git',
-
-            # Prune Path
-            '-prune', '-o', '-type', 'f', '-print',
-        ])
+        # files = cls.find(cwd, [
+        #     # Exclude Git Folders
+        #     '-path', '*/.git/*', '-path', '*/.git',
+        #
+        #     # Prune Path
+        #     '-prune', '-o', '-type', 'f', '-print',
+        # ])
+        files = cls.cmdrun(['ack', '-l', '^'])
         for file in files:
             print(cls.exclude_common(cwd, cls.format_path(file)))
 
