@@ -1,7 +1,7 @@
 " vim: ft=vim
 colorscheme modern
 
-set vicmd=vim
+set vicmd=nvim
 set nofollowlinks
 
 screen

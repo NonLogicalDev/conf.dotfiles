@@ -10,7 +10,7 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-if [ -f  ${HOME}/bin/completions ]; then
+if [ -d ${HOME}/bin/completions ]; then
   export fpath=(${HOME}/bin/completions $fpath)
 fi
 
@@ -19,8 +19,8 @@ function exists { which $1 &> /dev/null }
 # Customize to your needs ######################################################
 
 # Set up env VARIABLES
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export ANSIBLE_NOCOWS=1
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
 # Plugin VARIABLES
 export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
@@ -70,37 +70,52 @@ fi
 #                               Aliases                               #
 #######################################################################
 
-alias scurl='curl --cert $CU_CERT'
-
-# Setting up aliases
-
-alias grepl='grep --line-buffered'
-alias rmr='rmf'
-alias fuck='sudo $(fc -ln -1)'
-alias cdb='cd +1'
-
-alias tmsave='tmux show-buffer | pbcopy'
-alias mux='tmuxinator'
-
+VIM='vim'
 if exists 'nvim'; then
   alias vim='nvim'
-fi
-
-if [[ "$PLATFORM" == 'MAC' ]]; then
-  alias tmpaste='tmux saveb - | pbcopy'
-
-  alias jet.go='open -a GoLand'
-  alias jet.java='open -a IntelliJ\ IDEA'
-  alias jet.py='open -a PyCharm'
-  alias jet.js='open -a WebStorm'
+  VIM='nvim'
 fi
 
 # Location Aliases
 alias go.gz='cd ~/.groundzero'
 alias go.dot='cd ~/.groundzero/dotfiles'
-alias go.doc='cd ~/Documents'
-alias go.note='cd ~/Documents/Notes'
 
+alias scurl='curl --cert $CU_CERT'
+
+# Setting up aliases
+
+alias rmr='rmf'
+
+alias fuck='sudo $(fc -ln -1)'
+alias grepl='grep --line-buffered'
+alias cdb='cd +1'
+
+alias tmsave='tmux show-buffer | pbcopy'
+alias mux='tmuxinator'
+
+if exists 'gtask'; then
+  alias ts='gtask'
+  alias ts.edit="bash -c 'cd ${HOME}/.task && $VIM .'"
+fi
+
+if exists 'gtime'; then
+  alias ti='gtime'
+  alias ti.edit="bash -c 'cd ${HOME}/.timewarrior && $VIM .'"
+fi
+
+if [[ "$PLATFORM" == 'MAC' ]]; then
+  ssh-add -K 2>/dev/null
+
+  alias go.doc='cd ~/Documents'
+  alias go.note='cd ~/Documents/Notes'
+
+  alias tm.paste='tmux saveb - | pbcopy'
+
+  alias jet='open -a IntelliJ\ IDEA'
+  alias jet.go='open -a GoLand'
+  alias jet.py='open -a PyCharm'
+  alias jet.js='open -a WebStorm'
+fi
 
 #######################################################################
 #                              Functions                              #
@@ -158,21 +173,6 @@ fi
 #   fi
 # }
 # --------------------------
-
-function botch() {
-    TIME=$1
-    shift 1
-    while true; do
-        (echo -en '\033[H'
-            CMD="$@"
-            bash -c "$CMD" | while read LINE; do 
-                echo -n "$LINE"
-                echo -e '\033[0K' 
-            done
-            echo -en '\033[J')
-        sleep $TIME
-    done
-}
 
 ## Deduplicating the path
 path_prepend "$HOME/bin"

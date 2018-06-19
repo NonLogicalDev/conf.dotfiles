@@ -5,6 +5,14 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
+DIFF=/usr/bin/diff
+if [ -f ~/.profile_corp.prestine ]; then
+  if ! $DIFF ~/.profile_corp ~/.profile_corp.prestine; then
+    mv ~/.profile_corp ~/.profile_corp.dirty
+    cp ~/.profile_corp.prestine ~/.profile_corp
+  fi
+fi
+
 #
 # Easily determine where the zsh is running
 #
@@ -13,7 +21,7 @@ function get_platform {
     echo "MAC"
   elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
     echo "LINUX"
-  elif [[ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]]; then
+  elif [[ "$(expr substr $(uname -s) 2 10)" == "MINGW32_NT" ]]; then
     echo "WIN"
   else
     echo "UNKNOWN"
@@ -86,19 +94,21 @@ function init_iterm_integration {
 
 ## Adding ASDF Version Manger
 function init_asdf {
-  export ASDF_DIR="$(brew --prefix asdf)"
+  # export ASDF_DIR="$(brew --prefix asdf)"
+  export ASDF_DIR="/usr/local/opt/asdf"
 
   source "$ASDF_DIR/asdf.sh"
   source "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
-
-  declare -a plugins=(
-    "ruby"
-    "python"
-    "lua"
-  )
-  for plug in "${plugins[@]}"; do
-    asdf plugin-add $plug &> /dev/null
-  done
+  
+  # declare -a plugins=(
+  #   "ruby"
+  #   "python"
+  #   "lua"
+  # )
+  
+  # for plug in "${plugins[@]}"; do
+  #   asdf plugin-add $plug &> /dev/null
+  # done
 }
 
 ## Adding Node Version Manger
@@ -113,12 +123,13 @@ function init_node {
 
 ## Adding Java Version Manger
 function init_java {
-  if [[ ! -z "$(command -v jenv)" ]]; then
+  (( $+commands[jenv] )) && {
     echo "Initializing JVM..."
     export JVM_DIR="$HOME/.jenv"
+
     path_prepend "$JVM_DIR"
-    eval "$(jenv init -)"
-  fi
+    source <(jenv init -)
+  }
 }
 
 function init_basic_dev {
