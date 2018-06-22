@@ -4,59 +4,49 @@ local tmgrid = require("tmgrid")
 local qa = require("menubar")
 
 ------------------------------------------------------------------------
+--                               Macros                               --
+------------------------------------------------------------------------
+
+function M_rgba(r,g,b,a)
+  return {
+    ["red"] = r,
+    ["blue"] = b,
+    ["green"] = g,
+    ["alpha"] = a
+  }
+end
+
+------------------------------------------------------------------------
 --                             Variables                              --
 ------------------------------------------------------------------------
 
-local ggrid = nil
-local windowYankBuffer = nil
 local windowMap = {}
 local windowSizeStep = 300
+
+local global_grid = nil
+local blackoutRects = nil
 
 ------------------------------------------------------------------------
 --                               KeyMap                               --
 ------------------------------------------------------------------------
 
-local lastEvent = nil
-
-
-local timer_conf = {}
-function config_timer(_name, _seconds)
-  if not(timer_conf[_name] == nil) then
-    timer_conf[_name]:stop()
-  end
-
-  if _seconds > 0 then
-    timer_conf[_name] = hs.timer.doAfter(_seconds, function()
-      print("Tiiiiiimmmmmmeeeerrrrr!", _name)
-    end)
-  else
-    timer_conf[_name] = nil
-  end
-end
-
-function show_timer(_name, _seconds)
-  if not(timer_conf[_name] == nil) then
-    return timer_conf[_name]:nextTrigger()
-  end
-  return nil
-end
-
 function init_keymap() -- {{{
+  --------------------
   -- Setting up prefix
+  --------------------
 
   prefix = modal.make({'ctrl', 'alt'}, 'space', " P")
 
-  prefix:bind('', 'escape', function()
-    prefix:exit() 
+  prefix:bind('', 'escape', function(m)
+    -- m:exit() 
   end)
 
-  prefix:bind({'ctrl', 'alt'}, 'space', function() 
-    prefix:exit()
+  prefix:bind({'ctrl', 'alt'}, 'space', function(m) 
+    -- m:exit()
   end)
 
   prefix:bind('', 'd', hs.toggleConsole)
   prefix:bind('', 'f', hs.reload)
-
 
   function focusApp(appName)
     return function()
@@ -76,24 +66,16 @@ function init_keymap() -- {{{
     print(hs.window.focusedWindow():application():name())
   end)
 
+  ------------------
   -- Global Mappings
+  ------------------
 
   hs.hotkey.bind({'ctrl', 'alt'}, 'return', openTerminal)
-
-
   prefix:bind({}, '`', hs.toggleConsole)
 
-  -- prefix:bind({}, '\\', hs.reload)
-
-  -- function sendKeyStroke(mods, key)
-  --   return function()
-  --     hs.eventtap.keyStroke(mods, key)
-  --   end
-  -- end
-  -- hs.hotkey.bind({'ctrl', 'shift'}, '[', sendKeyStroke({'cmd', 'shift'}, '['))
-  -- hs.hotkey.bind({'ctrl', 'shift'}, ']', sendKeyStroke({'cmd', 'shift'}, ']'))
-
+  -------------------
   -- Language Manager
+  -------------------
 
   prefix:bind({}, 'n', langSwitch("U.S."))
   prefix:bind({}, 'm', langSwitch("Russian - Phonetic"))
@@ -134,11 +116,22 @@ function init_keymap() -- {{{
     "abc",
   })
 
+  bindGrid(binder, "i", {
+    "aab",
+    "aab",
+  })
+
   prefix:bind({}, "[", function()
     swapScreens() 
   end)
 
+  prefix:bind({}, "\\", function()
+    blackoutAll() 
+  end)
+
+  --------------------
   -- Window operations
+  --------------------
 
   hs.hotkey.bind({'ctrl', 'alt'}, "\\", winSelect)
 
@@ -148,19 +141,16 @@ function init_keymap() -- {{{
   prefix:bind({}, ']', winSaveFrame)
   prefix:bind({'shift'}, "]", winSaveFrameAll)
 
-  prefix:bind({}, 'h', hs.window.focusWindowWest)
-  prefix:bind({}, 'j', hs.window.focusWindowSouth)
-  prefix:bind({}, 'k', hs.window.focusWindowNorth)
-  prefix:bind({}, 'l', hs.window.focusWindowEast)
-
-  --# Expand a window vertically
+  -- Expand a window vertically
   prefix:bind({}, 'p', resizeFocusedWindow(function(w,s,f)
     f.y = 0
     f.h = s:frame()._h
     return f
   end))
 
+  ---------------
   -- Window Sizer
+  ---------------
 
   local winSizeMult = 0.2
 
@@ -196,9 +186,30 @@ end -- }}}
 --                            Helper Utils                            --
 ------------------------------------------------------------------------
 
+function bindGrid(pfx, key, grid, screens) -- {{{
+  local uGrid = {}
+  for k, v in pairs(grid) do
+    uGrid[k] = string.reverse(v)
+  end
+
+  local winSizeFun = function(rect, hint, screen)
+    local w = hs.window.focusedWindow()
+    winSetFrame(w, rect)
+    winSavePosition(w, true)
+  end
+
+  pfx('', key, function() 
+    gridShow(grid, hs.screen.allScreens(), winSizeFun)
+  end)
+
+  pfx('shift', key, function() 
+    gridShow(uGrid, hs.screen.allScreens(), winSizeFun)
+  end)
+end -- }}}
+
 function gridShow(grid, screens, winSizeFun, colorFunc)
-  if not(ggrid and ggrid.active == true) then
-    ggrid = tmgrid.showGrid(grid, screens, winSizeFun, colorFunc)
+  if not(global_grid and global_grid.active == true) then
+    global_grid = tmgrid.showGrid(grid, screens, winSizeFun, colorFunc)
   end
 end
 
@@ -313,8 +324,6 @@ function reframeWindow(src_frame, dest_frame, win)
 
   local tf = hs.geometry.rect(tf_x1,tf_y1,tf_x2-tf_x1,tf_y2-tf_y1)
 
-  -- print("SET FRAME:")
-  -- print(win, win:frame(), tf)
   winSetFrame(win, tf)
 end
 
@@ -363,7 +372,7 @@ function swapScreens() -- {{{
 
   gridShow({'a'}, screens, function(rect, hint, screen_id_a)
     -- Selected First Screen
-    ggrid = nil
+    global_grid = nil
 
     local i = screen2i[screen_id_a]
     hs.notify.show("Screen Selected", "", "#"..i)
@@ -389,248 +398,40 @@ function swapScreens() -- {{{
   end)
 end
 
-function bindGrid(pfx, key, grid, screens) -- {{{
-  local uGrid = {}
-  for k, v in pairs(grid) do
-    uGrid[k] = string.reverse(v)
+function blackoutAll() -- {{{
+  if not(blackoutRects == nil) then
+    for i, frame in pairs(blackoutRects) do
+      frame:delete()
+    end
+    blackoutRects = nil
+  else
+    blackoutRects = {}
+    local screens = hs.screen.allScreens()
+
+    local screen2i = {}
+    local screenid2s = {}
+    for i, screen in pairs(screens) do
+      screen2i[screen:id()] = i
+      screenid2s[screen:id()] = screen
+    end
+
+    gridShow({'a'}, screens, function(rect, hint, screen_id_a)
+      local screen_idx = screen2i[screen_id_a]
+      for i, screen in pairs(screens) do
+        if not(i == screen_idx) then
+
+          frame = hs.drawing.rectangle(screen:fullFrame())
+          frame:setFillColor(M_rgba(0,0,0,1))
+
+          frame:setLevel("screenSaver")
+          frame:show()
+
+          table.insert(blackoutRects, frame)
+        end
+      end
+    end)
   end
-
-  local winSizeFun = function(rect, hint, screen)
-    local w = hs.window.focusedWindow()
-    winSetFrame(w, rect)
-    winSavePosition(w, true)
-  end
-
-  -- colorConf = {
-  --   ['bcolor'] = {
-  --     ["red"]   = 1,
-  --     ["blue"]  = 0,
-  --     ["green"] = 0,
-  --     ["alpha"] = 0.80
-  --   }
-  -- }
-  -- colorConf2 = {
-  --   ['bcolor'] = {
-  --     ["red"]   = 0,
-  --     ["blue"]  = 1,
-  --     ["green"] = 0,
-  --     ["alpha"] = 0.80
-  --   }
-  -- }
-
-  pfx('', key, function() 
-    gridShow(grid, hs.screen.allScreens(), winSizeFun)
-  end)
-
-  pfx('shift', key, function() 
-    gridShow(uGrid, hs.screen.allScreens(), winSizeFun)
-  end)
 end -- }}}
-
-
-------------------------------------------------------------------------
---                              CHUNKWM                               --
-------------------------------------------------------------------------
-
--- hyper_mod = {'ctrl', 'alt', 'cmd'}
---
--- function cwmap(mods, key, args)
---   hs.hotkey.bind(mods, key, function()
---     out, st, ty, rc = hs.execute('/usr/local/bin/chunkc ' .. args)
---     print(st, out, args)
---   end)
--- end
---
--- cwmap(hyper_mod , 'h'     , 'tiling::window --focus west')
--- cwmap(hyper_mod , 'left'  , 'tiling::window --focus west')
---
--- cwmap(hyper_mod , 'j'     , 'tiling::window --focus south')
--- cwmap(hyper_mod , 'down'  , 'tiling::window --focus south')
---
--- cwmap(hyper_mod , 'k'     , 'tiling::window --focus north')
--- cwmap(hyper_mod , 'up'    , 'tiling::window --focus north')
---
--- cwmap(hyper_mod , 'l'     , 'tiling::window --focus east')
--- cwmap(hyper_mod , 'right' , 'tiling::window --focus east')
---
--- cwmap(hyper_mod , 'p' , 'tiling::window --toggle parent')
--- cwmap(hyper_mod , 'f' , 'tiling::window --toggle fullscreen')
---
--- cwmap(hyper_mod , 'm' , 'set bsp_split_mode vertical')
--- cwmap(hyper_mod , 'n' , 'set bsp_split_mode horizontal')
---
---
--- cwmap({'alt'}, 'a', 'tiling::desktop --layout bsp')
--- cwmap({'alt'}, 's', 'tiling::desktop --layout monocle')
--- cwmap({'alt'}, 'd', 'tiling::desktop --layout float')
---
--- cwmap({'alt'}, 'q', 'tiling::desktop --toggle offset')
---
--- for i=1,9 do  -- -- -- -- -- -- -- -- -- --
-------------------------------------------------------------------------
---   cwmap({'shift', 'alt'}, is, 'tiling::window --send-to-desktop ' .. is)
--- end
---
--- cwmap({'shift', 'alt'}, 'space', 'tiling::window --toggle float')
-
-
-------------------------------------------------------------------------
---                               Unused                               --
-------------------------------------------------------------------------
-
--- function langSwitch(code) -- {{{
---   return function()
---     if code == "EN" then
---       hs.keycodes.setLayout("U.S.")
---     elseif code == "RU" then
---       hs.keycodes.setLayout("Russian - Phonetic")
---     end
---   end
--- end -- }}}
-
-
--- function windowYank() -- {{{
---   local w = hs.window.focusedWindow()
---
---   windowYankBuffer = {}
---   windowYankBuffer['win_id'] = w:id()
---
---   print(windowYankBuffer['win_id'])
--- end -- }}}
--- function windowPut() -- {{{
---   if not(windowYankBuffer) then
---     print("Window Buffer not set")
---     return 
---   end
---   local win_id = windowYankBuffer['win_id']
---   print(windowYankBuffer['win_id'])
---
---   local w = hs.window.find(win_id)
---   if not(w) then 
---     print("No window with id")
---     return
---   end
---
---   local cur_screen = hs.screen.mainScreen()
---   local scs = hs.screen.allScreens()
---
---   tmgrid.showGrid({'.'}, scs, function(rect, hint) 
---     local screen_num = tonumber(string.sub(hint, 0, 1))
---     w:moveToScreen(scs[screen_num])
---   end)
--- end -- }}}
-
--- bindGrid("g", {
---   "aab",
---   "aab",
---   "aac"
--- })
-
--- hs.hotkey.bind({'ctrl', 'alt'}, "=", function() 
---   local screens = hs.screen.allScreens()
---
---   local rotations = {
---     [722475280] = 0,
---     [722496271] = 0,
---   }
---
---   for i, screen  in ipairs(screens) do
---     local screen_id = screen:id()
---     if not(rotations[screen_id] == nil) then
---       screen:rotate(rotations[screen_id])
---     end
---   end
---
---   for i, screen  in ipairs(hs.screen.allScreens()) do
---     print("Name:" .. screen:name())
---     print("ID:" .. tostring(screen:id()))
---     print("Rotation:" .. tostring(screen:rotate()))
---     print("-------------")
---   end
--- end)
-
--- qa.setMenu({
---   qa.mkmenu("Languages", {
---     qa.mkmenu("English", langSwitch("EN")),
---     qa.mkmenu("Russian", langSwitch("RU")),
---   }),
---   qa.mkmenu("-"),
---   qa.mkmenu("Exit")
--- }).update()
---
--- prefix.bind({}, 'q', function() 
---   local p = hs.screen.mainScreen():frame().center
---   qa.bar:popupMenu(p)
--- end)
-
--- qa = {}
--- qa.menu = {
---   { title = "Work Utils", 
---     menu = {
---       { title = "Mail GenStatus (This Week)", fn = function () workUtil_GenStatus(1) end },
---       { title = "Mail GenStatus (Past Week)", fn = function () workUtil_GenStatus(0) end }
---     }
---   },
--- }
---
--- qa.bar = hs.menubar.new()
--- qa.bar:setTitle("QAct")
--- qa.bar:setMenu(qa.menu)
---
--- function workUtil_GenStatus(thisWeek)
---   manager = "dsawyer@uber.com"
---   utils.composeMail(manager, "Hello", "<b>Focus:</b> lalalal \n")
--- end
---
---
-
--- Welp that did not work out =[
--- Focus Follows mouse is incredibly hard to implement
---
--- local mouseMoved = false
--- local activeWindow = nil
---
--- hs.eventtap.new({hs.eventtap.event.types['mouseMoved']}, function(e)
---   mouseMoved = true
--- end):start()
---
--- hs.timer.doEvery(0.1, function() 
---   if mouseMoved then
---     local my_pos = hs.geometry.new(hs.mouse.getAbsolutePosition())
---     local my_screen = hs.mouse.getCurrentScreen()
---
---     window = hs.fnutils.find(hs.window.orderedWindows(), function(w)
---       return my_screen == w:screen() and my_pos:inside(w:frame())
---     end)
---     print(hs.inspect(window, 2), mouseMoved)
---     -- mouseMoved = false
---   end
--- end)
-
--- keyTimes = {}
---
--- hs.eventtap.new({hs.eventtap.event.types['keyDown'], hs.eventtap.event.types['keyUp']}, function(e)
--- if not(e == nil) then
---   local etype = e:getType()
---   local ekey = e:getKeyCode()
---   local etime = hs.timer.absoluteTime() 
---   
---   if etype == hs.eventtap.event.types['keyDown'] then
---     if keyTimes[ekey] ~= nil then
---       keyTimes[ekey] = etime
---     end
---   elseif etype == hs.eventtap.event.types['keyUp'] then
---     local etimelapse = keyTimes[ekey]
---
---     if not(etimelaps == nil) then
---       print(etime - keyTimes[ekey])
---       keyTimes[ekey] = nil
---     end
---   end
--- end
---
--- return false, e
--- end):start()
 
 ------------------------------------------------------------------------
 --                                INIT                                --

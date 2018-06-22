@@ -128,7 +128,10 @@ if exists "fzf"; then
 fi
 
 function cdvim() {
-  cd $1 && vim .
+  local CWD=`pwd`
+  cd $1
+  vim .
+  cd $CWD
 }
 
 if exists tree; then

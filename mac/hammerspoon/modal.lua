@@ -41,7 +41,7 @@ end
 
 function Modal.bind(self, mod, key, fn)
   m = self.modal
-  self.modal:bind(mod, key, nil, function() fn(); m:exit() end)
+  self.modal:bind(mod, key, nil, function() m:exit(); fn(m); end)
 end
 
 function Modal.bindMultiple(self, mod, key, pressedFn, releasedFn, repeatFn)
