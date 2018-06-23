@@ -13,12 +13,10 @@ function Grid.showGrid(grid, screens, action_fun, colorFunc) -- {{{
 
   local ccolorFunc = colorFunc
   if ccolorFunc == nil then
-    print("$$$$$$$$$$$$$$ No Color function")
     ccolorFunc = function(screen)
       return {}
     end
   else
-    print("$$$$$$$$$$$$$$ Color function given")
   end
 
   local allScreens = screens
@@ -186,9 +184,6 @@ function _constructGrid(conf, action_fun) -- {{{
   i = 1
   tiles = {}
 
-  print("--------------------------")
-  print(rez_x)
-  print(rez_y)
 
   for key, val in pairs(grid) do
     local fx = sframe.x + val.x * rw
@@ -196,7 +191,6 @@ function _constructGrid(conf, action_fun) -- {{{
     local fw = val.w * rw
     local fh = val.h * rh
 
-    print(key)
 
     local hint = ""..prefix..key
     local rect = hs.geometry.rect(fx,fy,fw,fh)
@@ -222,10 +216,7 @@ function _constructGrid(conf, action_fun) -- {{{
 end -- }}}
 
 function _deleteBindingList(l) -- {{{
-  print("-- clreaing out list")
-  print(l)
   if l then
-     print("-- deleting")
     for i,binding in ipairs(l) do
       binding:delete()
     end

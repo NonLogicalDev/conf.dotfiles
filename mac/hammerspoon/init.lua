@@ -1,7 +1,6 @@
 local utils = require("utils")
 local modal = require("modal")
 local tmgrid = require("tmgrid")
-local qa = require("menubar")
 
 ------------------------------------------------------------------------
 --                               Macros                               --
