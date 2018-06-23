@@ -8,10 +8,7 @@ local tmgrid = require("tmgrid")
 
 function M_rgba(r,g,b,a)
   return {
-    ["red"] = r,
-    ["blue"] = b,
-    ["green"] = g,
-    ["alpha"] = a
+    ["red"] = r, ["blue"] = b, ["green"] = g, ["alpha"] = a
   }
 end
 
@@ -79,11 +76,13 @@ function init_keymap() -- {{{
   prefix:bind({}, 'n', langSwitch("U.S."))
   prefix:bind({}, 'm', langSwitch("Russian - Phonetic"))
 
+  ----------------------
   -- Grid Window Manager
+  ----------------------
+  
   binder = function(mods, key, fn)
     prefix:bind(mods, key, fn)
   end
-
 
   bindGrid(binder, "w", {
     "aaaabbbbbccc",
@@ -125,7 +124,7 @@ function init_keymap() -- {{{
   end)
 
   prefix:bind({}, "\\", function()
-    blackoutAll() 
+    toggleBlackoutFocusMode() 
   end)
 
   --------------------
@@ -380,12 +379,7 @@ function swapScreens() -- {{{
       local screen_num = screen2i[c_screen_id]
       if screen_num == i then
         return {
-          ['bcolor'] = {
-            ["red"]   = 1.0,
-            ["blue"]  = 0.0,
-            ["green"] = 0.0,
-            ["alpha"] = 0.80
-          }
+          ['bcolor'] = M_rgba(1, 0, 0, 1)
         }
       end
       return {}
@@ -397,7 +391,7 @@ function swapScreens() -- {{{
   end)
 end
 
-function blackoutAll() -- {{{
+function toggleBlackoutFocusMode() -- {{{
   if not(blackoutRects == nil) then
     for i, frame in pairs(blackoutRects) do
       frame:delete()
