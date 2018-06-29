@@ -30,6 +30,9 @@ export FZFZ_EXCLUDE_PATTERN='.git/|env/'
 export TERM_ITALICS='true'
 export NVIM_TUI_ENABLE_TRUE_COLOR=1
 
+bindkey -M viins '^Y' yank
+bindkey -M viins '^U' kill-whole-line
+
 #######################################################################
 #                               Imports                               #
 #######################################################################
@@ -93,12 +96,64 @@ alias cdb='cd +1'
 alias tmsave='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
 
-if exists 'gtask'; then
+if exists 'task'; then
+  rm -f "${HOME}/.taskrc"
+  ln -s "${HOME}/.taskwarrior/taskwarrior.cfg" "${HOME}/.taskrc"
+
+  function gtask() {
+    local ARGS=("$@")
+    TS=`date +"%Y-%m-%dT%H:%M:%S%z [%c]"`
+
+    if [[ "${ARGS[1]}" =~ "^ex\.[:a-zA-z0-9\.]*$" ]]; then
+      local EXT_CMD=${ARGS[1]#ex\.}
+      shift ARGS
+      EXT_ARGS=($EXT_CMD ${ARGS[@]})
+      python ~/.taskwarrior/scripts/twutils.py "${EXT_ARGS[@]}"
+    else
+      task "${ARGS[@]}"
+    fi
+
+
+    cd ~/.taskwarrior
+    DIFF=`git diff`
+    if [ ! -z "$DIFF" ]; then
+      echo "SAVED: $TS" >&2
+      git add . 1>&2 2>/dev/null
+      git commit -m "$TS" 1>&2 2>/dev/null
+    fi
+  }
+
   alias ts='gtask'
-  alias ts.edit="bash -c 'cd ${HOME}/.task && $VIM .'"
+  alias ts.edit="bash -c 'cd ${HOME}/.taskwarrior && $VIM .'"
 fi
 
-if exists 'gtime'; then
+if exists 'timew'; then
+  function gtime() {
+    local ARGS=("$@")
+    TS=`date +"%Y-%m-%dT%H:%M:%S%z [%c]"`
+
+
+    if [[ "${ARGS[1]}" == "list" ]]; then
+      ARGS[1]="summary"
+      ARGS+=(":ids")
+    fi
+   
+    if [[ "${ARGS[1]}" == "l" ]]; then
+      ARGS[1]="summary"
+      ARGS+=(":ids")
+    fi
+
+    timew "${ARGS[@]}"
+
+    cd ~/.timewarrior
+    DIFF=`git diff`
+    if [ ! -z "$DIFF" ]; then
+      echo "SAVED: $TS" >&2
+      git add . 1>&2 2>/dev/null
+      git commit -m "$TS" 1>&2 2>/dev/null
+    fi
+  }
+
   alias ti='gtime'
   alias ti.edit="bash -c 'cd ${HOME}/.timewarrior && $VIM .'"
 fi

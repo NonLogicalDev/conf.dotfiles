@@ -22,6 +22,8 @@ local windowSizeStep = 300
 local global_grid = nil
 local blackoutRects = nil
 
+local jumpPrevWindow = nil
+
 ------------------------------------------------------------------------
 --                               KeyMap                               --
 ------------------------------------------------------------------------
@@ -220,6 +222,15 @@ end -- }}}
 
 function openTerminal()
   local status = nil
+
+  if not(jumpPrevWindow == nil) then
+    jumpPrevWindow:focus()
+    jumpPrevWindow = nil
+    return
+  end
+
+  local curFocusedWindow = hs.window.focusedWindow()
+
   -- if status == nil then
   --   status = hs.application.open('kitty')
   -- end
@@ -234,8 +245,11 @@ function openTerminal()
     status = hs.application.open('Terminal')
     print(status)
   end
+
   if status == nil then
     hs.notify.show('Terminal', 'Error', 'Could not launch any terminal.')
+  else
+    jumpPrevWindow = curFocusedWindow
   end
 end
 
