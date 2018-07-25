@@ -116,6 +116,7 @@ Plug 'kien/ctrlp.vim'
 
 " The Amazing Orgmode (Half as amazing compared to emacs but Eh...)
 Plug 'jceb/vim-orgmode'
+" Plug 'blindfs/vim-taskwarrior'
 " Plug 'tpope/vim-speeddating'
 
 if has('nvim')
@@ -530,6 +531,9 @@ endfunc
 " }}}
 "                           Plugin Confugurations:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" TaskWarrior: {{{
+let g:task_rc_override     = 'rc.defaultwidth=999'
+" }}}
 " EasyMotion: {{{
 
 " =[

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function main()  {
+  CMD="$1"
+  shift
+
+  case "$CMD" in
+    vol )
+      local PARAM="$1"
+      echo "Setting volume to $PARAM"
+      osascript -e "set Volume ${PARAM}"
+      ;;
+  esac
+}
+
+main $*
+

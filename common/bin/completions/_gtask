@@ -1,0 +1,3 @@
+#compdef gtask
+
+_task "$@"

@@ -1,5 +1,5 @@
 " vim: ft=vim
-colorscheme modern
+colorscheme dmod
 
 set vicmd=nvim
 set nofollowlinks
@@ -11,4 +11,5 @@ filextype *.pdf, *.jpg
 
 map o :!open %f<CR>
 map O :!qlmanage -p %f > /dev/null 2>/dev/null &<CR>
+
 command link :execute '!ln -s %d/%f %D'

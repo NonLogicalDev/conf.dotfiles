@@ -1,0 +1,36 @@
+{
+  "root": "~/",
+
+  "dir_mode": "root",
+  "dot_mode": "top_level",
+  "copy_mode": "symlic_rec",
+
+  "symlink_ext": "xlink",
+  "copy_ext": "xcopy",
+  "touch_ext": "xtouch",
+
+  "dirconf": {
+    "irssi": {
+      "copy_mode": "copy",
+      "dir_mode": "id"
+    },
+    "vifm": {
+      "dir_mode": "id"
+    },
+    "bin": {
+      "copy_mode": "copy",
+      "dir_mode": "id",
+      "dot_mode": "no_dot"
+    }
+  },
+
+  "#": "Folders listed in here will not be acted upon",
+  "disabled" : [ "@hooks" ],
+
+  "#": "Files listed in here will not be symlinked",
+  "ignore" : [".DS_Store", "*.bak", ".gitkeep"],
+
+  "#": "Scripts (not implemented yet):",
+  "prelink"  : "@hooks/pre.sh",
+  "postlink" : "@hooks/post.sh"
+}

@@ -5,8 +5,11 @@
   st = status
   co = checkout
 
-  lg = log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
-  lgg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+  lsa = ls-files --exclude-standard
+
+  lg = log --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+  lgg = log --graph --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+
 
   lgd = !git lg -n 100 HEAD..
   lgud = !git lg -n 100 $(git upstream)..HEAD
@@ -31,6 +34,9 @@
   upstream = !git rev-parse --abbrev-ref $(git symbolic-ref --short HEAD)@{upstream} 
 
   oldest-ancestor = !zsh -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
+
+  stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's/^/D/g' | xargs -n 2 git tag -f
+  affected = !git show --format="" --name-only
 
   # lg = log --oneline -n 10
   # lgg = log -n 10 --pretty=format:'%C(yellow)%h%Creset %C(bold blue)<%an>%Creset %s %Cgreen(%cr) %C(red)%d%Creset' --abbrev-commit
