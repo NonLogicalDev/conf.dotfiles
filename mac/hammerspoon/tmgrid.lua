@@ -8,7 +8,7 @@ local frames = nil
 
 -- Module Methods
 ------------------------------------------------------------------------
-function Grid.showGrid(grid, screens, action_fun, colorFunc) -- {{{
+function Grid.showGrid(screenMap, screens, action_fun, colorFunc) -- {{{
   local conf = {}
 
   local ccolorFunc = colorFunc
@@ -28,7 +28,7 @@ function Grid.showGrid(grid, screens, action_fun, colorFunc) -- {{{
 
         ['screen'] = screen,
         ['prefix'] = index,
-        ['grid'] = grid
+        ['grid'] = screenMap[screen:id()]
       })
       index = index + 1
     end

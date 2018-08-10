@@ -186,11 +186,84 @@ end -- }}}
 --                            Helper Utils                            --
 ------------------------------------------------------------------------
 
-function bindGrid(pfx, key, grid, screens) -- {{{
+function flip2D(grid) 
   local uGrid = {}
   for k, v in pairs(grid) do
     uGrid[k] = string.reverse(v)
   end
+  return uGrid
+end
+
+function rotCW2D(grid) 
+  local uGrid = {}
+  
+  local rowLenMax = 0
+  local colLenMax = 0
+
+  for k, v in pairs(grid) do
+    local rowLen = string.len(v)
+    local colLen = k
+    if rowLenMax < rowLen then
+      rowLenMax = rowLen
+    end
+    if colLenMax < colLen then
+      colLenMax = colLen
+    end
+  end
+
+  for i, v in pairs(grid) do
+    for j = 1, rowLenMax do
+      if uGrid[j] == nil then
+        uGrid[j] = {}
+      end
+      local c = v:sub(j,j)
+      uGrid[j][colLenMax-i+1] = c
+    end
+  end
+
+  return hs.fnutils.map(uGrid, function(v)
+    return table.concat(v)
+  end)
+end
+
+function rotCCW2D(grid) 
+  local uGrid = {}
+  
+  local rowLenMax = 0
+  local colLenMax = 0
+
+  for k, v in pairs(grid) do
+    local rowLen = string.len(v)
+    local colLen = k
+    if rowLenMax < rowLen then
+      rowLenMax = rowLen
+    end
+    if colLenMax < colLen then
+      colLenMax = colLen
+    end
+  end
+
+  for i, v in pairs(grid) do
+    for j = 1, rowLenMax do
+      local jj = rowLenMax-j+1
+      if uGrid[jj] == nil then
+        uGrid[jj] = {}
+      end
+      local c = v:sub(j,j)
+      uGrid[jj][i] = c
+    end
+  end
+
+  return hs.fnutils.map(uGrid, function(v)
+    return table.concat(v)
+  end)
+end
+
+function bindGrid(pfx, key, grid, screens) -- {{{
+  local aGrid = grid
+  local bGrid = flip2D(aGrid)
+  local cGrid = rotCW2D(aGrid)
+  local dGrid = rotCCW2D(aGrid)
 
   local winSizeFun = function(rect, hint, screen)
     local w = hs.window.focusedWindow()
@@ -199,17 +272,44 @@ function bindGrid(pfx, key, grid, screens) -- {{{
   end
 
   pfx('', key, function() 
-    gridShow(grid, hs.screen.allScreens(), winSizeFun)
+    local screens = hs.screen.allScreens()
+    local screenMap = {}
+    for i, s in pairs(screens) do
+      if s:frame().w > s:frame().h then
+        screenMap[s:id()] = aGrid
+      else
+        screenMap[s:id()] = cGrid
+      end
+    end
+    gridShowM(screenMap, screens, winSizeFun)
   end)
 
   pfx('shift', key, function() 
-    gridShow(uGrid, hs.screen.allScreens(), winSizeFun)
+    local screens = hs.screen.allScreens()
+    local screenMap = {}
+    for i, s in pairs(screens) do
+      if s:frame().w > s:frame().h then
+        screenMap[s:id()] = bGrid
+      else
+        screenMap[s:id()] = dGrid
+      end
+    end
+    gridShowM(screenMap, screens, winSizeFun)
   end)
 end -- }}}
 
 function gridShow(grid, screens, winSizeFun, colorFunc)
+  local screenMap = {}
+  for i, s in pairs(screens) do
+    screenMap[s:id()] = grid
+  end
   if not(global_grid and global_grid.active == true) then
-    global_grid = tmgrid.showGrid(grid, screens, winSizeFun, colorFunc)
+    global_grid = tmgrid.showGrid(screenMap, screens, winSizeFun, colorFunc)
+  end
+end
+function gridShowM(screenMap, screens, winSizeFun, colorFunc)
+  if not(global_grid and global_grid.active == true) then
+    global_grid = tmgrid.showGrid(screenMap, screens, winSizeFun, colorFunc)
   end
 end
 
