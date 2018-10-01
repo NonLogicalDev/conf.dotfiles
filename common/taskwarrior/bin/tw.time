@@ -1,0 +1,34 @@
+#!/bin/bash
+
+function _gtime() {
+  local ARGS=("$@")
+  TS=`date +"TIME: %Y-%m-%dT%H:%M:%S%z [%c]"`
+
+  if [[ "${ARGS[0]}" == "lg" ||
+        "${ARGS[0]}" == "l"  ||
+        "${ARGS[0]}" == "ls" ||
+        "${ARGS[0]}" == "" ]]; then
+    ARGS[0]="summary"
+    ARGS+=(":ids")
+  fi
+
+  if [[ "${ARGS[0]}" == "all" ]]; then
+    ARGS[0]="summary"
+    ARGS[1]="2018-01-01"
+    ARGS[2]="-"
+    ARGS[3]="2023-01-01"
+    ARGS+=(":ids")
+  fi
+
+  timew "${ARGS[@]}"
+
+  cd ~/.taskwarrior/data.time/
+  git add . 1>&2 2>/dev/null
+  DIFF=`git diff --cached`
+  if [ ! -z "$DIFF" ]; then
+    echo "SAVED: $TS" >&2
+    git commit -m "$TS" 1>&2 2>/dev/null
+  fi
+}
+
+_gtime "$@"

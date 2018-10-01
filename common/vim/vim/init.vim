@@ -1,1 +1,1 @@
-/home/nonlogical/.groundzero/dotfiles/common/vim/vimrc
+../vimrc

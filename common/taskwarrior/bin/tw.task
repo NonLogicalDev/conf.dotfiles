@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+# vim: ft=python
+
+import sys
+import os
+import re
+import subprocess as sp
+import argparse
+import json
+
+sys.path.append(os.path.expanduser('~/.taskwarrior/scripts'))
+TW_DB_PATH = os.path.expanduser("~/.taskwarrior/data.task/")
+CUSTOM_ARG = re.compile(r"::([\w_-]+)")
+
+import twutils
+
+# [PARSER]
+PARSER = argparse.ArgumentParser()
+PARSER.exit = lambda _, m: PARSER._print_message(m, sys.stderr)
+
+CMD_PARSER = PARSER.add_subparsers(dest='command')
+
+TRACK_CMD_PARSER = CMD_PARSER.add_parser('track')
+TRACK_CMD_PARSER.add_argument('time', nargs='+')
+
+CTX_CMD_PARSER = CMD_PARSER.add_parser('ctx')
+CTX_CMD_PARSER.add_argument('--get', nargs=1, type=str)
+CTX_CMD_PARSER.add_argument('--set', nargs=1, type=str)
+# [\PARSER]
+
+
+def argsplit(cmd_args):
+    split_idx = None
+    processed_args = []
+
+    for idx, arg in enumerate(cmd_args):
+        custom_arg_match = CUSTOM_ARG.match(arg)
+        if custom_arg_match:
+            split_idx = idx
+            processed_args.append(custom_arg_match.group(1))
+        else:
+            processed_args.append(arg)
+
+    if split_idx is not None:
+        their_args = processed_args[0:split_idx]
+        our_args = processed_args[split_idx:]
+        return their_args, our_args
+
+    return cmd_args, []
+
+
+def run_task_cmd(args, **kwargs):
+    return sp.Popen(['task'] + args, **kwargs)
+
+
+def git_commit_on_changes(dir, message):
+    os.chdir(dir)
+    sp.Popen(['git', 'add', '.'], stdout=sp.DEVNULL).wait()
+    git_cmd_output = sp.check_output('git diff --cached', shell=True)
+    if len(git_cmd_output) != 0:
+        # sys.stderr.write("DIFF:\n{}\n".format(git_cmd_output))
+        sys.stderr.write("SAVED: {}\n".format(message))
+        sp.Popen(['git', 'commit', '-m', message]).wait()
+
+
+def process_args(cmd_args):
+    their_args, our_args = argsplit(cmd_args)
+    if len(our_args) == 0:
+        return run_task_cmd(their_args).wait()
+
+    try:
+        args = vars(PARSER.parse_args(our_args))
+    except Exception:
+        PARSER.print_help()
+        return 1
+
+    command = args.get('command', None)
+    if command == 'track':
+        ts_exp = run_task_cmd(their_args + ['export'], stdout=sp.PIPE)
+        tasks = json.load(ts_exp.stdout)
+        if len(tasks) != 1:
+            PARSER.error('Must match exaclty one task. Matched {} tasks'.format(len(tasks)))
+            return 1
+
+        id, task_annotation = twutils.tsw2tiw_annotation(tasks[0])
+        twutils.tiw_track(task_annotation, " ".join(args.get('time', [])))
+    elif command == 'ctx':
+        print(args)
+
+
+
+def main(cmd_args):
+    time_stamp = str(sp.check_output(
+        'date +"TASK: %Y-%m-%dT%H:%M:%S%z [%c]"',
+        shell=True
+    ).strip())
+    time_stamp += " args:({})".format(cmd_args)
+
+    status = process_args(cmd_args)
+    git_commit_on_changes(TW_DB_PATH, time_stamp)
+    sys.exit(status)
+
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv[1:])
+    except KeyboardInterrupt:
+      pass

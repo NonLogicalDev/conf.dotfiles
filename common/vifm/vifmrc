@@ -3,6 +3,7 @@ colorscheme dmod
 
 set vicmd=nvim
 set nofollowlinks
+set viewcolumns=-{name},6{size},15{mtime}
 
 screen
 filextype *.pdf, *.jpg 

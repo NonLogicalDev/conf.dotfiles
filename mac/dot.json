@@ -1,0 +1,13 @@
+{
+  "root": "~/",
+
+  "dir_mode": "root",
+  "dot_mode": "top_level",
+  "copy_mode": "rlink",
+
+  "dirconf": {
+    "hammerspoon": { "dir_mode": "id", "copy_mode": "link" }
+  },
+
+  "ignore": [ ".DS_Store", "*.bak", ".gitkeep", ".idea/*"]
+}

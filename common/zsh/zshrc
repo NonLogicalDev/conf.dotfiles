@@ -22,6 +22,7 @@ function exists { which $1 &> /dev/null }
 export ANSIBLE_NOCOWS=1
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
+
 # Plugin VARIABLES
 export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
 export FZFZ_EXCLUDE_PATTERN='.git/|env/'
@@ -78,8 +79,8 @@ if exists 'nvim'; then
   VIM='nvim'
   
   alias vim="$VIM"
-  EDITOR="$VIM"
-  VISUAL="$VIM"
+  export EDITOR="$VIM"
+  export VISUAL="$VIM"
 fi
 
 # Location Aliases
@@ -98,6 +99,7 @@ alias cdb='cd +1'
 
 alias tmsave='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'
+alias meme="memo read memes.yaml | python -c 'import yaml; import sys; import json;  print json.dumps(yaml.load(sys.stdin))'"
 
 if [[ "$PLATFORM" == 'MAC' ]]; then
   ssh-add -K 2>/dev/null

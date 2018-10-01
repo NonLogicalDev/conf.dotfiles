@@ -3,15 +3,14 @@
 
   "dir_mode": "root",
   "dot_mode": "top_level",
-  "copy_mode": "symlic_rec",
-
-  "symlink_ext": "xlink",
-  "copy_ext": "xcopy",
-  "touch_ext": "xtouch",
+  "copy_mode": "rlink",
 
   "dirconf": {
     "irssi": {
       "copy_mode": "copy",
+      "dir_mode": "id"
+    },
+    "taskwarrior": {
       "dir_mode": "id"
     },
     "vifm": {
@@ -28,7 +27,7 @@
   "disabled" : [ "@hooks" ],
 
   "#": "Files listed in here will not be symlinked",
-  "ignore" : [".DS_Store", "*.bak", ".gitkeep"],
+  "ignore" : [".DS_Store", "*.bak", ".gitkeep", ".idea/*", "__pycache__/*"],
 
   "#": "Scripts (not implemented yet):",
   "prelink"  : "@hooks/pre.sh",

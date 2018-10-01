@@ -893,22 +893,24 @@ endfunction
 
 " Setting Up Colorsheme and fonts
 set nocursorline " improve performance
-set background=dark 
 let g:lightline={'colorscheme': 'seoul256'}
 set nolazyredraw
+
 colo gruvbox
+set background=dark 
 
 if has("gui_running")
-  set macmeta
   set guifont=menlo:h14
+  "set guifont=dejavu\ sans\ mono\ for\ powerline:h14
+  "set macthinstrokes
+  
+  set macmeta
   set transparency=6
   set blurradius=10
-  "colo jasmine-dark-seti
-  "set macthinstrokes
-  "let g:airline_theme='tomorrow'
-  "set guifont=dejavu\ sans\ mono\ for\ powerline:h14
+  
+  let g:gruvbox_seethru=0
   colo gruvbox
-else 
+  " set background=light
 endif
 
 

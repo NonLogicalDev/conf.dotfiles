@@ -6,11 +6,57 @@ local tmgrid = require("tmgrid")
 --                               Macros                               --
 ------------------------------------------------------------------------
 
+local evt = hs.eventtap.event.types
+
 function M_rgba(r,g,b,a)
   return {
     ["red"] = r, ["blue"] = b, ["green"] = g, ["alpha"] = a
   }
 end
+
+
+-- local shift_time_ts = nil
+-- local shift_time_notif = nil
+-- local shift_time_trsh = 0.2
+--
+-- hs.eventtap.new({evt["flagsChanged"]}, function(e)
+--   local shift_pressed = e:getFlags()["shift"]
+--   local now_ts = hs.timer.absoluteTime()
+--
+--   if shift_pressed then
+--     if shift_time_ts == nil then
+--       shift_time_ts = now_ts
+--
+--       hs.timer.doAfter(shift_time_trsh, function()
+--         shift_time_ts = nil
+--       end)
+--     else
+--       local diff = (now_ts - shift_time_ts) / 10^9
+--       if (diff) < shift_time_trsh then
+--         print("DOUBLE SHIFT")
+--         hs.hid.capslock.toggle()
+--       end
+--       shift_time_ts = nil
+--     end
+--   end
+--
+--   -- Change this to be more in my face, because I really don't like capslock
+--   -- being turned on, especially when I am in vim.
+--   local capslock_state = hs.hid.capslock.get()
+--   if capslock_state then
+--     shift_time_notif = hs.notify.new({
+--       ['title'] = 'CAPS_LOCK',
+--       ['subTitle'] = 'State',
+--       ['informativeText'] = 'ON',
+--       ['alwaysPresent'] = true,
+--     }):send()
+--   else
+--     if shift_time_notif then
+--       shift_time_notif:withdraw()
+--       shift_time_notif = nil
+--     end
+--   end
+-- end):start()
 
 ------------------------------------------------------------------------
 --                             Variables                              --
@@ -55,10 +101,10 @@ function init_keymap() -- {{{
     end
   end
 
-  prefix:bind('', '1', focusApp("Wunderlist"))
+  prefix:bind('', '1', focusApp("Notion"))
   prefix:bind('', '2', focusApp("Mail"))
   prefix:bind('', '3', focusApp("uChat"))
-  prefix:bind('', '4', focusApp("Firefox"))
+  prefix:bind('', '4', focusApp("Google Chrome"))
 
   prefix:bind('', '0', function() 
     print(hs.window.focusedWindow():application():name())
@@ -76,6 +122,7 @@ function init_keymap() -- {{{
   -------------------
 
   prefix:bind({}, 'n', langSwitch("U.S."))
+  prefix:bind({}, 'b', langSwitch("QwertyDvor"))
   prefix:bind({}, 'm', langSwitch("Russian - Phonetic"))
 
   ----------------------
@@ -323,13 +370,13 @@ end -- }}}
 function openTerminal()
   local status = nil
 
-  if not(jumpPrevWindow == nil) then
-    jumpPrevWindow:focus()
-    jumpPrevWindow = nil
-    return
-  end
+  -- if not(jumpPrevWindow == nil) then
+  --   jumpPrevWindow:focus()
+  --   jumpPrevWindow = nil
+  --   return
+  -- end
 
-  local curFocusedWindow = hs.window.focusedWindow()
+  -- local curFocusedWindow = hs.window.focusedWindow()
 
   -- if status == nil then
   --   status = hs.application.open('kitty')
@@ -349,7 +396,7 @@ function openTerminal()
   if status == nil then
     hs.notify.show('Terminal', 'Error', 'Could not launch any terminal.')
   else
-    jumpPrevWindow = curFocusedWindow
+    -- jumpPrevWindow = curFocusedWindow
   end
 end
 
