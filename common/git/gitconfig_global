@@ -47,6 +47,11 @@
   rb = rebase
   rbu = !git rebase $(git upstream)
 
+  su = submodule update
+  suc = submodule update --checkout
+
+  rsh = reset --hard
+
   untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
   untrack = update-index --assume-unchanged
   track = update-index --no-assume-unchanged

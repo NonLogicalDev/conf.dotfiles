@@ -12,6 +12,7 @@ def main_args():
     commands.add_parser('parent-files')
     commands.add_parser('content-dirs')
     commands.add_parser('content-files')
+    commands.add_parser('projects')
 
     args = parser.parse_args(sys.argv[1:])
     return args, parser
@@ -27,6 +28,8 @@ def main(args, parser):
             DirOps.list_content_dirs()
         elif args.command == 'content-files':
             DirOps.list_content_files()
+        elif args.command == 'content-files':
+            DirOps.list_projects()
         else:
             parser.print_help()
     except IOError:
@@ -115,6 +118,20 @@ class DirOps:
 
     @classmethod
     def list_content_files(cls):
+        cwd = os.getcwd()
+        # files = cls.find(cwd, [
+        #     # Exclude Git Folders
+        #     '-path', '*/.git/*', '-path', '*/.git',
+        #
+        #     # Prune Path
+        #     '-prune', '-o', '-type', 'f', '-print',
+        # ])
+        files = cls.cmdrun(['ack', '-l', '^'])
+        for file in files:
+            print(cls.exclude_common(cwd, cls.format_path(file)))
+
+    @classmethod
+    def list_projects(cls):
         cwd = os.getcwd()
         # files = cls.find(cwd, [
         #     # Exclude Git Folders

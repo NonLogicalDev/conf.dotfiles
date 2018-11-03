@@ -1,10 +1,3 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
-
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
@@ -16,7 +9,13 @@ fi
 
 function exists { which $1 &> /dev/null }
 
-# Customize to your needs ######################################################
+## Adding HOME/bin and deduplicating
+path_prepend "$HOME/bin"
+path_dedup
+
+#######################################################################
+#                           Global Options                            #
+#######################################################################
 
 # Set up env VARIABLES
 export ANSIBLE_NOCOWS=1
@@ -74,10 +73,9 @@ fi
 #                               Aliases                               #
 #######################################################################
 
-VIM='vim'
+export VIM='vim'
 if exists 'nvim'; then
-  VIM='nvim'
-  
+  export VIM='nvim'
   alias vim="$VIM"
   export EDITOR="$VIM"
   export VISUAL="$VIM"
@@ -138,10 +136,6 @@ if exists tree; then
   }
 fi
 
-if exists nvim; then
-  alias vim='nvim'
-fi
-
 if [[ "$PLATFORM" == 'LINUX' ]]; then
   if exists xdg-open; then
     export OPEN_CMD=`which xdg-open`
@@ -175,9 +169,5 @@ fi
 # }
 # --------------------------
 
-## Deduplicating the path
-path_prepend "$HOME/bin"
-path_dedup
 brew analytics off 2>&1 >/dev/null
-
-export PATH=/Users/oleg.utkin/.local/bin/luna-studio:$PATH
+#export PATH=/Users/oleg.utkin/.local/bin/luna-studio:$PATH
