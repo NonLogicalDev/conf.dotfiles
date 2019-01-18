@@ -34,6 +34,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall | source $MYVIMRC
 endif
 "}}}
+
 call plug#begin('~/.vim/plugged')
 "===============================================================================
 " Libraries: {{{
@@ -909,8 +910,8 @@ if has("gui_running")
   set blurradius=10
   
   let g:gruvbox_seethru=0
+  set background=light
   colo gruvbox
-  " set background=light
 endif
 
 

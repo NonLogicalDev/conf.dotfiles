@@ -16,6 +16,13 @@
   lg = false
 [alias]
   x = ext
+  xphab = ext phab
+  xmark = ext meta
+  xlabel = ext stack label
+  xstack = ext stack
+  xedit = ext stack edit
+  xland = !git x meta delete && git x phab sync && git x phab land
+
   # stag = ext stack label
   stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
   dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
@@ -25,7 +32,7 @@
 
   upstream = !git rev-parse --abbrev-ref @{upstream} 
 
-  f = fetch
+  f = fetch -n
   b = branch
   st = status
   co = checkout
@@ -33,9 +40,11 @@
   cc = commit
   cm = commit -m
   cca = commit --amend -C HEAD
+  ccam = commit --amend
   cp = cherry-pick
 
   diffc = diff --cached
+  showd = show --format=""
   affected = !git show --format="" --name-only
 
   lsa = ls-files --exclude-standard
@@ -51,6 +60,9 @@
   suc = submodule update --checkout
 
   rsh = reset --hard
+
+  dirty = ls-files -o --exclude-standard
+  changed = !git ls-files -t -c -d -m -k -o --directory --exclude-standard | grep -v "^H" | cut -d\" \" -f 2
 
   untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
   untrack = update-index --assume-unchanged

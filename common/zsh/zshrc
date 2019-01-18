@@ -73,12 +73,12 @@ fi
 #                               Aliases                               #
 #######################################################################
 
-export VIM='vim'
+export VVIM='vim'
 if exists 'nvim'; then
-  export VIM='nvim'
-  alias vim="$VIM"
-  export EDITOR="$VIM"
-  export VISUAL="$VIM"
+  export VVIM='nvim'
+  alias vim="$VVIM"
+  export EDITOR="$VVIM"
+  export VISUAL="$VVIM"
 fi
 
 # Location Aliases
@@ -94,6 +94,7 @@ alias rmr='rmf'
 alias fuck='sudo $(fc -ln -1)'
 alias grepl='grep --line-buffered'
 alias cdb='cd +1'
+alias cdr='cd $(realpath .)'
 
 alias tmsave='tmux show-buffer | pbcopy'
 alias mux='tmuxinator'

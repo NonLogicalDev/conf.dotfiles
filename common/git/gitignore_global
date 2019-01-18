@@ -1,6 +1,7 @@
 # vim: ft=gitignore
 
 .gitrefs
+__local__
 
 ### Vim ###
 [._]*.s[a-w][a-z]
