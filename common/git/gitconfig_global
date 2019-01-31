@@ -16,12 +16,15 @@
   lg = false
 [alias]
   x = ext
+
   xphab = ext phab
   xmark = ext meta
-  xlabel = ext stack label
   xstack = ext stack
+
+  xlabel = ext stack label
   xedit = ext stack edit
-  xland = !git x meta delete && git x phab sync && git x phab land
+
+  xland = !git x phab sync && git x phab land
 
   # stag = ext stack label
   stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
