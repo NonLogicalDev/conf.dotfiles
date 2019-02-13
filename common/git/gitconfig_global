@@ -1,6 +1,6 @@
 # vim: ft=gitconfig
 [core]
-  excludesfile = ~/.gitignore_global
+  excludesfile = ~/.config/git/ignore_global
 [rerere]
   enabled = true
 [push]
@@ -11,7 +11,7 @@
   conflictstyle = diff3
 [diff]
   tool = vimdiff
-  algorithm = patience
+  algorithm = histogram
 [pager]
   lg = false
 [alias]

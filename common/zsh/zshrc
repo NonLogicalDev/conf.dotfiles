@@ -174,3 +174,7 @@ fi
 
 brew analytics off 2>&1 >/dev/null
 #export PATH=/Users/oleg.utkin/.local/bin/luna-studio:$PATH
+
+# Hook for desk activation
+export DESK_DIR="${HOME}/.config/desk"
+[ -n "$DESK_ENV" ] && source "$DESK_ENV" || true

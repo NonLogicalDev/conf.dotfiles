@@ -14,50 +14,6 @@ function M_rgba(r,g,b,a)
   }
 end
 
-
--- local shift_time_ts = nil
--- local shift_time_notif = nil
--- local shift_time_trsh = 0.2
---
--- hs.eventtap.new({evt["flagsChanged"]}, function(e)
---   local shift_pressed = e:getFlags()["shift"]
---   local now_ts = hs.timer.absoluteTime()
---
---   if shift_pressed then
---     if shift_time_ts == nil then
---       shift_time_ts = now_ts
---
---       hs.timer.doAfter(shift_time_trsh, function()
---         shift_time_ts = nil
---       end)
---     else
---       local diff = (now_ts - shift_time_ts) / 10^9
---       if (diff) < shift_time_trsh then
---         print("DOUBLE SHIFT")
---         hs.hid.capslock.toggle()
---       end
---       shift_time_ts = nil
---     end
---   end
---
---   -- Change this to be more in my face, because I really don't like capslock
---   -- being turned on, especially when I am in vim.
---   local capslock_state = hs.hid.capslock.get()
---   if capslock_state then
---     shift_time_notif = hs.notify.new({
---       ['title'] = 'CAPS_LOCK',
---       ['subTitle'] = 'State',
---       ['informativeText'] = 'ON',
---       ['alwaysPresent'] = true,
---     }):send()
---   else
---     if shift_time_notif then
---       shift_time_notif:withdraw()
---       shift_time_notif = nil
---     end
---   end
--- end):start()
-
 ------------------------------------------------------------------------
 --                             Variables                              --
 ------------------------------------------------------------------------
@@ -74,7 +30,90 @@ local jumpPrevWindow = nil
 --                               KeyMap                               --
 ------------------------------------------------------------------------
 
+function focusApp(appName)
+  return function()
+    local status = hs.application.open(appName)
+    local focusedApp = hs.window.focusedWindow():application():name()
+
+    if status == nil and focusedApp == name then
+      status = true
+    end 
+
+    if status == nil then
+      hs.notify.show('FocusApp', 'Error', 'Could not launch app ' .. appName .. ' / ' .. focusedApp)
+    end
+    return status
+  end
+end
+
+
+function focusCycleApp(name)
+  local focusedWinName = hs.window.focusedWindow():application():name()
+  if focusedWinName == name then
+    hs.eventtap.keyStroke({"cmd"}, "`")
+  else
+    focusApp(name)()
+  end
+end
+
 function init_keymap() -- {{{
+  hs_taggedApp = nil
+  hs_mask = {
+    "pad.", "pad0",
+    "pad1", "pad2", "pad3",
+    "pad4", "pad5", "pad6",
+    "pad7", "pad8", "pad9",
+    "pad/", "pad*",
+    "pad+", "pad-",
+    "padenter",
+  }
+  for i,key in pairs(hs_mask) do 
+    hs.hotkey.bind({}, key, function() end)
+  end
+  hs.eventtap.new({evt["keyDown"]}, function(e)
+    local kc = hs.keycodes.map[e:getKeyCode()]
+    if false then
+    elseif kc == "pad*" then
+      hs.reload()
+    elseif kc == "pad/" then
+      hs.caffeinate.systemSleep()
+
+    elseif kc == "pad+" then
+      hs_taggedApp = hs.window.focusedWindow():application():name()
+      hs.notify.show('FocusApp', 'REC', hs_taggedApp)
+    elseif kc == "padenter" then
+      if not(hs_taggedApp == nil) then
+        focusCycleApp(hs_taggedApp)
+      else
+        hs.notify.show('FocusApp', 'ERR', "No App is tagged...")
+      end
+
+    elseif kc == "pad-" then
+      -- Activate 1Password
+      hs.eventtap.keyStroke({"cmd", "ctrl"}, "return")
+
+    elseif kc == "pad." then
+      -- Activate My Prefix Command
+      hs.eventtap.keyStroke({"ctrl", "alt"}, "space")
+
+    elseif kc == "pad0" then
+      focusCycleApp("Alacritty")
+
+    elseif kc == "pad1" then
+      focusCycleApp("Google Chrome")
+    elseif kc == "pad2" then
+      focusCycleApp("uChat")
+    elseif kc == "pad3" then
+      focusCycleApp("Mail")
+    elseif kc == "pad5" then
+      focusCycleApp("Wunderlist")
+    elseif kc == "pad6" then
+      focusCycleApp("Calendar")
+    elseif kc == "pad9" then
+      hs.eventtap.keyStroke({"ctrl", "alt"}, "\\")
+    end
+  end):start()
+
   --------------------
   -- Setting up prefix
   --------------------
@@ -91,15 +130,6 @@ function init_keymap() -- {{{
 
   prefix:bind('', 'd', hs.toggleConsole)
   prefix:bind('', 'f', hs.reload)
-
-  function focusApp(appName)
-    return function()
-      status = hs.application.open(appName)
-      if status == nil then
-        hs.notify.show('FocusApp', 'Error', 'Could not launch app ' + appName + '.')
-      end
-    end
-  end
 
   prefix:bind('', '1', focusApp("Notion"))
   prefix:bind('', '2', focusApp("Mail"))
@@ -133,48 +163,55 @@ function init_keymap() -- {{{
     prefix:bind(mods, key, fn)
   end
 
-  bindGrid(binder, "w", {
-    "aaaabbbbbccc",
-  })
-
+  -----------------------
   bindGrid(binder, "e", {
-    "ab",
+    "aaaaaabbbb",
+    "aaaaaabbbb",
+    "aaaaaabbbb",
+    "aaaaaacccc", 
+    "aaaaaacccc", 
   })
 
+  bindGrid(binder, "d", {
+    "aaaaaaabbbb",
+    "aaaaaaabbbb",
+    "aaaaaaabbbb",
+    "aaaaaaacccc", 
+    "aaaaaaacccc", 
+  })
+
+  -----------------------
   bindGrid(binder, "r", {
     "aaaaaabbbb",
   })
 
-  bindGrid(binder, "t", {
-    "aaaaaabbbb",
-    "aaaaaabbbb",
-    "aaaaaabbbb",
-    "aaaaaacccc", 
-    "aaaaaacccc", 
+  bindGrid(binder, "f", {
+    "aaaaaaabbbb",
   })
 
-  bindGrid(binder, "y", {
+  -----------------------
+  bindGrid(binder, "w", {
+    "ab",
+  })
+
+  bindGrid(binder, "s", {
     "ab",
     "cd",
   })
 
-  bindGrid(binder, "u", {
-    "abc",
-    "abc",
-  })
-
-  bindGrid(binder, "i", {
-    "aab",
-    "aab",
-  })
-
-  prefix:bind({}, "[", function()
-    swapScreens() 
-  end)
-
-  prefix:bind({}, "\\", function()
-    toggleBlackoutFocusMode() 
-  end)
+  -- bindGrid(binder, "w", {
+  --   "aaaabbbbbccc",
+  -- })
+  --
+  -- bindGrid(binder, "u", {
+  --   "abc",
+  --   "abc",
+  -- })
+  --
+  -- bindGrid(binder, "i", {
+  --   "aab",
+  --   "aab",
+  -- })
 
   --------------------
   -- Window operations
@@ -182,11 +219,14 @@ function init_keymap() -- {{{
 
   hs.hotkey.bind({'ctrl', 'alt'}, "\\", winSelect)
 
+  prefix:bind({}, 'a', winSaveFrame)
+  prefix:bind({'shift'}, "a", winSaveFrameAll)
+
   prefix:bind({}, "q", winRestoreFrame)
   prefix:bind({'shift'}, "q", winRestoreFrameAll)
 
-  prefix:bind({}, ']', winSaveFrame)
-  prefix:bind({'shift'}, "]", winSaveFrameAll)
+  prefix:bind({}, "b", swapScreens)
+  prefix:bind({}, "z", toggleBlackoutFocusMode)
 
   -- Expand a window vertically
   prefix:bind({}, 'p', resizeFocusedWindow(function(w,s,f)
