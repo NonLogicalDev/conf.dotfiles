@@ -1,0 +1,1 @@
+/Users/oleg.utkin/.local/share/dotter/common/zsh/zdir

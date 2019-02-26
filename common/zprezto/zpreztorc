@@ -37,6 +37,8 @@ zstyle ':prezto:load' pmodule \
   'syntax-highlighting' \
   'git' \
   'history-substring-search'
+  
+  #'autosuggestions' \
 
 zstyle ':prezto:module:history-substring-search' case-sensitive 'yes'
 zstyle ':prezto:module:history-substring-search' color 'yes'

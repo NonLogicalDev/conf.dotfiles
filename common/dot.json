@@ -13,9 +13,6 @@
     "taskwarrior": {
       "dir_mode": "id"
     },
-    "vifm": {
-      "dir_mode": "id"
-    },
     "bin": {
       "copy_mode": "copy",
       "dir_mode": "id",

@@ -5,37 +5,35 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
-DIFF=/usr/bin/diff
-if [ -f ~/.profile_corp.prestine ]; then
-  if ! $DIFF ~/.profile_corp ~/.profile_corp.prestine; then
-    mv ~/.profile_corp ~/.profile_corp.dirty
-    cp ~/.profile_corp.prestine ~/.profile_corp
+# Ensure that a non-login, non-interactive shell has a defined environment.
+if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprofile"
+fi
+
+#######################################################################
+#                           Define Platform                           #
+#######################################################################
+
+if (( $+commands[uname] )); then
+  if [[ "$(uname)" == "Darwin" ]]; then
+    PLATFORM="MAC"
+  elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
+    PLATFORM="LINUX"
+  elif [[ "$(expr substr $(uname -s) 2 10)" == "MINGW32_NT" ]]; then
+    PLATFORM="WIN"
   fi
 fi
 
-#
-# Easily determine where the zsh is running
-#
-function get_platform {
-  if [[ "$(uname)" == "Darwin" ]]; then
-    echo "MAC"
-  elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
-    echo "LINUX"
-  elif [[ "$(expr substr $(uname -s) 2 10)" == "MINGW32_NT" ]]; then
-    echo "WIN"
-  else
-    echo "UNKNOWN"
-  fi
-}
+if ! [[ -v PLATFORM ]]; then
+  PLATFORM="UNKNOWN"
+fi
 
-export PLATFORM=`get_platform`
-export EDITOR=nvim
-IGNOREOF=10
-set -o ignoreeof
+export PLATFORM
 
-#
-# Make path entries unique
-#
+#######################################################################
+#                       Path Related Functions                        #
+#######################################################################
+
 function path_dedup {
   if [ -n "$PATH" ]; then
     old_PATH=$PATH:; PATH=
@@ -71,76 +69,12 @@ function path_prepend() {
   done
 }
 
-# Ensure that a non-login, non-interactive shell has a defined environment.
-if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprofile"
-fi
-
 # Setting up brew
-if [[ $(get_platform) == "LINUX" ]]; then
-  export PATH="$HOME/.linuxbrew/bin:$PATH"
+if [[ "$PLATFORM" == "LINUX" ]]; then
+  path_prepend "$HOME/.linuxbrew/bin"
 fi
 
-#######################################################################
-#                 Adding Version Managers to the path                 #
-#######################################################################
-
-function init_iterm_integration {
-  if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
-    echo "Initializing iTerm..."
-    source "${HOME}/.iterm2_shell_integration.zsh"
-  fi
-}
-
-## Adding ASDF Version Manger
-function init_asdf {
-  # export ASDF_DIR="$(brew --prefix asdf)"
-  export ASDF_DIR="/usr/local/opt/asdf"
-
-  source "$ASDF_DIR/asdf.sh"
-  source "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
-  
-  # declare -a plugins=(
-  #   "ruby"
-  #   "python"
-  #   "lua"
-  # )
-  
-  # for plug in "${plugins[@]}"; do
-  #   asdf plugin-add $plug &> /dev/null
-  # done
-}
-
-## Adding Node Version Manger
-function init_node {
-  export NVM_DIR="$HOME/.nvm"
-  if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-    echo "Initializing Node..."
-    source "$NVM_DIR/nvm.sh"
-    nvm use node
-  fi
-}
-
-## Adding Java Version Manger
-function init_java {
-  (( $+commands[jenv] )) && {
-    echo "Initializing JVM..."
-    export JVM_DIR="$HOME/.jenv"
-
-    path_prepend "$JVM_DIR"
-    source <(jenv init -)
-  }
-}
-
-function init_basic_dev {
-  init_iterm_integration
-
-  init_asdf
-  init_java
-}
-
-function init_full_dev {
-  init_basic_dev
-  init_node
-}
+# Add local Bin dirs
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/bin"
 

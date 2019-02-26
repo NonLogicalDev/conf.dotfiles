@@ -1,50 +1,74 @@
+#!/bin/zsh
+#zmodload zsh/zprof
+
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
+# Add completions.
 if [ -d ${HOME}/bin/completions ]; then
   export fpath=(${HOME}/bin/completions $fpath)
 fi
 
-function exists { which $1 &> /dev/null }
+#######################################################################
+#                               Plugins                               #
+#######################################################################
 
-## Adding HOME/bin and deduplicating
-path_prepend "$HOME/bin"
-path_dedup
+# Add zsh plugins
+if [[ -d ${HOME}/.zplugins ]]; then
+  export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
+  export FZFZ_EXCLUDE_PATTERN='.git/|env/'
+
+  for plugin in ${HOME}/.zplugins/**/*.plugin.zsh; do
+    source $plugin
+  done
+fi
+
+
+#######################################################################
+#                             Basic Conf                              #
+#######################################################################
+
+if [[ "$PLATFORM" == 'MAC' ]]; then
+  ssh-add -K 2>/dev/null
+fi
 
 #######################################################################
 #                           Global Options                            #
+#######################################################################
+
+IGNOREOF=10
+set -o ignoreeof
+unsetopt nomatch
+
+#######################################################################
+#                           Global Bindings                           #
+#######################################################################
+
+autoload -Uz edit-command-line
+
+zle -N edit-command-line
+bindkey -M vicmd v edit-command-line
+
+bindkey -M viins '^Y' yank
+bindkey -M viins '^U' kill-whole-line
+
+#######################################################################
+#                       Global Interactive Vars                       #
 #######################################################################
 
 # Set up env VARIABLES
 export ANSIBLE_NOCOWS=1
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-
-# Plugin VARIABLES
-export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
-export FZFZ_EXCLUDE_PATTERN='.git/|env/'
-
 # Setting up vim settings
 export TERM_ITALICS='true'
 export NVIM_TUI_ENABLE_TRUE_COLOR=1
 
-bindkey -M viins '^Y' yank
-bindkey -M viins '^U' kill-whole-line
-
-unsetopt nomatch
-
 #######################################################################
 #                               Imports                               #
 #######################################################################
-
-# Adding all my zsh plugins
-if [[ -d ${HOME}/.zplugins ]]; then
-  for plugin in ${HOME}/.zplugins/**/*.plugin.zsh; do
-    source $plugin
-  done
-fi
 
 # Import Local evn VARIABLES
 if [[ ! -f ${HOME}/SHELL_VARS ]]; then
@@ -58,79 +82,128 @@ if [[ ! -f ${HOME}/.zshrc_local ]]; then
 fi
 source ${HOME}/.zshrc_local
 
-# Adding all of my amazing functions
-if [[ -f ${HOME}/.zfunc ]]; then
-  source ${HOME}/.zfunc
-fi
-
-# Add the frecent directory searcher
-if [[ ! -f ${HOME}/.z ]]; then
-  touch ${HOME}/.z
-fi
-if [[ -f ${HOME}/.zdir ]]; then
-  source ${HOME}/.zdir
-fi
-
 #######################################################################
 #                               Aliases                               #
 #######################################################################
 
-export VVIM='vim'
-if exists 'nvim'; then
-  export VVIM='nvim'
-  alias vim="$VVIM"
-  export EDITOR="$VVIM"
-  export VISUAL="$VVIM"
+export EDITOR="vim"
+export VISUAL="vim"
+
+if [[ -v commands[nvim] ]]; then
+  alias vim="nvim"
+  export EDITOR="nvim"
+  export VISUAL="nvim"
 fi
 
-# Location Aliases
-alias go.gz='cd ~/.groundzero'
-alias go.dot='cd ~/.groundzero/dotfiles'
+if [[ $PLATFORM == "MAC" ]]; then
+  alias x.copy="pbcopy"
+  alias x.paste="pbpaste"
 
-alias scurl='curl --cert $CU_CERT'
-
-# Setting up aliases
-
-alias rmr='rmf'
-
-alias fuck='sudo $(fc -ln -1)'
-alias grepl='grep --line-buffered'
-alias cdb='cd +1'
-alias cdr='cd $(realpath .)'
-
-alias tmsave='tmux show-buffer | pbcopy'
-alias mux='tmuxinator'
-alias meme="memo read memes.yaml | python -c 'import yaml; import sys; import json;  print json.dumps(yaml.load(sys.stdin))'"
-
-if [[ "$PLATFORM" == 'MAC' ]]; then
-  ssh-add -K 2>/dev/null
-
-  alias go.doc='cd ~/Documents'
-  alias go.note='cd ~/Documents/Notes'
-
-  alias tm.paste='tmux saveb - | pbcopy'
+  alias x.curl='curl --cert $CU_CERT'
 
   alias jet='open -a IntelliJ\ IDEA'
   alias jet.go='open -a GoLand'
   alias jet.py='open -a PyCharm'
-  alias jet.js='open -a WebStorm'
+  alias jet.web='open -a WebStorm'
+else
+  alias x.copy=":"
+  alias x.paste=":"
 fi
+
+alias tm.paste='tmux saveb - | x.copy'
+alias tm.save='tmux show-buffer | x.copy'
+
+alias oops='sudo $(fc -ln -1)'
+
+# Location Aliases
+alias go.dots='cd ~/.local/share/dotter'
+alias go.strap='cd ~/.local/share/GroundZERO'
+
+if [[ $PLATFORM == "MAC" ]]; then
+  alias go.docs='cd ~/Documents'
+  alias go.note='cd ~/Documents/Notes'
+  alias go.pics='cd ~/Pictures'
+fi
+
+alias grepl='grep --line-buffered'
+
+alias cdb='cd +1'
+alias cdr='cd $(realpath .)'
 
 #######################################################################
 #                              Functions                              #
 #######################################################################
 
-if exists "fzf"; then
+function init_iterm_integration {
+  if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
+    echo "Initializing iTerm..."
+    source "${HOME}/.iterm2_shell_integration.zsh"
+  fi
+}
+
+## Adding ASDF Version Manger
+function init_asdf {
+  # export ASDF_DIR="$(brew --prefix asdf)"
+  export ASDF_DIR="/usr/local/opt/asdf"
+
+  source "$ASDF_DIR/asdf.sh"
+  source "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
+  
+  # declare -a plugins=(
+  #   "ruby"
+  #   "python"
+  #   "lua"
+  # )
+  
+  # for plug in "${plugins[@]}"; do
+  #   asdf plugin-add $plug &> /dev/null
+  # done
+}
+
+## Adding Node Version Manger
+function init_node {
+  export NVM_DIR="$HOME/.nvm"
+
+  if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+    echo "INIT | Node..."
+    source "$NVM_DIR/nvm.sh"
+    nvm use node
+  fi
+}
+
+## Adding Java Version Manger
+function init_java {
+  export JVM_DIR="$HOME/.jenv"
+
+  (( $+commands[jenv] )) && {
+    echo "INIT | JVM..."
+    path_prepend "$JVM_DIR"
+    source <(jenv init -)
+  }
+}
+
+function init_basic_dev {
+  init_iterm_integration
+
+  init_asdf
+  init_java
+}
+
+function init_full_dev {
+  init_basic_dev
+  init_node
+}
+
+if [[ -v commands[fzf] && -v commands[dbranch] ]]; then
   function cdp {
-    cd $(dbranch | fzf)
+    cd "$(dbranch | fzf)"
   }
 fi
 
 function cdvim() {
-  local CWD=`pwd`
-  cd $1
-  vim .
-  cd $CWD
+  local OLD_PWD=`pwd`
+  cd $1 && vim .
+  cd $OLD_PWD
 }
 
 if exists tree; then
@@ -153,28 +226,12 @@ elif [[ "$PLATFORM" == 'MAC' ]]; then
   }
 fi
 
-# MOVED AWAY FROM USING MVIM
-# --------------------------
-# function mkvim {
-#   SERVERNAME=$1
-#   shift
-#   mvim --servername $SERVERNAME $@
-# }
-#
-# function uvim {
-#   SERVERS=$(mvim --serverlist)
-#   if [[ -z $SERVERS ]]; then
-#     echo "NO GUI Server is running"
-#     mkvim GUI $@
-#   else
-#     mvim --servername $(echo $SERVERS|percol) --remote $@
-#   fi
-# }
-# --------------------------
+if [[ -v commands[memo] ]]; then
+  function meme() {
+    memo read memes.yaml |
+      python -c 'import yaml; import sys; import json; print json.dumps(yaml.load(sys.stdin))'
+  }
+fi
 
-brew analytics off 2>&1 >/dev/null
-#export PATH=/Users/oleg.utkin/.local/bin/luna-studio:$PATH
-
-# Hook for desk activation
-export DESK_DIR="${HOME}/.config/desk"
-[ -n "$DESK_ENV" ] && source "$DESK_ENV" || true
+# Dedup the path
+path_dedup

@@ -2,7 +2,9 @@
 # Print a random, hopefully interesting, adage.
 
 if (( $+commands[fortune] )); then
-  alias login_fortune="fortune $HOME/.groundzero/configs/common/files/fortune"
+  #alias login_fortune="fortune $HOME/.groundzero/configs/common/files/fortune"
+  alias login_fortune="fortune"
+
   PIPE1="cat"
   PIPE2="cat"
 

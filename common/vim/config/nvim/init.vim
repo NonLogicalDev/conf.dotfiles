@@ -3,6 +3,9 @@
 " Close/open all folds zm/zr
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+let g:vim_conf_home = "~/.config/nvim"
+let g:vim_data_home = "~/.local/share/nvim"
+
 " This line is important, some backwards compatible features break my setup
 set nocompatible 
 " let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
@@ -225,8 +228,13 @@ nnoremap Q <nop>
 
 " Setting the backup to a specific folder
 " so that I dont have to fight vim backup files in repositories
-set backupdir=~/.config/nvim/backup
+set backupdir=~/.local/share/nvim/backup
 set backupcopy=yes
+
+if empty(glob(&backupdir))
+  echo "Creating Backup DIR" &backupdir
+  call system("mkdir -p " . &backupdir)
+endif
 
 set noswapfile      " Don't use swapfile
 set nobackup        " Don't create annoying backup files

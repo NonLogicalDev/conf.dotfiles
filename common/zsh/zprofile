@@ -77,3 +77,5 @@ if [[ ! -d "$TMPPREFIX" ]]; then
 fi
 
 # vim: ft=zsh
+
+export PATH="$HOME/.cargo/bin:$PATH"
