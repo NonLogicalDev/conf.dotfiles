@@ -686,12 +686,10 @@ let g:deoplete#enable_at_startup = 1
 
 let g:go_fmt_experimental = 1
 
-" let g:tern#command = ["tern"]
-" let g:tern#arguments = ["--persistent"]
-" let g:tern_map_keys = 1
-
-let g:deoplete#sources#clang#libclang_path = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
-let g:deoplete#sources#clang#clang_header = "/Users/olegutkin/.vim/plugged/YouCompleteMe/third_party/ycmd/clang_includes"
+let s:mac_clang_locaction = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
+if filereadable(s:mac_clang_locaction)
+  let g:deoplete#sources#clang#libclang_path = s:mac_clang_locaction
+endif
 
 " }}}
 " UltiSnips: {{{
