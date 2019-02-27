@@ -2,16 +2,50 @@
 " Github: nonlogicaldev
 " Close/open all folds zm/zr
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                              General Settings:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Env Setup: {{{
 
-let g:vim_conf_home = "~/.config/nvim"
-let g:vim_data_home = "~/.local/share/nvim"
-
-" This line is important, some backwards compatible features break my setup
+" This line is important, some backwards compatible features break my setup.
 set nocompatible 
+
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
 " let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
 " let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
 
+func! s:Dir(dir)
+  if empty(glob(a:dir))
+    call system("mkdir -p " . a:dir)
+  endif
+  return a:dir
+endfunc
 
+func! s:File(path)
+  if !filereadable(a:path)
+    call system("touch " . a:path)
+  endif
+  return a:path
+endfunc
+
+func! s:VimConfig(path) 
+  if has("nvim")
+    return expand("~/.config/nvim/" . a:path)
+  else
+    return expand("~/.vim/" . a:path)
+  endif
+endfunc
+call s:Dir(s:VimConfig(""))
+
+func! s:VimData(path) 
+  if has("nvim")
+    return expand("~/.local/share/nvim/". a:path)
+  else
+    return expand("~/.local/share/nvim/". a:path)
+  endif
+endfunc
+call s:Dir(s:VimData(""))
+
+" Set up Python on macOS:
 if filereadable("/usr/local/opt/asdf/shims/python2")
   let g:python_host_prog = '/usr/local/opt/asdf/shims/python2'
 elseif filereadable("/usr/local/bin/python2")
@@ -24,221 +58,6 @@ elseif filereadable("/usr/local/bin/python3")
   let g:python3_host_prog = '/usr/local/bin/python3'
 endif
 
-"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"                            Initialising Plugins:
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Plugin Definitions: {{{
-" Autoinstall Vim Plug: {{{
-" vim-plug (https://github.com/junegunn/vim-plug) settings 
-" Automatically install vim-plug and run PlugInstall if vim-plug not found
-if empty(glob('~/.config/nvim/autoload/plug.vim'))
-  silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall | source $MYVIMRC
-endif
-"}}}
-
-call plug#begin('~/.config/nvim/plugged')
-"===============================================================================
-" Libraries: {{{
-
-Plug 'vim-scripts/ingo-library' " Utility library needed for some plugins
-Plug 'tpope/vim-repeat'
-Plug 'Shougo/unite.vim'
-
-" }}}
-" Language Definitions: {{{
-
-Plug 'digitaltoad/vim-pug' " Jade/Pug templates
-Plug 'MicahElliott/Rocannon'
-Plug 'chr4/nginx.vim'
-Plug 'rkennedy/vim-delphi'
-Plug 'aklt/plantuml-syntax'
-
-Plug 'keith/swift.vim',                   { 'for':'swift'          }
-Plug 'hdima/python-syntax',               { 'for':'python'         }
-Plug 'fatih/vim-go',                      { 'for':'go'             }
-Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
-Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
-Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
-Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
-
-Plug 'guns/vim-clojure-static',           { 'for':'clojure'        }
-Plug 'guns/vim-clojure-highlight',        { 'for':'clojure'        }
-Plug 'tpope/vim-fireplace',               { 'for':'clojure'        }
-Plug 'guns/vim-sexp',                     { 'for':'clojure'        }
-
-Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
-Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
-Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
-Plug 'cakebaker/scss-syntax.vim',         { 'for':['scss', 'sass'] }
-
-Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
-Plug 'ClockworkNet/vim-junos-syntax'
-
-"Plug 'phildawes/racer',                  { 'do': 'cargo build --release' }
-Plug 'vim-ruby/vim-ruby',                 { 'for':'ruby'           }
-"Plug 'JuliaEditorSupport/julia-vim',      { 'for':'julia'          }
-
-" }}}
-" Colorschemes: {{{
-
-Plug 'altercation/vim-colors-solarized'
-Plug 'nonlogicaldev/vim-jasmine-colortheme'
-"Plug 'morhetz/gruvbox'
-Plug 'nonlogicaldev/gruvbox'
-Plug 'fatih/molokai'
-Plug 'flazz/vim-colorschemes'
-
-" }}}
-" Interface Plugins: {{{
-
-" Graphical Enhancements
-Plug 'itchyny/lightline.vim' " An even nicer replacement for the default status line
-Plug 'kien/rainbow_parentheses.vim' " Rainbow parenthetical expressions
-Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
-" Plug 'Yggdroot/indentLine' " A subtle visual guide for indents
-Plug 'tomtom/tcomment_vim' " Lets you quickly comment out lines wtih gc
-
-" Adding Navigator to vim
-Plug 'scrooloose/nerdtree'
-"Plug 'Shougo/vimfiler.vim'
-
-" Plug 'jistr/vim-nerdtree-tabs'
-" Plug 'ryanoasis/vim-devicons' " Unleash Graphical awesomeness
-" Plug 'Xuyuanp/nerdtree-git-plugin'
-" Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
-
-" Making editing colors in vim a little easier
-Plug 'iandoe/vim-osx-colorpicker'
-Plug 'skammer/vim-css-color'
-Plug 'vim-scripts/Colorizer'
-
-" Quick Finders
-Plug 'kien/ctrlp.vim'
-"kPlug 'majutsushi/tagbar', {'on':['Tagbar','TagbarToggle']}
-
-" The Amazing Orgmode (Half as amazing compared to emacs but Eh...)
-Plug 'jceb/vim-orgmode'
-" Plug 'blindfs/vim-taskwarrior'
-" Plug 'tpope/vim-speeddating'
-
-if has('nvim')
-  Plug 'kassio/neoterm'
-  "Plug 'airblade/vim-gitgutter'
-endif
-
-" }}}
-" Behavior Engancements: {{{
-
-Plug 'tpope/vim-abolish'
-"Plug 'YankRing.vim' " Stores history of yanks and deletes
-Plug 'vim-scripts/EnhancedJumps' " Improve jumps (CTRL-I / CTRL-O)
-Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
-Plug 'tpope/vim-surround' " Surround current element with a symbol
-Plug 'Lokaltog/vim-easymotion' " Visualises increments of jump commands
-Plug 'godlygeek/tabular' " Aligns any delimiter in selected strings
-Plug 'vim-scripts/bufkill.vim' " Allows you to kill a buffer without closing current pane
-Plug 'Raimondi/delimitMate' " Auto closes brackets quotes and just about everything else
-
-Plug 'mattn/emmet-vim', {'for':'html'}  " Super cool way to write html
-Plug 'vim-scripts/ragtag.vim', {'for':'xml'} " Helps with html/xml editing
-
-" }}}
-" Connectivity Plugins: {{{
-
-" Dash integration (Documentation Lookup)
-Plug 'rizzatti/funcoo.vim'
-Plug 'rizzatti/dash.vim'
-
-" Git Integration
-Plug 'tpope/vim-fugitive'
-if has('nvim')
-  "Plug 'airblade/vim-gitgutter' " This thing is a resource hog (unless you have neovim)
-endif
-
-" CTags Integration 
-" (which would have been useful if I did not discoever Semantic Highlighter)
-Plug 'xolox/vim-misc'
-Plug 'xolox/vim-easytags'
-
-" On the fly code checker
-if has('nvim')
-  Plug 'neomake/neomake'
-else
-  " Plug 'scrooloose/syntastic' " This thing is also a major resource hog
-endif
-
-" Terminal integration
-"Plug 'gcmt/tube.vim' " Lets issuing commands straight to terminal
-
-" }}}
-" Code Completers: {{{
-
-" Plug 'SyntaxComplete' " Adds all the syntax highlights to omniCompletion
-" Plug 'ternjs/tern_for_vim'
-Plug 'flowtype/vim-flow', { 'do': 'npm install -g flow-bin' }
-
-Plug 'SirVer/ultisnips'
-
-" vim-plug
-if has('nvim')
-  Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
-  Plug 'zchee/deoplete-go', { 'do': 'make'}
-  Plug 'zchee/deoplete-clang'
-  Plug 'wokalski/autocomplete-flow'
-  " Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
-else
-  Plug 'Valloric/YouCompleteMe'
-endif
-
-" }}}
-"===============================================================================
-call plug#end() 
-
-" Call PlugInstall on first startup
-if !filereadable(expand("~/.vim/.init"))
-  PlugInstall
-  call system('touch ~/.vim/.init')
-endif
-
-" }}}
-"                               Custom Mappings:
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Global Mappings: {{{
-
-"set clipboard=unnamedplus
-let mapleader = " " " This is a spaca by the way
-let maplocalleader = "\\"
-
-
-" select most recently changed text - particularly useful for pastes
-nnoremap <leader>v `[v`]
-nnoremap <leader>V `[V`]
-
-nnoremap <leader><leader>m :cd %:p:h<cr>
-
-" Maks sure that I never open the useless ExMode
-nnoremap Q <nop>
-
-" }}}
-"                              General Settings:
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Backup File Settings: {{{
-
-" Setting the backup to a specific folder
-" so that I dont have to fight vim backup files in repositories
-set backupdir=~/.local/share/nvim/backup
-set backupcopy=yes
-
-if empty(glob(&backupdir))
-  echo "Creating Backup DIR" &backupdir
-  call system("mkdir -p " . &backupdir)
-endif
-
-set noswapfile      " Don't use swapfile
-set nobackup        " Don't create annoying backup files
-
 " }}}
 " Encoding Settings: {{{
 
@@ -250,13 +69,158 @@ set encoding=utf-8
 set grepprg=ack
 
 " }}}
+" Global Mappings: {{{
+
+"set clipboard=unnamedplus
+let mapleader = " " " Spaaaaaace.
+let maplocalleader = "\\"
+
+" Select most recently changed text.
+nnoremap <leader>v `[v`]
+nnoremap <leader>V `[V`]
+
+nnoremap <leader><leader>m :cd %:p:h<cr>
+
+" ExMode is not my thing.
+nnoremap Q <nop>
+
+" Make twitch saving easier.
+command! W w
+
+" }}}
+"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"                            Initialising Plugins:
+"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+""" Plugin Definitions: {{{
+" Autoinstall Vim Plug: {{{
+
+" vim-plug (https://github.com/junegunn/vim-plug) settings 
+" Automatically install vim-plug and run PlugInstall if vim-plug not found
+
+let g:plug_dir = s:VimConfig('autoload/plug.vim')
+if empty(glob(g:plug_dir))
+  system(
+    "curl -fLo " . g:plug_dir . " -create-dirs "
+    "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+  )
+  autocmd VimEnter * PlugInstall | source $MYVIMRC
+endif
+
+"}}}
+call plug#begin(s:Dir(s:VimConfig('plugged')))
+"===============================================================================
+" Libraries: {{{
+
+Plug 'vim-scripts/ingo-library' " Utility library needed for some plugins
+Plug 'tpope/vim-repeat'
+Plug 'Shougo/unite.vim'
+Plug 'rizzatti/funcoo.vim'
+
+" }}}
+" Language Definitions: {{{
+
+Plug 'chr4/nginx.vim'
+Plug 'keith/swift.vim',                   { 'for':'swift'          }
+Plug 'hdima/python-syntax',               { 'for':'python'         }
+Plug 'fatih/vim-go',                      { 'for':'go'             }
+Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
+Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
+Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
+Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
+Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
+Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
+Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
+Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
+Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
+
+Plug 'mattn/emmet-vim',        {'for':'html'} " Faster way to write HTML
+Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
+
+" }}}
+" Colorschemes: {{{
+
+Plug 'nonlogicaldev/gruvbox'
+
+" }}}
+" Interface Plugins: {{{
+
+Plug 'scrooloose/nerdtree'   " Ex Browser Replacement
+Plug 'Shougo/vimfiler.vim'   " Adding Navigator to vim
+
+Plug 'itchyny/lightline.vim' " Status Line Replacement
+Plug 'kien/ctrlp.vim'        " Quick Finder
+
+Plug 'kien/rainbow_parentheses.vim'  " Rainbow parenthetical expressions
+Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
+
+
+" Making editing colors in vim a little easier
+Plug 'iandoe/vim-osx-colorpicker'
+Plug 'skammer/vim-css-color'
+Plug 'vim-scripts/Colorizer'
+
+if has('nvim')
+  Plug 'kassio/neoterm'
+endif
+
+" }}}
+" Behavior Engancements: {{{
+
+Plug 'vim-scripts/bufkill.vim'         " Allows killing a buffer without closing current pane
+
+Plug 'godlygeek/tabular'               " Aligns any delimiter in selected strings
+Plug 'Raimondi/delimitMate'            " Auto closes brackets quotes and just about everything else
+
+Plug 'vim-scripts/EnhancedJumps'       " Improve jumps (CTRL-I / CTRL-O)
+Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
+Plug 'Lokaltog/vim-easymotion'         " Visualises increments of jump commands
+
+Plug 'tpope/vim-abolish'               " Error Correction on-the-fly
+Plug 'tomtom/tcomment_vim'             " Commenting out lines with 'gc'
+Plug 'tpope/vim-surround'              " Surround current element with a symbol
+
+" }}}
+" Connectivity Plugins: {{{
+
+Plug 'rizzatti/dash.vim'  " Dash integration (Documentation Lookup)
+Plug 'tpope/vim-fugitive' " Git Integration
+
+" }}}
+" Code Completers: {{{
+
+Plug 'SirVer/ultisnips' " Snippets
+
+if has('nvim')
+  Plug 'neomake/neomake' " On the fly code checker
+
+  Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
+  Plug 'zchee/deoplete-go', { 'do': 'make'}
+  Plug 'zchee/deoplete-clang'
+  Plug 'wokalski/autocomplete-flow',
+endif
+
+" }}}
+"===============================================================================
+call plug#end() 
+" Post Intialization: {{{
+" Call PlugInstall on first startup
+let g:plug_initialized = s:VimConfig("__plug.initialized__")
+if !filereadable(g:plug_initialized)
+  PlugInstall
+  call s:File(g:plug_initialized)
+endif
+
+" }}}
+""" }}}
+"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "                           Vim Behaviour Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Editor Behaviour: {{{
 
+set backspace=indent,eol,start  " intuitive backspacing.
+
 set autowrite       " Automatically save before :next, :make etc.
 
-set backspace=indent,eol,start  " intuitive backspacing.
 set visualbell      " no beeping.
 
 set autoindent      " autoindent if possible
@@ -276,13 +240,23 @@ set history=1000    " remember more commands and search history
 set undolevels=1000 " use many levels of undo
 
 " }}}
+" Backup File Settings: {{{
+
+" Save Backups to a well known location.
+let &backupdir=s:Dir(s:VimConfig("backup"))
+set backupcopy=yes
+
+set noswapfile " Don't use swapfile
+set nobackup   " Don't create annoying backup files
+
+" }}}
 " Cmd Settings: {{{
 
-set wildmenu        " enhanced command line completion.
-set wildmode=list:longest  " complete files like a shell.
+set wildmenu              " enhanced command line completion.
+set wildmode=list:longest " complete files like a shell.
 
-set showcmd         " display incomplete commands.
-set showmode        " display the mode you're in.
+set showcmd               " display incomplete commands.
+set showmode              " display the mode you're in.
 
 set completeopt=menu,menuone,longest
 set switchbuf=useopen,usetab
@@ -336,17 +310,18 @@ nmap <C-w><S-Tab> :tabprev<CR>
 noremap <C-c> <C-a>
 " }}}
 " Pasting With Ease: {{{
- noremap <localleader>] "*p
- noremap <localleader>} "*P
- noremap <localleader>[ "*y
- noremap <localleader>{ "*Y
+noremap <localleader>] "*p
+noremap <localleader>} "*P
+noremap <localleader>[ "*y
+noremap <localleader>{ "*Y
 " }}}
 " Slecting With Ease: {{{
 noremap gA ggVG
 "}}}
 " Enable Nice Folds: {{{
-command! Devify call SetUpDevExperience()
-func! SetUpDevExperience()
+
+command! FoldUP call FoldUP()
+func! FoldUP()
   set foldenable
   set foldmethod=syntax
   set foldnestmax=1
@@ -359,20 +334,20 @@ endf
 " opposed to the lines int the files, which makes editing text rather
 " unintuitive.
 
-" Remap that supper annoying thing that seems to always happen
-command! W w
+
 func! WordProcessorMode() 
+  setlocal spell spelllang=en_gb
   " setlocal formatoptions=1 
+  " setlocal formatprg=par
+  
   map j gj
   map k gk
-  setlocal spell spelllang=en_gb
-  set complete+=s
-  " set formatprg=par
-  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
+
+  setlocal complete+=s
   setlocal wrap 
   setlocal linebreak 
-  set nocursorline
-endfu 
+  setlocal nocursorline
+endfunc
 com! WP call WordProcessorMode()
 " }}}
 " Emacs Style Search: {{{
@@ -540,28 +515,16 @@ endfunc
 " }}}
 "                           Plugin Confugurations:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" TaskWarrior: {{{
-let g:task_rc_override     = 'rc.defaultwidth=999'
-" }}}
-" EasyMotion: {{{
+" GruvBox: {{{
 
-" =[
+let g:gruvbox_contrast_light = 'hard'
+let g:gruvbox_contrast_dark = 'hard'
+let g:gruvbox_improved_strings = 0
 
-" }}}
-" Abolish: {{{
-
-let g:abolish_save_file = "~/.vim/after/plugin/abolish.vim"
-
-" }}}
+"}}}
 " Highlighter Settings: {{{
 let python_highlight_all = 1
 au FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
-" }}}
-" IndentLine Configuration: {{{
-
-let g:indentLine_char = '|'
-let g:indentLine_color_gui = '#4F2528'
-
 " }}}
 " Airline Configuration: {{{
 
@@ -627,94 +590,6 @@ nmap <silent> <leader>q :NERDTreeFocusToggle<cr>
 "     \ ]
 
 " }}}
-" UltiSnips: {{{
-" ultisnips is missing a setf trigger for snippets on bufenter
-autocmd BufEnter *.snippets setf snippets
-
-" in ultisnips snippet files, we want actual tabs instead of spaces for
-" indents. us will use those tabs and convert them to spaces if expandtab is set when
-" the user wants to insert the snippet.
-autocmd filetype snippets setlocal noexpandtab
-
-function! g:UltiSnips_Complete()
-    call UltiSnips#ExpandSnippet()
-    if g:ulti_expand_res == 0
-        if pumvisible()
-            return "\<Tab>"
-        else
-            call UltiSnips#JumpForwards()
-            if g:ulti_jump_forwards_res == 0
-               return "\<Tab>"
-            endif
-        endif
-    endif
-    return ""
-endfunction
-
-inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
-au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
-
-let g:UltiSnipsExpandTrigger="<C-Space>"
-let g:UltiSnipsJumpForwardTrigger="<M-Space>"
-let g:UltiSnipsListSnippets="<c-e>"
-
-" If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsEditSplit="vertical"
-
-let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
-" }}}
-" Completer Configuration: {{{
-" to avoid problems with arrows
-" let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/cpp/ycm/.ycm_extra_conf.py'
-if has('nvim')
-  " inoremap <silent><expr> <TAB>
-  "       \ pumvisible() ? "\<C-n>" :
-  "       \ <SID>check_back_space() ? "\<TAB>" :
-  "       \ deoplete#mappings#manual_complete()
-
-  " function! s:check_back_space() abort
-  "   let col = col('.') - 1
-  "   return !col || getline('.')[col - 1]  =~ '\s'
-  " endfunction
-else
-  " let g:ycm_key_list_select_completion = ['<M-Tab>']
-  " let g:ycm_semantic_triggers =  {
-  "       \   'c' : ['->', '.'],
-  "       \   'objc' : ['->', '.'],
-  "       \   'cpp,objcpp' : ['->', '.', '::'],
-  "       \   'perl' : ['->'],
-  "       \   'php' : ['->', '::'],
-  "       \   'cs,java,javascript,d,vim,ruby,python,perl6,scala,vb,elixir,go' : ['.'],
-  "       \   'lua' : ['.', ':'],
-  "       \   'erlang' : [':'],
-  "       \ }
-  " " nmap <silent> gd :YcmCompleter GoToDeclaration<CR>
-  " " inoremap <M-Tab> <NOP>
-  "
-  " function! Auto_complete_string()
-  "   if pumvisible()
-  "     return "\<C-n>"
-  "   else
-  "     return "\<C-x>\<C-o>\<C-r>=Auto_complete_opened()\<CR>"
-  "   end
-  " endfunction
-  "
-  " function! Auto_complete_opened()
-  "   if pumvisible()
-  "     return "\<Down>"
-  "   end
-  "   return ""
-  " endfunction
-  "
-  " inoremap <expr> <Nul> Auto_complete_string()
-  " inoremap <expr> <C-q> Auto_complete_string()
-endif
-
-"}}}
-" Org Mode Configuration: {{{
-
-
-" }}}
 " YankRing Configuration: {{{
 
 let g:yankring_history_dir = '~/.vim'
@@ -746,37 +621,6 @@ let g:ctrlp_extensions = ['buffertag']
 
 imap <C-Tab> <C-y>,
 
-" }}}
-" Tube Terminal Config: {{{
-let g:tube_terminal = 'iterm'
-
-" }}}
-" Syntastic: {{{
-let g:syntastic_go_checkers = ['golint', 'govet', 'errcheck']
-let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
-" }}}
-" GoLang: {{{
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_types = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_build_constraints = 1
-
-let g:go_list_type = "quickfix"
-"let g:go_fmt_command = "goimports"
-" }}}
-" Easytags: {{{
-let g:easytags_async = 1
-let g:easytags_languages = {
-\   'go': {
-\     'cmd': '/Users/olegutkin/gocode/bin/gotags',
-\       'args': [],
-\       'fileoutput_opt': '-f',
-\       'stdout_opt': '-f-',
-\       'recurse_flag': '-R'
-\   }
-\}
 " }}}
 " Semantic: {{{
 autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
@@ -836,18 +680,6 @@ let g:semanticBlacklistOverride = {
       \ ]
 \ }
 " }}}
-" GruvBox: {{{
-
-let g:gruvbox_contrast_light = 'hard'
-let g:gruvbox_contrast_dark = 'hard'
-let g:gruvbox_improved_strings = 0
-
-"}}}
-" Clojure Static: {{{
-
-let g:clojure_align_multiline_strings = 1
-
-" }}}
 " Deoplete: {{{
 
 let g:deoplete#enable_at_startup = 1
@@ -862,19 +694,54 @@ let g:deoplete#sources#clang#libclang_path = "/Library/Developer/CommandLineTool
 let g:deoplete#sources#clang#clang_header = "/Users/olegutkin/.vim/plugged/YouCompleteMe/third_party/ycmd/clang_includes"
 
 " }}}
-" Flow: {{{
+" UltiSnips: {{{
+" ultisnips is missing a setf trigger for snippets on bufenter
+autocmd BufEnter *.snippets setf snippets
 
-autocmd BufRead *.js nnoremap <buffer> gd :FlowJumpToDef<CR>
+" in ultisnips snippet files, we want actual tabs instead of spaces for
+" indents. us will use those tabs and convert them to spaces if expandtab is set when
+" the user wants to insert the snippet.
+autocmd filetype snippets setlocal noexpandtab
 
+function! g:UltiSnips_Complete()
+    call UltiSnips#ExpandSnippet()
+    if g:ulti_expand_res == 0
+        if pumvisible()
+            return "\<Tab>"
+        else
+            call UltiSnips#JumpForwards()
+            if g:ulti_jump_forwards_res == 0
+               return "\<Tab>"
+            endif
+        endif
+    endif
+    return ""
+endfunction
+
+inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
+au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+
+let g:UltiSnipsExpandTrigger="<C-Space>"
+let g:UltiSnipsJumpForwardTrigger="<M-Space>"
+let g:UltiSnipsListSnippets="<c-e>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
+let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
 " }}}
-" Surround: {{{
-
-let g:surround_115 = "\1surround: \1\r\1\1""
-
-" }}}
-"                                Misc Settings:
+"                              Language Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Languages: {{{
+" GoLang: {{{
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_types = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_build_constraints = 1
+
+let g:go_list_type = "quickfix"
+"let g:go_fmt_command = "goimports"
 
 augroup lang_go
   autocmd!
@@ -883,9 +750,8 @@ augroup lang_go
   autocmd BufWritePost *.go Neomake
 augroup END
 
-
 " }}}
-" File Type Aliases: {{{
+" ZSH: {{{
 
 " Substitute the ZSH file format to SH cause highlighting is better
 autocmd BufRead * call s:ftZSHtoSH()
@@ -897,7 +763,9 @@ endfunction
 
 " autocmd BufRead * call AliasZSH()
 
-"}}}
+" }}}
+"                                Misc Settings:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " GUI Settings: {{{
 
 " Setting Up Colorsheme and fonts
@@ -929,8 +797,6 @@ endif
 
 " }}}
 " NeoVim Settings: {{{
-
-let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
 
 if has('nvim')
   set termguicolors
@@ -971,75 +837,5 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " }}}
-"                          Pretending To Be Sublime:
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"{{{
-if has("gui_running")
-  " No toolbars, menu or scrollbars in the GUI
-  "set clipboard+=unnamed
-  set vb t_vb=
-  set guioptions-=m  " no menu
-  set guioptions-=l
-  set guioptions-=L
-  set guioptions-=r  " no scrollbar
-  set guioptions-=R
-
-  " Open ctrlp with cmd+p
-  let g:ctrlp_map = '<D-p>'
-
-  " Open goto symbol on current buffer
-  nmap <D-r> :CtrlPBuffer<cr>
-  imap <D-r> <esc>:CtrlPBuffer<cr>
-
-  " Open goto symbol on all buffers
-  nmap <D-R> :CtrlPBufTagAll<cr>
-  imap <D-R> <esc>:CtrlPBufTagAll<cr>
-
-  " Open goto file
-  nmap <D-e> :CtrlP getcwd()<cr>
-  imap <D-e> <esc>:CtrlP getcwd()<cr>
-
-  " Comment lines with cmd+/
-  map  <D-/> :TComment<cr>
-  vmap <D-/> :TComment<cr>gv
-
-  " Indent lines with cmd+[ and cmd+]
-  nmap <D-]> >>
-  nmap <D-[> <<
-  vmap <D-[> <gv
-  vmap <D-]> >gv
-
-  " Open sidebar with cmd+k
-  map <D-k> :NERDTreeTabsToggle<CR>
-
-  " This mapping makes Ctrl-Tab switch between tabs. 
-  " Ctrl-Shift-Tab goes the other way.
-  " noremap <C-Tab> :tabnext<CR>
-  " noremap <C-S-Tab> :tabprev<CR>
-
-  " switch between tabs with cmd+1, cmd+2,..."
-  map <D-1> 1gt
-  map <D-2> 2gt
-  map <D-3> 3gt
-  map <D-4> 4gt
-  map <D-5> 5gt
-  map <D-6> 6gt
-  map <D-7> 7gt
-  map <D-8> 8gt
-  map <D-9> 9gt
-
-  " until we have default MacVim shortcuts this is the only way to use it in
-  " insert mode
-  imap <D-1> <esc>1gt
-  imap <D-2> <esc>2gt
-  imap <D-3> <esc>3gt
-  imap <D-4> <esc>4gt
-  imap <D-5> <esc>5gt
-  imap <D-6> <esc>6gt
-  imap <D-7> <esc>7gt
-  imap <D-8> <esc>8gt
-  imap <D-9> <esc>9gt
-endif
-"}}}
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim:foldmethod=marker
