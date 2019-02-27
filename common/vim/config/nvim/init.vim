@@ -87,6 +87,47 @@ nnoremap Q <nop>
 " Make twitch saving easier.
 command! W w
 
+" Make switching panes easier.
+autocmd VimEnter * nmap <tab> <c-w><c-w>
+
+" Fix increment collision with TMUX prefix.
+noremap <C-c> <C-a>
+
+" Make selecting easier.
+noremap gA ggVG
+
+" Simplified Tab navigation.
+nmap <C-w>1 1gt
+nmap <C-w>2 2gt
+nmap <C-w>3 3gt
+nmap <C-w>4 4gt
+nmap <C-w>5 5gt
+nmap <C-w>6 6gt
+nmap <C-w>7 7gt
+nmap <C-w>8 8gt
+nmap <C-w>9 9gt
+
+nmap <C-w><Tab> :tabnext<CR>
+nmap <C-w><S-Tab> :tabprev<CR>
+
+" Simplified interaction with system clipboard.
+noremap <localleader>] "*p
+noremap <localleader>} "*P
+noremap <localleader>[ "*y
+noremap <localleader>{ "*Y
+
+" Become a god?
+nnoremap <up> <c-w>+
+nnoremap <down> <c-w>-
+nnoremap <right> <c-w><
+nnoremap <left> <c-w>>
+
+imap <C-j> <CR><C-o>O
+
+" By default this calls up man command on whaterver is under the cursor it is
+" kinda slow, and I don't use it.
+autocmd VimEnter * nmap K <nop> 
+
 " }}}
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "                            Initialising Plugins:
@@ -159,10 +200,6 @@ Plug 'iandoe/vim-osx-colorpicker'
 Plug 'skammer/vim-css-color'
 Plug 'vim-scripts/Colorizer'
 
-if has('nvim')
-  Plug 'kassio/neoterm'
-endif
-
 " }}}
 " Behavior Engancements: {{{
 
@@ -213,7 +250,7 @@ endif
 " }}}
 """ }}}
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-"                           Vim Behaviour Settings:
+"                             Vim Basic Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Editor Behaviour: {{{
 
@@ -292,75 +329,6 @@ set laststatus=2    " always show statusline
 " }}}
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Tab Navigation Simplified: {{{
-nmap <C-w>1 1gt
-nmap <C-w>2 2gt
-nmap <C-w>3 3gt
-nmap <C-w>4 4gt
-nmap <C-w>5 5gt
-nmap <C-w>6 6gt
-nmap <C-w>7 7gt
-nmap <C-w>8 8gt
-nmap <C-w>9 9gt
-
-nmap <C-w><Tab> :tabnext<CR>
-nmap <C-w><S-Tab> :tabprev<CR>
-" }}}
-" Make Increment Play Well With TMUX: {{{
-noremap <C-c> <C-a>
-" }}}
-" Pasting With Ease: {{{
-noremap <localleader>] "*p
-noremap <localleader>} "*P
-noremap <localleader>[ "*y
-noremap <localleader>{ "*Y
-" }}}
-" Slecting With Ease: {{{
-noremap gA ggVG
-"}}}
-" Enable Nice Folds: {{{
-
-command! FoldUP call FoldUP()
-func! FoldUP()
-  set foldenable
-  set foldmethod=syntax
-  set foldnestmax=1
-  SemanticHighlight
-endf
-
-" }}}
-" Essay Mode: {{{
-" This mode sets lines to wrap and makes j an k go by actual visible lines as
-" opposed to the lines int the files, which makes editing text rather
-" unintuitive.
-
-
-func! WordProcessorMode() 
-  setlocal spell spelllang=en_gb
-  " setlocal formatoptions=1 
-  " setlocal formatprg=par
-  
-  map j gj
-  map k gk
-
-  setlocal complete+=s
-  setlocal wrap 
-  setlocal linebreak 
-  setlocal nocursorline
-endfunc
-com! WP call WordProcessorMode()
-" }}}
-" Emacs Style Search: {{{
-
-" (Yah yah I know... but that's like the only thing they got right!)
-let &highlight = 0
-nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
-nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
-nnoremap <silent> N :let &hlsearch = 1<CR>N
-nnoremap <silent> n :let &hlsearch = 1<CR>n
-nnoremap <silent> <leader><leader>` :set nohlsearch<CR>
-
-" }}}
 " Cutom Fold Text Line: {{{
 
 set foldtext=CustomFoldText()
@@ -386,6 +354,50 @@ func! CustomFoldText()
 endf
 
 " }}}
+" Emacs Style Search: {{{
+
+let &highlight = 0
+
+nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
+nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
+
+nnoremap <silent> N :let &hlsearch = 1<CR>N
+nnoremap <silent> n :let &hlsearch = 1<CR>n
+
+nnoremap <silent> <leader><leader>` :set nohlsearch<CR>
+
+" }}}
+" Enable Nice Folds: {{{
+
+command! FoldUP call FoldUP()
+func! FoldUP()
+  set foldenable
+  set foldmethod=syntax
+  set foldnestmax=1
+  SemanticHighlight
+endf
+
+" }}}
+" Enable Essay Mode: {{{
+" This mode sets lines to wrap and makes j an k go by actual visible lines as
+" opposed to the lines int the files, which makes editing text rather
+" unintuitive.
+
+command! WP call WordProcessorMode()
+func! WordProcessorMode() 
+  setlocal spell spelllang=en_gb
+  " setlocal formatoptions=1 
+  " setlocal formatprg=par
+  
+  map j gj
+  map k gk
+
+  setlocal complete+=s
+  setlocal wrap 
+  setlocal linebreak 
+  setlocal nocursorline
+endfunc
+" }}}
 " Diff With Saved State: {{{
   
 command! DiffSaved call s:DiffWithSaved()
@@ -407,8 +419,6 @@ function! GetBufferList()
   return buflist
 endfunction
 
-nmap <silent> <leader><leader>q :call ToggleList("Quickfix List", 'c')<CR>
-nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
 function! ToggleList(bufname, pfx)
   let buflist = GetBufferList()
   for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
@@ -429,29 +439,20 @@ function! ToggleList(bufname, pfx)
   endif
 endfunction
 
+nmap <silent> <leader><leader>q :call ToggleList("Quickfix List", 'c')<CR>
+nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
+
 " }}}
 " Open Scratch Buffer: {{{
 
 command! Scratch call s:OpenScratch() 
-
 function! s:OpenScratch()
   botright new
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
 endf
 
 " }}}
-" Arrow Godmode: {{{
-
-" Become a god?
-nnoremap <up> <c-w>+
-nnoremap <down> <c-w>-
-nnoremap <right> <c-w><
-nnoremap <left> <c-w>>
-
-" }}}
-" Misc Extensions: {{{
-
-imap <C-j> <CR><C-o>O
+" Quick Config Extensions: {{{
  
 " Open the vimrc file
 command! Config call s:OpenConfig()
@@ -459,57 +460,43 @@ func! s:OpenConfig()
   exec "tabedit ~/.config/nvim/init.vim"
 endfu
 
-" Word Processor mode for easier markdown handling
-command! WP call s:WordProcessorMode()
-func! s:WordProcessorMode() 
-  " setlocal formatoptions=1 
-  map j gj
-  map k gk
-  setlocal spell spelllang=en_gb
-  " set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
-  set complete+=s
-  " set formatprg=par
-  setlocal wrap 
-  setlocal linebreak 
-  set nocursorline
-endfu 
-
-
-" }}}
-" Fuck You K: {{{
-
-nmap K <nop> " By default this calls up man command on whaterver is under the cursor
-             " And it is rediculosly slow and buggy if not run from terminal
-
 " }}}
 " TMUX Exec: {{{
+"
 command! -nargs=* Tme call s:TMUXExec(<f-args>)
 command! -nargs=* TMUXExec call s:TMUXExec(<f-args>)
 func! s:TMUXExec(...)
   let pane_num = a:1
   let command = a:000[1:-1]
+
 python << EOF
 import vim
 import subprocess
+
 pane_num = vim.eval('pane_num')
 command = vim.eval('command')
+
 subprocess.call(["tmux", "send-keys", "-t", pane_num, "-l", " ".join(command)])
 subprocess.call(["tmux", "send-keys", "-t", pane_num, "Enter"])
 EOF
+
 endfunc
 
 command! -range -nargs=1 Tms <line1>,<line2>call s:TMUXSend(<f-args>)
 command! -range -nargs=1 TMUXSend <line1>,<line2>call s:TMUXSend(<f-args>)
 func! s:TMUXSend(pane_num) range
   let lines=getline(a:firstline, a:lastline)
+
 python << EOF
 import vim
 import subprocess
+
 lines = vim.eval('lines')
 pane_num = vim.eval('a:pane_num')
 for line in lines:
   subprocess.call(["tmux", "send-keys", "-t", pane_num, "-l", line])
   subprocess.call(["tmux", "send-keys", "-t", pane_num, "Enter"])
+
 EOF
 endfunc
 " }}}
