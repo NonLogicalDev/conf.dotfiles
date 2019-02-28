@@ -59,6 +59,53 @@ elseif filereadable("/usr/local/bin/python3")
 endif
 
 " }}}
+" Plugin Manager Setup: {{{
+
+let g:PlugHomePath = s:VimConfig('autoload/plug.vim')
+let g:PlugDataPath = s:Dir(s:VimData('plug.vim'))
+let g:PlugRepoURL = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+let g:PlugInitialized = 0
+
+command! -nargs=+ -bar Plug
+command! -nargs=* -bar PlugInstall
+
+if ! exists("*s:PlugInitBegin")
+  func! s:PlugInitBegin()
+    if empty(glob(g:PlugHomePath))
+      " vim-plug (https://github.com/junegunn/vim-plug) settings 
+      " Automatically install vim-plug and run PlugInstall if vim-plug not found
+      call system("curl -fLo " . g:PlugHomePath . " -create-dirs " . g:PlugRepoURL)
+    else
+      let g:PlugInitialized = 1
+    endif
+
+    call plug#begin(g:PlugDataPath)
+  endfunc
+endif
+
+if ! exists("*s:PlugInitEnd")
+  func! s:PlugInitEnd()
+    call plug#end()
+
+    if ! g:PlugInitialized 
+      PlugInstall
+      ReloadConfig
+    endif
+  endfunc
+endif
+
+command! ReloadConfig :call s:ReloadConfig()
+if ! exists("*s:ReloadConfig")
+  func s:ReloadConfig()
+    if has("nvim")
+      exec "source " . s:VimConfig("init.vim")
+    else
+      exec "source " . s:VimConfig("../.vimrc")
+    endif
+  endfunc
+endif
+
+" }}}
 " Encoding Settings: {{{
 
 " Choosing the best encoding ever
@@ -133,22 +180,7 @@ autocmd VimEnter * nmap K <nop>
 "                            Initialising Plugins:
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """ Plugin Definitions: {{{
-" Autoinstall Vim Plug: {{{
-
-" vim-plug (https://github.com/junegunn/vim-plug) settings 
-" Automatically install vim-plug and run PlugInstall if vim-plug not found
-
-let g:plug_dir = s:VimConfig('autoload/plug.vim')
-if empty(glob(g:plug_dir))
-  system(
-    "curl -fLo " . g:plug_dir . " -create-dirs "
-    "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-  )
-  autocmd VimEnter * PlugInstall | source $MYVIMRC
-endif
-
-"}}}
-call plug#begin(s:Dir(s:VimConfig('plugged')))
+call s:PlugInitBegin()
 "===============================================================================
 " Libraries: {{{
 
@@ -225,7 +257,10 @@ Plug 'tpope/vim-fugitive' " Git Integration
 " }}}
 " Code Completers: {{{
 
-Plug 'SirVer/ultisnips' " Snippets
+if (!(version < 704) && (has("python") || has("python3")) )
+  " Requires version above 7.4 and a python installed.
+  Plug 'SirVer/ultisnips' " Snippets
+endif
 
 if has('nvim')
   Plug 'neomake/neomake' " On the fly code checker
@@ -238,16 +273,7 @@ endif
 
 " }}}
 "===============================================================================
-call plug#end() 
-" Post Intialization: {{{
-" Call PlugInstall on first startup
-let g:plug_initialized = s:VimConfig("__plug.initialized__")
-if !filereadable(g:plug_initialized)
-  PlugInstall
-  call s:File(g:plug_initialized)
-endif
-
-" }}}
+call s:PlugInitEnd()
 """ }}}
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "                             Vim Basic Settings:
@@ -401,25 +427,25 @@ endfunc
 " Diff With Saved State: {{{
   
 command! DiffSaved call s:DiffWithSaved()
-function! s:DiffWithSaved()
+func! s:DiffWithSaved()
     let filetype=&ft
     diffthis
     vnew | r # | normal! 1Gdd
     diffthis
     exe " setlocal bt=nofile bh=wipe nobl noswf ro ft=" . filetype
-endfunction
+endfunc
 
 " }}}
 " Quick List Toggle: {{{
 
-function! GetBufferList()
+func! GetBufferList()
   redir =>buflist
   silent! ls
   redir END
   return buflist
-endfunction
+endfunc
 
-function! ToggleList(bufname, pfx)
+func! ToggleList(bufname, pfx)
   let buflist = GetBufferList()
   for bufnum in map(filter(split(buflist, '\n'), 'v:val =~ "'.a:bufname.'"'), 'str2nr(matchstr(v:val, "\\d\\+"))')
     if bufwinnr(bufnum) != -1
@@ -437,7 +463,7 @@ function! ToggleList(bufname, pfx)
   if winnr() != winnr
     wincmd p
   endif
-endfunction
+endfunc
 
 nmap <silent> <leader><leader>q :call ToggleList("Quickfix List", 'c')<CR>
 nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
@@ -446,10 +472,10 @@ nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
 " Open Scratch Buffer: {{{
 
 command! Scratch call s:OpenScratch() 
-function! s:OpenScratch()
+func! s:OpenScratch()
   botright new
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
-endf
+endfunc
 
 " }}}
 " Quick Config Extensions: {{{
@@ -688,7 +714,7 @@ autocmd BufEnter *.snippets setf snippets
 " the user wants to insert the snippet.
 autocmd filetype snippets setlocal noexpandtab
 
-function! g:UltiSnips_Complete()
+func! g:UltiSnips_Complete()
     call UltiSnips#ExpandSnippet()
     if g:ulti_expand_res == 0
         if pumvisible()
@@ -701,7 +727,7 @@ function! g:UltiSnips_Complete()
         endif
     endif
     return ""
-endfunction
+endfunc
 
 inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
 au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
@@ -740,11 +766,11 @@ augroup END
 
 " Substitute the ZSH file format to SH cause highlighting is better
 autocmd BufRead * call s:ftZSHtoSH()
-function s:ftZSHtoSH()
+func! s:ftZSHtoSH()
   if &filetype == "zsh"
     setlocal filetype=sh
   endif
-endfunction
+endfunc
 
 " autocmd BufRead * call AliasZSH()
 
