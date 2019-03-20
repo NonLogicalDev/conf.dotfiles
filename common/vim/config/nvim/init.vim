@@ -1,3 +1,5 @@
+" vim:foldmethod=marker
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Author: Oleg Utkin
 " Github: nonlogicaldev
 " Close/open all folds zm/zr
@@ -74,33 +76,56 @@ if ! exists("*s:PlugInitBegin")
     if empty(glob(g:PlugHomePath))
       " vim-plug (https://github.com/junegunn/vim-plug) settings 
       " Automatically install vim-plug and run PlugInstall if vim-plug not found
-      call system("curl -fLo " . g:PlugHomePath . " -create-dirs " . g:PlugRepoURL)
+      let curl_cmd = "curl -fLo " . g:PlugHomePath . " --create-dirs " . g:PlugRepoURL
+      call system(curl_cmd)
+      if v:shell_error != 0
+        echoerr "Cant install PLUG"
+        echoerr ": " . curl_cmd "\r: exited with " . v:shell_error
+      endif
     else
       let g:PlugInitialized = 1
     endif
 
-    call plug#begin(g:PlugDataPath)
+    try
+      call plug#begin(g:PlugDataPath)
+    catch /.*/
+      echo "Can't Load PLUG"
+    endtry
   endfunc
 endif
 
 if ! exists("*s:PlugInitEnd")
   func! s:PlugInitEnd()
-    call plug#end()
+    try
+      call plug#end()
+    catch /.*/
+    endtry
 
     if ! g:PlugInitialized 
       PlugInstall
-      ReloadConfig
     endif
   endfunc
 endif
 
 command! ReloadConfig :call s:ReloadConfig()
 if ! exists("*s:ReloadConfig")
-  func s:ReloadConfig()
+  func! s:ReloadConfig()
     if has("nvim")
       exec "source " . s:VimConfig("init.vim")
     else
       exec "source " . s:VimConfig("../.vimrc")
+    endif
+  endfunc
+endif
+"
+" Open the vimrc file
+command! Config call s:OpenConfig()
+if ! exists("*s:OpenConfig")
+  func! s:OpenConfig()
+    if has("nvim")
+      exec "tabedit " . s:VimConfig("init.vim")
+    else
+      exec "tabedit " . s:VimConfig("../.vimrc")
     endif
   endfunc
 endif
@@ -478,15 +503,6 @@ func! s:OpenScratch()
 endfunc
 
 " }}}
-" Quick Config Extensions: {{{
- 
-" Open the vimrc file
-command! Config call s:OpenConfig()
-func! s:OpenConfig()
-  exec "tabedit ~/.config/nvim/init.vim"
-endfu
-
-" }}}
 " TMUX Exec: {{{
 "
 command! -nargs=* Tme call s:TMUXExec(<f-args>)
@@ -550,15 +566,17 @@ let g:airline_right_sep=''
 " }}}
 " NerdTree Config: {{{
 
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
+let g:WebDevIconsUnicodeGlyphDoubleWidth = 1
+let g:webdevicons_enable_ctrlp = 1
+let g:webdevicons_conceal_nerdtree_brackets = 1
+let g:DevIconsEnableFoldersOpenClose = 1
+
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeCascadeSingleChildDir = 0
 let g:nerdtree_tabs_open_on_gui_startup = 0
-let g:WebDevIconsUnicodeDecorateFolderNodes = 1
-let g:webdevicons_enable_ctrlp = 1
-let g:webdevicons_conceal_nerdtree_brackets = 1
-let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
-let g:WebDevIconsUnicodeGlyphDoubleWidth = 1
-let g:DevIconsEnableFoldersOpenClose = 1
+
 let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exact match
 
 " NERD tree mappings
@@ -568,8 +586,10 @@ command! ToggleNav call s:ToggleNav()
 func! s:ToggleNav() 
   if exists(":NERDTabsTreeToggle")
     exec ":NERDTreeTabsToggle"
-  else
+  elseif exists(":NERDTreeToggle")
     exec ":NERDTreeToggle"
+  elseif exists(":Ex")
+    exec ":Ex"
   endif
 endfu
 nmap <silent> <leader>q :NERDTreeFocusToggle<cr>
@@ -636,9 +656,17 @@ imap <C-Tab> <C-y>,
 
 " }}}
 " Semantic: {{{
-autocmd BufEnter,BufRead,BufWritePost *.go SemanticHighlight
-autocmd BufEnter,BufRead,BufWritePost *.py SemanticHighlight
-autocmd BufEnter,BufRead,BufWritePost *.jsx,*.js SemanticHighlight
+
+autocmd BufEnter,BufRead,BufWritePost *.go call s:Semantic()
+autocmd BufEnter,BufRead,BufWritePost *.py call s:Semantic()
+autocmd BufEnter,BufRead,BufWritePost *.jsx,*.js call s:Semantic()
+
+func! s:Semantic()
+  try
+    SemanticHighlight
+  catch /.*/
+  endtry
+endfunc
 
 let g:semanticContainedlistOverride = {
       \ 'javascript': join([
@@ -706,31 +734,6 @@ endif
 
 " }}}
 " UltiSnips: {{{
-" ultisnips is missing a setf trigger for snippets on bufenter
-autocmd BufEnter *.snippets setf snippets
-
-" in ultisnips snippet files, we want actual tabs instead of spaces for
-" indents. us will use those tabs and convert them to spaces if expandtab is set when
-" the user wants to insert the snippet.
-autocmd filetype snippets setlocal noexpandtab
-
-func! g:UltiSnips_Complete()
-    call UltiSnips#ExpandSnippet()
-    if g:ulti_expand_res == 0
-        if pumvisible()
-            return "\<Tab>"
-        else
-            call UltiSnips#JumpForwards()
-            if g:ulti_jump_forwards_res == 0
-               return "\<Tab>"
-            endif
-        endif
-    endif
-    return ""
-endfunc
-
-inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
-au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
 
 let g:UltiSnipsExpandTrigger="<C-Space>"
 let g:UltiSnipsJumpForwardTrigger="<M-Space>"
@@ -740,6 +743,37 @@ let g:UltiSnipsListSnippets="<c-e>"
 let g:UltiSnipsEditSplit="vertical"
 
 let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
+
+" ultisnips is missing a setf trigger for snippets on bufenter
+autocmd BufEnter *.snippets setf snippets
+
+" in ultisnips snippet files, we want actual tabs instead of spaces for
+" indents. us will use those tabs and convert them to spaces if expandtab is set when
+" the user wants to insert the snippet.
+autocmd filetype snippets setlocal noexpandtab
+
+inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
+au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+
+func! g:UltiSnips_Complete()
+  if exists(":UltiSnips")
+    call UltiSnips#ExpandSnippet()
+    if g:ulti_expand_res == 0
+        if pumvisible()
+            return "\<Tab>"
+        else
+            call UltiSnips#JumpForwards()
+            if g:ulti_jump_forwards_res == 0
+              return "\<Tab>"
+            endif
+        endif
+    endif
+    return ""
+  else
+    return "\<Tab>"
+  endif
+endfunc
+
 " }}}
 "                              Language Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -756,10 +790,17 @@ let g:go_list_type = "quickfix"
 
 augroup lang_go
   autocmd!
-  autocmd BufRead *.go setlocal foldmethod=syntax
-  autocmd BufRead *.go setlocal foldnestmax=1
-  autocmd BufWritePost *.go Neomake
+  " autocmd BufRead *.go setlocal foldmethod=syntax
+  " autocmd BufRead *.go setlocal foldnestmax=1
+  autocmd BufWritePost *.go call s:GoOnBufWrite()
 augroup END
+
+func! s:GoOnBufWrite()
+  try
+    Neomake
+  catch /.*/
+  endtry
+endfunc
 
 " }}}
 " ZSH: {{{
@@ -784,8 +825,13 @@ set nocursorline " improve performance
 let g:lightline={'colorscheme': 'seoul256'}
 set nolazyredraw
 
-colo gruvbox
-set background=dark 
+try
+  colo gruvbox
+  set background=dark 
+catch /.*/
+
+  
+endtry
 
 if has("gui_running")
   set guifont=menlo:h14
@@ -849,4 +895,3 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 
 " }}}
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" vim:foldmethod=marker

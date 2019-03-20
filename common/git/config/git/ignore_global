@@ -1,4 +1,5 @@
 # vim: ft=gitignore
+buck-out
 
 .gitrefs
 __local__

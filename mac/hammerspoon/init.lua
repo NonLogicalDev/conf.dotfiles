@@ -2,6 +2,8 @@ local utils = require("utils")
 local modal = require("modal")
 local tmgrid = require("tmgrid")
 
+utils.windowBorderEnable()
+
 ------------------------------------------------------------------------
 --                               Macros                               --
 ------------------------------------------------------------------------
@@ -97,7 +99,7 @@ function init_keymap() -- {{{
       hs.eventtap.keyStroke({"ctrl", "alt"}, "space")
 
     elseif kc == "pad0" then
-      focusCycleApp("Alacritty")
+      focusCycleApp("iTerm")
 
     elseif kc == "pad1" then
       focusCycleApp("Google Chrome")
@@ -131,10 +133,10 @@ function init_keymap() -- {{{
   prefix:bind('', 'd', hs.toggleConsole)
   prefix:bind('', 'f', hs.reload)
 
-  prefix:bind('', '1', focusApp("Notion"))
-  prefix:bind('', '2', focusApp("Mail"))
-  prefix:bind('', '3', focusApp("uChat"))
-  prefix:bind('', '4', focusApp("Google Chrome"))
+  -- prefix:bind('', '1', focusApp("Notion"))
+  -- prefix:bind('', '2', focusApp("Mail"))
+  -- prefix:bind('', '3', focusApp("uChat"))
+  -- prefix:bind('', '4', focusApp("Google Chrome"))
 
   prefix:bind('', '0', function() 
     print(hs.window.focusedWindow():application():name())
