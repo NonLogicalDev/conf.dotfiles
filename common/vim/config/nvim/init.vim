@@ -657,9 +657,7 @@ imap <C-Tab> <C-y>,
 " }}}
 " Semantic: {{{
 
-autocmd BufEnter,BufRead,BufWritePost *.go call s:Semantic()
-autocmd BufEnter,BufRead,BufWritePost *.py call s:Semantic()
-autocmd BufEnter,BufRead,BufWritePost *.jsx,*.js call s:Semantic()
+autocmd BufEnter,BufRead,BufWritePost *.go,*.py,*.jsx,*.js call s:Semantic()
 
 func! s:Semantic()
   try
@@ -689,7 +687,6 @@ let g:semanticContainedlistOverride = {
         \ 'jsFutureKeys',
       \], ","),
       \ }
-
       
 let g:semanticBlacklistOverride = {
       \ 'go': [
@@ -736,8 +733,9 @@ endif
 " UltiSnips: {{{
 
 let g:UltiSnipsExpandTrigger="<C-Space>"
-let g:UltiSnipsJumpForwardTrigger="<M-Space>"
-let g:UltiSnipsListSnippets="<c-e>"
+let g:UltiSnipsJumpForwardTrigger="<C-j>"
+let g:UltiSnipsJumpBackwardTrigger="<C-k>"
+let g:UltiSnipsListSnippets="<c-l>"
 
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
@@ -750,25 +748,24 @@ autocmd BufEnter *.snippets setf snippets
 " in ultisnips snippet files, we want actual tabs instead of spaces for
 " indents. us will use those tabs and convert them to spaces if expandtab is set when
 " the user wants to insert the snippet.
-autocmd filetype snippets setlocal noexpandtab
+autocmd filetype snippets setlocal noexpandtab 
+inoremap <silent> <Tab> <C-R>=g:SmartTab()<cr>
+inoremap <silent> <S-Tab> <C-R>=g:SmartSTab()<cr>
+"au VimEnter * exec "inoremap <silent> <Tab> <C-R>=g:UltiSnips_Complete()<cr>"
 
-inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>
-au VimEnter * exec "inoremap <silent><Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+" Make tab smart
 
-func! g:UltiSnips_Complete()
-  if exists(":UltiSnips")
-    call UltiSnips#ExpandSnippet()
-    if g:ulti_expand_res == 0
-        if pumvisible()
-            return "\<Tab>"
-        else
-            call UltiSnips#JumpForwards()
-            if g:ulti_jump_forwards_res == 0
-              return "\<Tab>"
-            endif
-        endif
-    endif
-    return ""
+func! g:SmartTab()
+  if pumvisible()
+    return "\<C-n>"
+  else
+    return "\<Tab>"
+  endif
+endfunc
+
+func! g:SmartSTab()
+  if pumvisible()
+    return "\<C-p>"
   else
     return "\<Tab>"
   endif

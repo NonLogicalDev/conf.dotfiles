@@ -87,6 +87,14 @@ function utils.windowBorderEnable()
   end
 
   function updateBorder()
+    if border then
+      border:delete()
+    end
+
+    if not(hs.application.find("Amethyst")) then
+      return
+    end
+
     local win = hs.window.focusedWindow()
     if win == nil then return end
 
@@ -95,12 +103,7 @@ function utils.windowBorderEnable()
       return
     end
 
-    local f = win:frame()
-
-    if border then
-      border:delete()
-    end
-    border = drawBorder(f, 7)
+    border = drawBorder(win:frame(), 7)
   end
 
   windows = hs.window.filter.new(nil)
