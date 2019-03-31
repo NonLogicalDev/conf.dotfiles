@@ -1,1 +1,0 @@
-/Users/oleg.utkin/.local/share/dotter/common/zsh/zfunc

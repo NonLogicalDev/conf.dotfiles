@@ -1,6 +1,6 @@
 # vim: ft=gitconfig
 [core]
-  excludesfile = ~/.config/git/ignore_global
+  excludesfile = ./ignore_global
 [rerere]
   enabled = true
 [push]
