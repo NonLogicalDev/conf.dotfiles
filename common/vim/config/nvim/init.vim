@@ -577,6 +577,9 @@ let g:NERDTreeMinimalUI = 1
 let g:NERDTreeCascadeSingleChildDir = 0
 let g:nerdtree_tabs_open_on_gui_startup = 0
 
+let g:NERDTreeDirArrowExpandable = "+"
+let g:NERDTreeDirArrowCollapsible = "-"
+
 let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exact match
 
 " NERD tree mappings
