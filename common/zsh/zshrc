@@ -31,7 +31,7 @@ fi
 #######################################################################
 
 if [[ "$PLATFORM" == 'MAC' ]]; then
-  ssh-add -K 2>/dev/null
+  ssh-add -K 1>/dev/null
 fi
 
 #######################################################################
@@ -106,8 +106,8 @@ if [[ $PLATFORM == "MAC" ]]; then
   alias jet.py='open -a PyCharm'
   alias jet.web='open -a WebStorm'
 else
-  alias x.copy=":"
-  alias x.paste=":"
+  alias x.copy="xclip -i -selection clipboard"
+  alias x.paste="xclip -o -selection clipboard"
 fi
 
 alias tm.paste='tmux saveb - | x.copy'
