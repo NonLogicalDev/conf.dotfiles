@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -xe
+
+cd "$(git rev-parse --show-toplevel)"
+
+command -v fzf || (echo "No FZF command detected" && exit 0)
+
+ORIGINAL_SHA=$(git rev-parse HEAD)
+git branch -f GIT_SPLIT $ORIGINAL_SHA
+git reset $(git rev-parse ${ORIGINAL_SHA}^1)
+
+SELECTED_FILES=$(git status --porcelain=1 | cut -c4- | fzf --multi) && true
+if [ -n "$SELECTED_FILES" ]; then
+  git add .
+  git reset $SELECTED_FILES
+  git commit -C $ORIGINAL_SHA
+else
+  git reset $ORIGINAL_SHA
+fi
+
+echo "ORIGINAL: $ORIGINAL_SHA"

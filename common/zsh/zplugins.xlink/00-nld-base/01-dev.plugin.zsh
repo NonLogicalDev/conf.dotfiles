@@ -1,6 +1,5 @@
 typeset -aU INIT_LIST
-INIT_LIST=()
-export INIT_LIST
+export INIT_LIST=()
 
 ## iTerm Integration
 function init.iterm {
@@ -67,7 +66,6 @@ function init.vm.java {
 function init.vmset.basic {
   init.iterm
   init.vm.asdf
-  init.vm.java
 }
 
 function init.vmset.full {

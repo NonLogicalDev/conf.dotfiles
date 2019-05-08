@@ -1,0 +1,15 @@
+#!/bin/bash
+
+read -r -d '' JQ_SCRIPT <<EOS 
+. 
+| to_entries
+| .[] 
+| select(.value != [])
+| .key as \$path | [
+      (.value[] | {path: \$path, line:.line, desc:.description, })
+] | .[] | .path + ":" + (.line|tostring) + "*[" + .desc + "]"
+EOS
+
+# | from_entries
+
+arc lint --output json | jq -f <(echo $JQ_SCRIPT) -r | column -txs "*"

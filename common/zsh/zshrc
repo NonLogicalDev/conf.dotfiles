@@ -7,8 +7,8 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Add completions.
-if [ -d ${HOME}/bin/completions ]; then
-  export fpath=(${HOME}/bin/completions $fpath)
+if [ -d ${HOME}/.local/bin/completions ]; then
+  export fpath=(${HOME}/.local/bin/completions $fpath)
 fi
 
 #######################################################################
@@ -16,222 +16,18 @@ fi
 #######################################################################
 
 # Add zsh plugins
-if [[ -d ${HOME}/.zplugins ]]; then
-  export FZF_DEFAULT_OPTS='--height 40% --reverse --border'
-  export FZFZ_EXCLUDE_PATTERN='.git/|env/'
-
-  for plugin in ${HOME}/.zplugins/**/*.plugin.zsh; do
+if [[ -d ${ZDOTDIR-$HOME}/.zplugins ]]; then
+  for plugin in ${ZDOTDIR-$HOME}/.zplugins/**/*.plugin.zsh; do
     source $plugin
   done
 fi
-
-
-#######################################################################
-#                             Basic Conf                              #
-#######################################################################
-
-if [[ "$PLATFORM" == 'MAC' ]]; then
-  ssh-add -K 1>/dev/null
-fi
-
-#######################################################################
-#                           Global Options                            #
-#######################################################################
-
-IGNOREOF=10
-set -o ignoreeof
-unsetopt nomatch
-
-#######################################################################
-#                           Global Bindings                           #
-#######################################################################
-
-autoload -Uz edit-command-line
-
-zle -N edit-command-line
-bindkey -M vicmd v edit-command-line
-
-bindkey -M viins '^Y' yank
-bindkey -M viins '^U' kill-whole-line
-
-#######################################################################
-#                       Global Interactive Vars                       #
-#######################################################################
-
-# Set up env VARIABLES
-export ANSIBLE_NOCOWS=1
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-
-# Setting up vim settings
-export TERM_ITALICS='true'
-export NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 #######################################################################
 #                               Imports                               #
 #######################################################################
 
-# Import Local evn VARIABLES
-if [[ ! -f ${HOME}/SHELL_VARS ]]; then
-  touch ${HOME}/SHELL_VARS
-fi
-source ${HOME}/SHELL_VARS
-
 # Import Local settings
-if [[ ! -f ${HOME}/.zshrc_local ]]; then
-  touch ${HOME}/.zshrc_local
+if [[ ! -f ${ZDOTDIR-$HOME}/.zshrc.local ]]; then
+  touch ${ZDOTDIR-$HOME}/.zshrc.local
 fi
-source ${HOME}/.zshrc_local
-
-#######################################################################
-#                               Aliases                               #
-#######################################################################
-
-export EDITOR="vim"
-export VISUAL="vim"
-
-if [[ -v commands[nvim] ]]; then
-  alias vim="nvim"
-  export EDITOR="nvim"
-  export VISUAL="nvim"
-fi
-
-if [[ $PLATFORM == "MAC" ]]; then
-  alias x.copy="pbcopy"
-  alias x.paste="pbpaste"
-
-  alias x.curl='curl --cert $CU_CERT'
-
-  alias jet='open -a IntelliJ\ IDEA'
-  alias jet.go='open -a GoLand'
-  alias jet.py='open -a PyCharm'
-  alias jet.web='open -a WebStorm'
-else
-  alias x.copy="xclip -i -selection clipboard"
-  alias x.paste="xclip -o -selection clipboard"
-fi
-
-alias tm.paste='tmux saveb - | x.copy'
-alias tm.save='tmux show-buffer | x.copy'
-
-alias oops='sudo $(fc -ln -1)'
-
-# Location Aliases
-alias go.dots='cd ~/.local/share/dotter'
-alias go.strap='cd ~/.local/share/GroundZERO'
-
-if [[ $PLATFORM == "MAC" ]]; then
-  alias go.docs='cd ~/Documents'
-  alias go.note='cd ~/Documents/Notes'
-  alias go.pics='cd ~/Pictures'
-fi
-
-alias grepl='grep --line-buffered'
-
-alias cdb='cd +1'
-alias cdr='cd $(realpath .)'
-
-#######################################################################
-#                              Functions                              #
-#######################################################################
-
-function init_iterm_integration {
-  if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
-    echo "Initializing iTerm..."
-    source "${HOME}/.iterm2_shell_integration.zsh"
-  fi
-}
-
-## Adding ASDF Version Manger
-function init_asdf {
-  # export ASDF_DIR="$(brew --prefix asdf)"
-  export ASDF_DIR="/usr/local/opt/asdf"
-
-  source "$ASDF_DIR/asdf.sh"
-  source "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
-  
-  # declare -a plugins=(
-  #   "ruby"
-  #   "python"
-  #   "lua"
-  # )
-  
-  # for plug in "${plugins[@]}"; do
-  #   asdf plugin-add $plug &> /dev/null
-  # done
-}
-
-## Adding Node Version Manger
-function init_node {
-  export NVM_DIR="$HOME/.nvm"
-
-  if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-    echo "INIT | Node..."
-    source "$NVM_DIR/nvm.sh"
-    nvm use node
-  fi
-}
-
-## Adding Java Version Manger
-function init_java {
-  export JVM_DIR="$HOME/.jenv"
-
-  (( $+commands[jenv] )) && {
-    echo "INIT | JVM..."
-    path_prepend "$JVM_DIR"
-    source <(jenv init -)
-  }
-}
-
-function init_basic_dev {
-  init_iterm_integration
-
-  init_asdf
-  init_java
-}
-
-function init_full_dev {
-  init_basic_dev
-  init_node
-}
-
-if [[ -v commands[fzf] && -v commands[dbranch] ]]; then
-  function cdp {
-    cd "$(dbranch | fzf)"
-  }
-fi
-
-function cdvim() {
-  local OLD_PWD=`pwd`
-  cd $1 && vim .
-  cd $OLD_PWD
-}
-
-if exists tree; then
-  function lst() {
-    tree -L 2 -C $* | less
-  }
-fi
-
-if [[ "$PLATFORM" == 'LINUX' ]]; then
-  if exists xdg-open; then
-    export OPEN_CMD=`which xdg-open`
-    function open() {
-      $OPEN_CMD $* & disown
-    }
-  fi
-elif [[ "$PLATFORM" == 'MAC' ]]; then
-  export OPEN_CMD=`which open`
-  function open() {
-    $OPEN_CMD $*
-  }
-fi
-
-if [[ -v commands[memo] ]]; then
-  function meme() {
-    memo read memes.yaml |
-      python -c 'import yaml; import sys; import json; print json.dumps(yaml.load(sys.stdin))'
-  }
-fi
-
-# Dedup the path
-path_dedup
+source ${ZDOTDIR-$HOME}/.zshrc.local

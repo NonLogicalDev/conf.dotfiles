@@ -80,8 +80,7 @@ if exists 'python' && exists 'fzf'; then
         LBUFFER="${LBUFFER}$RES"
 
         local ret=$?
-        zle redisplay
-        typeset -f zle-line-init >/dev/null && zle zle-line-init
+        zle redisplay typeset -f zle-line-init >/dev/null && zle zle-line-init
         return $ret
     }
 

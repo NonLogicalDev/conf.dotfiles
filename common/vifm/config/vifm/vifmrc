@@ -5,7 +5,7 @@ set vicmd=nvim
 set nofollowlinks
 set viewcolumns=-{name},6{size},15{mtime}
 
-screen
+" screen
 filextype *.pdf, *.jpg 
       \ {View in default OSX app} 
       \ open %c

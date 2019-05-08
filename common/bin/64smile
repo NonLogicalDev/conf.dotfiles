@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require "base64"
+
+chset64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+chsetSmiley="😀😁😂😃😄😅😆😉😊😋😎😍😘😗😙😚🙂🤗🤔😐😑😶🙄😏😣😥😮🤐😯😪😫😴😌🤓😛😜😝😒😓😔😕🙃🤑😲🙁😖😞😟😤😢😭😦😧😨😩😬😰😱😳😵😡😠😇😷"
+
+B64toSmile={}
+SmileTo64={}
+
+(0...64).each do |i|
+  B64toSmile[chset64[i]] = chsetSmiley[i]
+  SmileTo64[chsetSmiley[i]] = chset64[i]
+end
+
+def main()
+  string = STDIN.read()
+  if ARGV[0] == "-D"
+    puts Base64.decode64(decode(string))
+  else
+    puts encode(Base64.encode64(string))
+  end
+end
+
+def encode(string)
+  string.split(//).map(&->c{B64toSmile[c]}).join
+end
+
+def decode(string)
+  string.split(//).map(&->c{SmileTo64[c]}).join
+end
+
+main()

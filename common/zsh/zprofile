@@ -1,3 +1,4 @@
+# vim: ft=zsh
 #
 # Executes commands at login pre-zshrc.
 #
@@ -79,6 +80,8 @@ if [[ ! -d "$TMPPREFIX" ]]; then
   mkdir -p "$TMPPREFIX"
 fi
 
-# vim: ft=zsh
+#######################################################################
+#                               CUSTOM                                #
+#######################################################################
 
-export PATH="$HOME/.cargo/bin:$PATH"
+[ -r /Users/oleg.utkin/.profile_lda ] && . /Users/oleg.utkin/.profile_lda

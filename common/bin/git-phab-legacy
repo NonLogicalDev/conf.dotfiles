@@ -1,0 +1,431 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import argparse
+import json
+import os
+import os.path as path
+import re
+import subprocess
+import sys
+import tempfile
+import textwrap
+from collections import OrderedDict
+
+PARSER = argparse.ArgumentParser()
+SP_PARSER = PARSER.add_subparsers(dest="cmd")
+
+LIST_CMD = SP_PARSER.add_parser("list")
+LIST_CMD.add_argument('--log', '-l', help='specify a log command')
+LIST_CMD.add_argument('--upstream', '-u', help='specify upstream')
+
+BROWSE_CMD = SP_PARSER.add_parser("browse")
+BROWSE_CMD.add_argument('--ref', '-r', help='specify a reference')
+
+REBASE_CMD = SP_PARSER.add_parser("edit")
+REBASE_CMD.add_argument('ref', help='git ref to edit')
+
+DIFF_CMD = SP_PARSER.add_parser("diff")
+DIFF_CMD.add_argument('--update', "-u", help="diff to update")
+
+GIT_REBASE_EDITOR_CMD = SP_PARSER.add_parser("_git_rebase_editor")
+GIT_REBASE_EDITOR_CMD.add_argument("rebase_file")
+
+PHAB_DIFF_RE = re.compile(r"^\s*Differential Revision:\s*(.+)", re.M)
+
+DBG_CMD = SP_PARSER.add_parser("dbg")
+
+
+def default(a, _default):
+    if a is None:
+        return _default
+    return a
+
+
+def first(_default, l):
+    try:
+        return iter(l).next()
+    except StopIteration:
+        return _default
+
+def pp(o):
+    print json.dumps(o, indent=2)
+
+class FPopen(subprocess.Popen):
+    @staticmethod
+    def cmd(args, redirect=True, **kwargs):
+        kw = {}
+        if redirect:
+            kw = {
+                "stdin": subprocess.PIPE,
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.PIPE,
+            }
+        kw.update(kwargs)
+        return FPopen(args, **kw)
+
+    def wait(self):
+        super(FPopen, self).wait()
+        return self
+
+    def read_out(self):
+        return self.wait().stdout.read()
+
+    def sread_out(self):
+        return self.read_out().strip("\n")
+
+
+class GitCMD(object):
+    @staticmethod
+    def cmd(args, **kwargs):
+        return FPopen.cmd(['git']+args, **kwargs)
+
+    @classmethod
+    def run(cls, args, **kwargs):
+        out = cls.cmd(args, **kwargs)
+        out.wait()
+        if out.returncode != 0:
+            raise RuntimeError(out.stderr.read())
+        return out.sread_out()
+
+    @classmethod
+    def get_root_path(cls):
+        return cls.run(['rev-parse', '--show-toplevel'])
+
+    @classmethod
+    def get_sha(cls, ref, length=None):
+        sha = cls.run(['rev-parse', str(ref)])
+        if length:
+            sha = sha[0:length]
+        return sha
+
+    @classmethod
+    def find_ref(cls, ref):
+        return cls.run(['show-ref', str(ref)])
+
+    @classmethod
+    def get_branch(cls, ref):
+        return cls.run(['rev-parse', '--abbrev-ref', str(ref)])
+
+    @classmethod
+    def get_merge_base(cls, src, dst):
+        return cls.run(['merge-base', src, dst])
+
+    @classmethod
+    def get_git_objects(cls, src, dst):
+        return cls.run(['log', "{}..{}".format(src, dst), '--format=%H']).split("\n")
+
+    @classmethod
+    def cat(cls, ref):
+         return cls.cmd(['cat-file', '-p', ref]).sread_out()
+
+    @classmethod
+    def stat(cls, ref):
+        return cls.cmd(['show', '--oneline', '--shortstat', ref]).sread_out()
+
+    @classmethod
+    def get_upstream(cls, upstream=None):
+        if upstream is None:
+            git_upstream = cls.get_branch('@{upstream}')
+        else:
+            git_upstream = upstream
+
+        # Check if we are in a rebase
+        if len(git_upstream) == 0:
+            git_top_level = cls.get_root_path()
+            git_rebase_orig_head_file = path.join(git_top_level, '.git/rebase-merge/head-name')
+            git_orig_head = FPopen.cmd(['cat', git_rebase_orig_head_file]).sread_out().replace('refs/heads/', '')
+
+            if len(git_orig_head) > 0:
+                git_upstream = cls.get_branch("{}@{{upstream}}".format(git_orig_head))
+
+        if len(git_upstream) == 0:
+            raise RuntimeError('No upstream detected for HEAD')
+
+        return git_upstream
+
+
+class ArcCMD(object):
+    @staticmethod
+    def cmd(args, **kwargs):
+        return FPopen.cmd(['arc']+args, **kwargs)
+
+    @staticmethod
+    def revision_from_message(message):
+        diff_url = None
+        match = PHAB_DIFF_RE.search(message)
+        if match:
+            diff_url = match.group(1)
+        return diff_url
+
+    @classmethod
+    def run(cls, args, **kwargs):
+        out = cls.cmd(args, **kwargs)
+        out.wait()
+        if out.returncode != 0:
+            PARSER.error(out.stderr.read())
+        return out.sread_out()
+
+    @classmethod
+    def browse(cls, obj):
+        print "OPENNING: {}".format(obj)
+        return cls.cmd(['browse', obj], redirect=False).wait()
+
+    @classmethod
+    def list_features(cls):
+        return json.loads(cls.run(['feature', '--output', 'json']))
+
+    @classmethod
+    def diff(cls, base, update=None):
+        if update:
+            return cls.cmd(['diff', '--base=git:{}'.format(base), '--update={}'.format(update)], redirect=False).wait()
+        else:
+            return cls.cmd(['diff', '--base=git:{}'.format(base)], redirect=False).wait()
+
+
+class PHConduitCMD(object):
+    @staticmethod
+    def call(method, data={}):
+        cnd = FPopen.cmd(['arc', 'call-conduit', method], stderr=sys.stderr)
+        cnd.stdin.write(json.dumps(data))
+        cnd.stdin.close()
+        out = json.loads(cnd.sread_out())
+        return out.get("response", None), out.get("errorMessage", None)
+
+    @classmethod
+    def get_prj_by_name(cls, name):
+        resp, err = cls.call('project.search', {"constraints":{"name":name}})
+        return first(None, filter(lambda x: x.get("fields").get("name") == name, resp.get('data')))
+
+    @classmethod
+    def get_prjs_with_parent(cls, parent):
+        resp, err = cls.call('project.search', {"constraints":{"parents":[parent]}})
+        return resp.get('data')
+
+def main():
+    args = PARSER.parse_args()
+
+    cmd = getattr(args, 'cmd', 'browse')
+    if cmd == 'browse':
+        ref = default(getattr(args, 'ref', None), 'HEAD')
+
+        git_sha = GitCMD.get_sha(ref)
+        git_branch = GitCMD.get_branch(ref)
+
+        arc_diff = None
+        if git_branch:
+            arc_feature = first(None, map(
+                lambda x: x[1],
+                filter(
+                    lambda x: x[0] == git_branch and x[1].get('revision') is not None,
+                    ArcCMD.list_features()
+                )
+            ))
+            if arc_feature:
+                arc_diff = "D" + arc_feature.get('revision')
+
+        if arc_diff is not None:
+            ArcCMD.browse(arc_diff)
+        elif git_branch and 'remotes/' in GitCMD.find_ref(git_branch):
+            ArcCMD.browse(git_branch)
+        else:
+            ArcCMD.browse(git_sha)
+
+    elif cmd == 'list':
+        log_cmd = default(
+            getattr(args, 'log'), 'log|--pretty=%C(red)%h%C(yellow)%d%C(reset)\n%s'
+        ).split("|")
+
+        git_upstream = GitCMD.get_upstream(upstream=args.upstream)
+        git_merge_base = GitCMD.get_merge_base(git_upstream, 'HEAD')
+        git_shas = GitCMD.get_git_objects(git_merge_base, 'HEAD')
+
+        for git_sha in git_shas:
+            message = GitCMD.cat(git_sha)
+            stat = GitCMD.stat(git_sha).split("\n")[-1]
+            diff_url = ArcCMD.revision_from_message(message) or "No Revision"
+            log = GitCMD.run(['-c', 'color.ui=always'] + log_cmd + ['-n1', git_sha])
+            print("[{}]\n{}\n{}\n".format(diff_url, log, stat))
+
+    elif cmd == "edit":
+        ref = getattr(args, 'ref')
+        git_sha_tr = GitCMD.get_sha(ref, length=7)
+
+        git_upstream = GitCMD.get_branch('@{upstream}')
+        if len(git_upstream) == 0:
+            PARSER.error('No upstream detected for HEAD')
+
+        git_merge_base = GitCMD.get_merge_base(git_upstream, 'HEAD')
+
+        source="""
+import sys
+file = open(sys.argv[1], "r+")
+lines = file.read().split("\\n")
+file.seek(0)
+
+SHA = "{sha}"
+
+for line in lines:
+    if SHA in line:
+        line = line.replace('pick', 'edit')
+    file.write(line)
+    file.write("\\n")
+    print(line)
+    file.flush()
+
+file.close()
+        """.format(sha=git_sha_tr)
+
+        with tempfile.NamedTemporaryFile(delete=False) as script_file:
+            script_file.write(source)
+            script_file.flush()
+
+            rebase_env = os.environ.copy()
+            rebase_env['GIT_SEQUENCE_EDITOR'] = '/usr/bin/env python {}'.format(script_file.name)
+
+            GitCMD.cmd(['rebase', '-i', git_merge_base], redirect=False, env=rebase_env).wait()
+
+    elif cmd == "_git_rebase_editor":
+        file_path = getattr(args, "rebase_file")
+        print("[ARGS]: {}".format(sys.argv))
+        print("Rebase File: {}".format(file_path))
+
+    elif cmd == "diff":
+        ArcCMD.diff('HEAD^1', update=getattr(args, 'update'))
+
+    elif cmd == "dbg":
+        def simplify_task(task):
+            return OrderedDict([
+                ("phid", task.get('phid')),
+                ("id", task.get('objectName')),
+                ("uri", task.get('uri')),
+
+                ("name", task.get('title')),
+                ("description", task.get('description')),
+                ("status", task.get('statusName')),
+
+                ("author", task.get('author')),
+                ("owner", task.get('ownerPHID')),
+
+                ("depends", task.get('dependsOnTaskPHIDs', [])),
+                ("projects", task.get('dependsOnTaskPHIDs', [])),
+                ("children", {}),
+
+                # "misc": task,
+            ])
+
+        prj = PHConduitCMD.get_prj_by_name("Archetype")
+        cprjs = PHConduitCMD.get_prjs_with_parent(prj.get("phid"))
+        prjs = [prj] + cprjs
+
+        tasks = {}
+        for phid in map(lambda x: x.get("phid"), cprjs):
+            rtasks, err = PHConduitCMD.call('maniphest.query', {"projectPHIDs": [phid]})
+            if isinstance(rtasks, dict):
+                tasks.update(rtasks)
+
+        sTasks = {}
+        unfetchedTasks = set()
+
+        for phid, task in tasks.iteritems():
+            entry = simplify_task(task)
+            for dep_phid in entry['depends']:
+                if dep_phid not in tasks.keys():
+                    unfetchedTasks.add(dep_phid)
+            sTasks[phid] = entry
+
+        if len(unfetchedTasks) > 0:
+            tasks, err = PHConduitCMD.call('maniphest.query', {"phids": list(unfetchedTasks)})
+            for phid, task in tasks.iteritems():
+                entry = simplify_task(task)
+                #pp(entry)
+                sTasks[phid] = entry
+
+        dTasks = {}
+        for phid in sTasks:
+            task = sTasks[phid]
+
+            for dep_phid in task.get('depends', []):
+                if dep_phid not in sTasks:
+                    continue
+
+                dep_task = sTasks.get(dep_phid)
+                sTasks[phid]['children'][dep_phid] = dep_task
+
+                dTasks[dep_phid] = None
+
+            if phid not in dTasks:
+                dTasks[phid] = sTasks[phid]
+
+        dTasks = {k:v for k,v in dTasks.iteritems() if v is not None}
+
+        def prefix(prefix, s):
+            wrap_len = 60
+            def frm(s):
+                return s + (" " * (wrap_len - len(s) + 1))
+            return "\n".join(
+                map(
+                    lambda x: prefix + frm(x) + "|",
+                    map(
+                        lambda l: "\n".join(textwrap.wrap(l, wrap_len)),
+                        s.split("\n")
+                    )
+                )
+            )
+
+        def print_tasks(tasks, l=0):
+            for phid, task in tasks.iteritems():
+                if l == 0:
+                    print "\n"
+
+                p = "@{}".format(" "*l*4)
+                pr = "{}| ".format(p)
+
+                lll = 60
+                print "{}{}".format(p, ".*{}*.".format("-"*lll))
+
+                print prefix(pr, "{}".format(task.get('name')))
+                print "{}{}".format(p, "|-{}-".format("-"*lll))
+                print prefix(pr, "[{}]".format(task.get('uri')))
+                print "{}{}".format(p, "|-{}-".format("-"*lll))
+                print prefix(pr, "{}".format(task.get('description')))
+
+                print "{}{}".format(p, "'*{}*'".format("-"*lll))
+
+                print_tasks(task.get('children', {}), l=l+1)
+
+        # print json.dumps(dTasks, indent=2)
+        print_tasks(dTasks)
+
+        #print json.dumps(tasks.keys(), indent=2)
+
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except RuntimeError as e:
+        PARSER.error(e.message)
+
+# ORIGINAL SCRIPT:
+# --------------------------------------------------------------------
+# GIT_REF=$1
+# if [ -z "$GIT_REF" ]; then
+#   GIT_REF="HEAD"
+# fi
+#
+# GIT_SHA=$(git rev-parse $GIT_REF)
+# GIT_BRANCH=$(git rev-parse --abbrev-ref $GIT_REF)
+# if [ -n "$GIT_BRANCH" ]; then
+#   FEATURE=$(arc feature --output json | jq  ".[]|select(.name==\"$GIT_BRANCH\" and .revision!=.null)|\"D\"+.revision" -r)
+# fi
+#
+# if [ -n "$FEATURE" ]; then
+#   arc browse $FEATURE
+# elif [ -n "$GIT_BRANCH" ] && (git show-ref $GIT_BRANCH | grep -q "remotes/"); then
+#   echo "$GIT_BRANCH"
+#   arc browse $GIT_BRANCH
+# else
+#   arc browse $GIT_SHA
+# fi

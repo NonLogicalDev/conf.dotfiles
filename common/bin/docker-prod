@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run --entrypoint="/bin/bash" -ti docker-all.artifactory.uber.internal:5922/uber-usi/archetype:$1

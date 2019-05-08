@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+CURRENT=$(git rev-parse HEAD)
+
+START=$1
+
+SUCCESS=""
+function finish {
+  if [ -z "$SUCCESS" ]; then
+    if [ "$(git rev-parse HEAD)" != "$CURRENT" ]; then
+      git reset --hard $CURRENT
+    fi
+    git cherry-pick --quit
+  fi
+}
+trap finish EXIT
+
+CL=$(git rev-list --reverse $START..$END) 
+echo "$CL"
+
+CM=$(echo "$CL" | xargs -n 1 git rev-list -n 1 --format="%B" | sed 's/^commit /# commit: /')
+echo "$CM"
+
+git reset --hard "$START"
+echo "$CL" | git cherry-pick -n --stdin
+git commit -m "$CM" -e
+
+SUCCESS="true"
