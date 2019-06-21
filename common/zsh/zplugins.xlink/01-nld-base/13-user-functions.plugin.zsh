@@ -48,3 +48,11 @@ if [ -x $OPEN_CMD ]; then
     "$OPEN_CMD" $* > /dev/null 2>&1 & disown
   }
 fi
+
+function zsh-compile-dir() {
+  find $1 -type f -iname $2 -exec zsh -c 'echo "Compiling: {}" && zcompile "{}"' \;
+}
+
+function lspath() {
+  echo $PATH | tr ":" "\n"
+}

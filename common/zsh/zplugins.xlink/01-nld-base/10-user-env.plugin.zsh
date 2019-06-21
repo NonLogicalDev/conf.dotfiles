@@ -1,6 +1,14 @@
 #######################################################################
+#                              Language                               #
+#######################################################################
+
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+#######################################################################
 #                           Global Options                            #
 #######################################################################
+
 
 IGNOREOF=10
 set -o ignoreeof
@@ -8,13 +16,14 @@ unsetopt nomatch
 
 setopt share_history
 setopt histignorespace
+setopt HIST_IGNORE_DUPS
 
-HISTFILE="${HOME}/.cache/zsh/history"  # The path to the history file.
+export HISTFILE="${HOME}/.cache/zsh/history"  # The path to the history file.
 if [ ! -d "$(dirname $HISTFILE)" ]; then
   mkdir -p "$(dirname $HISTFILE)"  
 fi
-HISTSIZE=1000000 # The maximum number of events to save in the internal history.
-SAVEHIST=1000000 # The maximum number of events to save in the history file.
+export HISTSIZE=1000000 # The maximum number of events to save in the internal history.
+export SAVEHIST=1000000 # The maximum number of events to save in the history file.
 
 #######################################################################
 #                             Basic Conf                              #

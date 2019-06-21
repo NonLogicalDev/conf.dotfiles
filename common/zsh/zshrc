@@ -2,9 +2,9 @@
 #zmodload zsh/zprof
 
 # Source Prezto.
-if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
-fi
+# if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+#   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+# fi
 
 # Add completions.
 if [ -d ${HOME}/.local/bin/completions ]; then
@@ -16,8 +16,8 @@ fi
 #######################################################################
 
 # Add zsh plugins
-if [[ -d ${ZDOTDIR-$HOME}/.zplugins ]]; then
-  for plugin in ${ZDOTDIR-$HOME}/.zplugins/**/*.plugin.zsh; do
+if [[ -d ${ZDOTDIR:-$HOME}/.zplugins ]]; then
+  for plugin in ${ZDOTDIR:-$HOME}/.zplugins/**/*.plugin.zsh; do
     source $plugin
   done
 fi
@@ -28,6 +28,6 @@ fi
 
 # Import Local settings
 if [[ ! -f ${ZDOTDIR-$HOME}/.zshrc.local ]]; then
-  touch ${ZDOTDIR-$HOME}/.zshrc.local
+  touch ${ZDOTDIR:-$HOME}/.zshrc.local
 fi
-source ${ZDOTDIR-$HOME}/.zshrc.local
+source ${ZDOTDIR:-$HOME}/.zshrc.local

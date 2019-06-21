@@ -3,7 +3,7 @@ local modal = require("modal")
 local tmgrid = require("tmgrid")
 
 utils.windowBorderEnable()
-
+hs.application.enableSpotlightForNameSearches(true)
 ------------------------------------------------------------------------
 --                               Macros                               --
 ------------------------------------------------------------------------
@@ -37,25 +37,30 @@ function focusApp(appName)
     local status = hs.application.open(appName)
     local focusedApp = hs.window.focusedWindow():application():name()
 
-    if status == nil and focusedApp == name then
+    if status == nil and focusedApp == appName then
       status = true
     end 
-
+    if status == nil and focusedApp == "iTerm2" and appName == "iTerm" then
+      status = true
+    end 
     if status == nil then
       hs.notify.show('FocusApp', 'Error', 'Could not launch app ' .. appName .. ' / ' .. focusedApp)
     end
+
     return status
   end
 end
 
 
 function focusCycleApp(name)
-  local focusedWinName = hs.window.focusedWindow():application():name()
-  if focusedWinName == name then
-    hs.eventtap.keyStroke({"cmd"}, "`")
-  else
-    focusApp(name)()
-  end
+  pcall(function()
+    local focusedWinName = hs.window.focusedWindow():application():name()
+    if focusedWinName == name then
+      hs.eventtap.keyStroke({"cmd"}, "`")
+    else
+      focusApp(name)()
+    end
+  end)
 end
 
 function init_keymap() -- {{{
@@ -632,6 +637,5 @@ end -- }}}
 ------------------------------------------------------------------------
 --                                INIT                                --
 ------------------------------------------------------------------------
-
 init_keymap()
 

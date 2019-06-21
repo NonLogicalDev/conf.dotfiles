@@ -20,7 +20,7 @@
   xmark = ext meta
   xstack = ext stack
 
-  xlabel = ext stack label
+  xlabel = !git ext stack label && git lg
   xedit = ext stack edit
 
   xland = !git x phab sync && git x phab land
@@ -38,6 +38,9 @@
   b = branch
   st = status
   co = checkout
+
+  d = diff
+  dc = diff --cached
 
   cc = commit
   cm = commit -m
@@ -76,6 +79,8 @@
   lgd = !git lg -n 100 HEAD..
   lgud = !git lg -n 100 $(git upstream)..HEAD
   lgdu = !git lg -n 100 HEAD..$(git upstream)
+
+  rstash = "!f() { [ -z $1 ] || [ -z $2 ] || git push -f origin $1:stash/$(whoami)/$2; }; f"
 
   # oldest-ancestor = !bash -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
   # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f

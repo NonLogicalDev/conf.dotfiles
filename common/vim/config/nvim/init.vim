@@ -200,6 +200,8 @@ imap <C-j> <CR><C-o>O
 " kinda slow, and I don't use it.
 autocmd VimEnter * nmap K <nop> 
 
+xnoremap p pgvy
+
 " }}}
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 "                            Initialising Plugins:
@@ -843,7 +845,7 @@ if has("gui_running")
   set blurradius=10
   
   let g:gruvbox_seethru=0
-  set background=light
+  "set background=light
   colo gruvbox
 endif
 
