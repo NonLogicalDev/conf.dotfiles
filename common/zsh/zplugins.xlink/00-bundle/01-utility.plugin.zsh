@@ -251,6 +251,9 @@ else
 fi
 
 # Miscellaneous
+if (( $+commands[git] )); then
+  alias g='git'
+fi
 
 # Serves a directory via HTTP.
 if (( $+commands[python3] )); then
