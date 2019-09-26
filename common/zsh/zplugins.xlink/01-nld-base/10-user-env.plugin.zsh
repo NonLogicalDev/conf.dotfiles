@@ -17,6 +17,7 @@ unsetopt nomatch
 setopt share_history
 setopt histignorespace
 setopt HIST_IGNORE_DUPS
+setopt autocd autopushd pushdignoredups
 
 export HISTFILE="${HOME}/.cache/zsh/history"  # The path to the history file.
 if [ ! -d "$(dirname $HISTFILE)" ]; then

@@ -244,6 +244,8 @@ Plug 'nonlogicaldev/gruvbox'
 " }}}
 " Interface Plugins: {{{
 
+Plug 'vimwiki/vimwiki'       " Personal Wiki
+
 Plug 'scrooloose/nerdtree'   " Ex Browser Replacement
 Plug 'Shougo/vimfiler.vim'   " Adding Navigator to vim
 
@@ -745,7 +747,7 @@ let g:UltiSnipsListSnippets="<c-l>"
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
 
-let g:UltiSnipsSnippetDirectories = ['~/.vim/UltiSnips', 'UltiSnips']
+let g:UltiSnipsSnippetDirectories = [s:VimConfig('UltiSnips'), 'UltiSnips']
 
 " ultisnips is missing a setf trigger for snippets on bufenter
 autocmd BufEnter *.snippets setf snippets
@@ -827,32 +829,30 @@ set nocursorline " improve performance
 let g:lightline={'colorscheme': 'seoul256'}
 set nolazyredraw
 
-try
-  colo gruvbox
-  set background=dark 
-catch /.*/
-
-  
-endtry
-
 if has("gui_running")
   set guifont=menlo:h14
   "set guifont=dejavu\ sans\ mono\ for\ powerline:h14
-  "set macthinstrokes
-  
   set macmeta
   set transparency=6
   set blurradius=10
-  
-  let g:gruvbox_seethru=0
-  "set background=light
-  colo gruvbox
+  "set macthinstrokes
 endif
 
+if (has("gui_running") || has("gui_vimr"))
+  let g:gruvbox_seethru=0
+else
+  let g:gruvbox_seethru=1
+endif
 
 if exists("neovim_dot_app")
   call MacSetFont("Menlo", 14)
 endif
+
+try
+  colo gruvbox
+  set background=dark 
+catch /.*/
+endtry
 
 " }}}
 " NeoVim Settings: {{{

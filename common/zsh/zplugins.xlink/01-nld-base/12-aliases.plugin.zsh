@@ -12,8 +12,8 @@ alias tm.snap='tmux show-buffer | x.copy'
 
 alias grepl='grep --line-buffered'
 
-alias cdb='cd +1'
-alias cdr='cd $(realpath .)'
+alias cdb='cd "+1"'
+alias cdr='cd "$(realpath .)"'
 
 # Location Aliases
 alias go.dots='cd ~/.local/share/dotter'
@@ -36,13 +36,14 @@ if [[ $PLATFORM == "MAC" ]]; then
   alias x.paste="pbpaste"
 
   function jet {
+    APP="IntelliJ\ IDEA\ Ultimate"
     local args="$@"
     local root=$(git rev-parse --show-toplevel)
 
     if [ -z "$root" ] || [ -n "$args" ]; then
-      open -a IntelliJ\ IDEA "$@"
+      open -a "$APP" "$@"
     else
-      open -a IntelliJ\ IDEA $root
+      open -a "$APP" $root
     fi
   }
 
