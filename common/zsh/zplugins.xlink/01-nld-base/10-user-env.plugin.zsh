@@ -9,7 +9,6 @@ export LC_ALL=en_US.UTF-8
 #                           Global Options                            #
 #######################################################################
 
-
 IGNOREOF=10
 set -o ignoreeof
 unsetopt nomatch
@@ -64,3 +63,18 @@ if [[ -v commands[nvim] ]]; then
   export EDITOR="nvim"
   export VISUAL="nvim"
 fi
+
+#######################################################################
+#                               Editor                                #
+#######################################################################
+sman() {
+  local MAXMANWIDTH=120
+  if [[ $COLUMNS -gt $MAXMANWIDTH ]]; then
+    MANWIDTH=$MAXMANWIDTH man "$@"
+  else
+    man "$@"
+  fi
+}
+alias man="sman"
+compdef sman="man"
+
