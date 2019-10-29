@@ -85,3 +85,5 @@ fi
 #######################################################################
 
 [ -r /Users/oleg.utkin/.profile_lda ] && . /Users/oleg.utkin/.profile_lda
+
+export PATH="$HOME/.cargo/bin:$PATH"
