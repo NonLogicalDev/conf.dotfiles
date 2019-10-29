@@ -8,7 +8,7 @@
 #
 
 # Load dependencies.
-#pmodload 'helper' 'spectrum'
+# pmodload 'helper' 'spectrum'
 
 # Checks if a file can be autoloaded by trying to load it in a subshell.
 function is-autoloadable {

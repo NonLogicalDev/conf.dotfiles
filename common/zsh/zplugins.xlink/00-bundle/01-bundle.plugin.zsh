@@ -31,8 +31,10 @@ fi
 if [ ! -z "$ZSH_ANTIBODY" ]; then 
   HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 
-  bindkey -- "${key[Up]}"   history-substring-search-up
-  bindkey -- "${key[Down]}" history-substring-search-down
+  [[ -n "${key[Up]}"   ]] && bindkey -- "${key[Up]}"   history-substring-search-up
+  [[ -n "${key[Down]}" ]] && bindkey -- "${key[Down]}" history-substring-search-down
 fi
 
+
 #autoload -Uz promptinit && promptinit
+
