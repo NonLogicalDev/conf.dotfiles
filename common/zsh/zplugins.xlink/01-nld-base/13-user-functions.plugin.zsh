@@ -3,6 +3,14 @@
 #                              Functions                              #
 #######################################################################
 
+function git() {
+  ( until [[ ! -f "$(command git rev-parse --show-toplevel)/.git/index.lock" ]]; do
+      echo "Waiting for Git Lock" >&2
+      sleep 0.5;
+    done 
+  ) && command git "$@"
+}
+
 function __cmd() {
   local cmdpath=`whence -ap "$1" | head -n 1`
   if [[ -x "$cmdpath" ]]; then

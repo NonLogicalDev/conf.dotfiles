@@ -16,6 +16,8 @@
 [alias]
   x = ext
 
+  root = rev-parse --show-toplevel
+
   xphab = ext phab
   xmark = ext meta
   xstack = ext stack
@@ -48,6 +50,7 @@
 
   cc = commit
   cm = commit -m
+  cma = commit --all -m
   cca = commit --amend -C HEAD
   ccam = commit --amend
   cp = cherry-pick

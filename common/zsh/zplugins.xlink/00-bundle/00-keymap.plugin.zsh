@@ -16,6 +16,8 @@ fi
 # Use human-friendly identifiers.
 typeset -g -A key
 key=(
+  'Tab'          '	'
+  'ShiftTab'     '^[[Z'
   'Control'      '\C-'
   'ControlLeft'  '\e[1;5D \e[5D \e\e[D \eOd'
   'ControlRight' '\e[1;5C \e[5C \e\e[C \eOc'
@@ -23,6 +25,7 @@ key=(
   'Meta'         '\M-'
   'Backspace'    "^?"
   'Delete'       "^[[3~"
+
   'F1'           "$terminfo[kf1]"
   'F2'           "$terminfo[kf2]"
   'F3'           "$terminfo[kf3]"
@@ -51,21 +54,28 @@ key=(
 #                        Setup default keymap.                        #
 #######################################################################
 
-[[ -n "${key[Home]}"      ]] && bindkey -- "${key[Home]}"      beginning-of-line
-[[ -n "${key[End]}"       ]] && bindkey -- "${key[End]}"       end-of-line
+bindkey -- "${key[Home]}"      beginning-of-line
+bindkey -- "${key[End]}"       end-of-line
 
-[[ -n "${key[PageUp]}"    ]] && bindkey -- "${key[PageUp]}"    beginning-of-buffer-or-history
-[[ -n "${key[PageDown]}"  ]] && bindkey -- "${key[PageDown]}"  end-of-buffer-or-history
+bindkey -- "${key[PageUp]}"    beginning-of-buffer-or-history
+bindkey -- "${key[PageDown]}"  end-of-buffer-or-history
 
-[[ -n "${key[Up]}"        ]] && bindkey -- "${key[Up]}"        up-line-or-history
-[[ -n "${key[Down]}"      ]] && bindkey -- "${key[Down]}"      down-line-or-history
+bindkey -- "${key[Up]}"        up-line-or-history
+bindkey -- "${key[Down]}"      down-line-or-history
 
-[[ -n "${key[Left]}"      ]] && bindkey -- "${key[Left]}"      backward-char
-[[ -n "${key[Right]}"     ]] && bindkey -- "${key[Right]}"     forward-char
+bindkey -- "${key[Left]}"      backward-char
+bindkey -- "${key[Right]}"     forward-char
 
-[[ -n "${key[Backspace]}" ]] && bindkey -- "${key[Backspace]}" backward-delete-char
-[[ -n "${key[Delete]}"    ]] && bindkey -- "${key[Delete]}"    delete-char
+bindkey -- "${key[Backspace]}" backward-delete-char
+bindkey -- "${key[Delete]}"    delete-char
 
-[[ -n "${key[Insert]}"    ]] && bindkey -- "${key[Insert]}"    overwrite-mode
-[[ -n "${key[ShiftTab]}"  ]] && bindkey -- "${key[ShiftTab]}"  reverse-menu-complete
+bindkey -- "${key[Insert]}"    overwrite-mode
+
+#######################################################################
+#                            Menu Complete                            #
+#######################################################################
+zmodload zsh/complist
+
+bindkey -M menuselect -- "${key[Tab]}"       menu-complete 
+bindkey -M menuselect -- "${key[ShiftTab]}"  reverse-menu-complete
 
