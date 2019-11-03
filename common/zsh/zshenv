@@ -34,11 +34,6 @@ if [ ! -z "ZSH_PROFILE" ]; then
   zmodload zsh/zprof
 fi
 
-# Ensure that a non-login, non-interactive shell has a defined environment.
-if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprofile"
-fi
-
 #######################################################################
 #                           Define Platform                           #
 #######################################################################
@@ -63,10 +58,13 @@ export PLATFORM
 #                               Imports                               #
 #######################################################################
 
+# Ensure that a non-login, non-interactive shell has a defined environment.
+if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprofile"
+fi
+
 # Import Local evn VARIABLES
 if [[ ! -f ${HOME}/SHELL_VARS ]]; then
   touch ${HOME}/SHELL_VARS
 fi
 source ${HOME}/SHELL_VARS
-
-[[ -r ${HOME}/.zshenv.local ]] && source ~/.zshrc.local
