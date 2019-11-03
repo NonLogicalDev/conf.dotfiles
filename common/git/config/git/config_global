@@ -80,6 +80,8 @@
   untrack = update-index --assume-unchanged
   track = update-index --no-assume-unchanged
 
+  lgf = lg --follow
+
   lg = log --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
   lgg = log --graph --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
 
