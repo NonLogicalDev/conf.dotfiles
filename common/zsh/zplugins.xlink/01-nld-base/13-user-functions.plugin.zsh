@@ -4,7 +4,11 @@
 #######################################################################
 
 function git() {
-  ( until [[ ! -f "$(command git rev-parse --show-toplevel)/.git/index.lock" ]]; do
+  local GIT_DIR=$(command git rev-parse --show-toplevel 2>/dev/null)
+  if [[ $? -ne 0 ]]; then
+    exit 1
+  fi
+  ( until [[ ! -f "${GIT_DIR}/.git/index.lock" ]]; do
       echo "Waiting for Git Lock" >&2
       sleep 0.5;
     done 

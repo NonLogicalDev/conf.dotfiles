@@ -10,6 +10,7 @@ tt () {
 }
 
 if [[ ! -z "$ZSH_COMPILE_SOURCE" ]]; then
+  echo "COMPILING ON.."
   source () {
     [[ ! "$1.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
       ( echo "Compiling $1" && zcompile $1 )
