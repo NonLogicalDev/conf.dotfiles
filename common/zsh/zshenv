@@ -5,6 +5,34 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
+tt () {
+  gdate +%s%3N
+}
+
+if [[ ! -z "$ZSH_COMPILE_SOURCE" ]]; then
+  source () {
+    [[ ! "$1.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
+      ( echo "Compiling $1" && zcompile $1 )
+
+    local t1=`tt`
+    builtin source $@
+    echo "SOURCED $(( $(tt) - $t1 )) > $1"
+  }
+
+  . () {
+    [[ ! "$1.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
+      ( echo "Compiling $1" && zcompile $1 )
+
+    local t1=`tt`
+    builtin . $@
+    echo "SOURCED $(( $(tt) - $t1 )) > $1"
+  }
+fi
+
+if [ ! -z "ZSH_PROFILE" ]; then
+  zmodload zsh/zprof
+fi
+
 # Ensure that a non-login, non-interactive shell has a defined environment.
 if [[ "$SHLVL" -eq 1 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
@@ -14,12 +42,12 @@ fi
 #                           Define Platform                           #
 #######################################################################
 
-if [ -x `command -v uname` ]; then
-  if [[ `uname` == "Darwin" ]]; then
+if (( $+commands[uname] )); then
+  if [[ "$(uname)" == "Darwin" ]]; then
     PLATFORM="MAC"
-  elif [[ `expr substr $(uname -s) 1 5` == "Linux" ]]; then
+  elif [[ "$(expr substr $(uname -s) 1 5)" == "Linux" ]]; then
     PLATFORM="LINUX"
-  elif [[ `expr substr $(uname -s) 2 10` == "MINGW32_NT" ]]; then
+  elif [[ "$(expr substr $(uname -s) 2 10)" == "MINGW32_NT" ]]; then
     PLATFORM="WIN"
   fi
 fi
@@ -29,3 +57,15 @@ if ! [[ -v PLATFORM ]]; then
 fi
 
 export PLATFORM
+
+#######################################################################
+#                               Imports                               #
+#######################################################################
+
+# Import Local evn VARIABLES
+if [[ ! -f ${HOME}/SHELL_VARS ]]; then
+  touch ${HOME}/SHELL_VARS
+fi
+source ${HOME}/SHELL_VARS
+
+[[ -r ${HOME}/.zshenv.local ]] && source ~/.zshrc.local
