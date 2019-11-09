@@ -14,9 +14,17 @@
 [pager]
   lg = false
 [alias]
-  x = ext
-
   root = rev-parse --show-toplevel
+  upstream = !git rev-parse --abbrev-ref @{upstream} 
+  run = "!f() { "$@" "`git root`"; }; f"
+  checkoud-submodules = submodule update -f --checkout
+  changes = status --porcelain=1 -uall
+  affected = !git show --format="" --name-only
+  showd = show --format=""
+  dirty = ls-files -o --exclude-standard
+  changed = !git ls-files -t -c -d -m -k -o --directory --exclude-standard | grep -v "^H" | cut -d\" \" -f 2
+
+  x = ext
 
   xphab = ext phab
   xmark = ext meta
@@ -32,13 +40,10 @@
   xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
 
   # stag = ext stack label
-  stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
-  dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
+  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
+  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
 
   dephab = !git tag | grep phabricator | xargs -n 1 git tag -d
-  chsub = submodule update -f --checkout
-
-  upstream = !git rev-parse --abbrev-ref @{upstream} 
 
   f = fetch -n
   b = branch
@@ -47,38 +52,25 @@
 
   d = diff
   dc = diff --cached
+  diffc = diff --cached
 
-  cc = commit
   cm = commit -m
   cma = commit --all -m
+
+  cc = commit
   cca = commit --amend -C HEAD
   ccam = commit --amend
+
   cp = cherry-pick
 
-  diffc = diff --cached
-  showd = show --format=""
-  affected = !git show --format="" --name-only
-
-  lsa = ls-files --exclude-standard
-  ch = !git changes
-  changes = status --porcelain=1 -uall
-
-  pull = pull --ff-only
-  ffo = merge --ff-only
   rb = rebase
   rbu = !git rebase $(git upstream)
+  rbi = rb -i
 
   su = submodule update
   suc = submodule update --checkout
 
-  rsh = reset --hard
-
-  dirty = ls-files -o --exclude-standard
-  changed = !git ls-files -t -c -d -m -k -o --directory --exclude-standard | grep -v "^H" | cut -d\" \" -f 2
-
-  untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
-  untrack = update-index --assume-unchanged
-  track = update-index --no-assume-unchanged
+  lsa = ls-files --exclude-standard
 
   lgf = lg --follow
 
@@ -86,8 +78,17 @@
   lgg = log --graph --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
 
   lgd = !git lg -n 100 HEAD..
+
   lgud = !git lg -n 100 $(git upstream)..HEAD
   lgdu = !git lg -n 100 HEAD..$(git upstream)
+
+  fpull = pull --ff-only
+  fmerge = merge --ff-only
+
+  untrack = update-index --assume-unchanged
+  track = update-index --no-assume-unchanged
+
+  untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
 
   # oldest-ancestor = !bash -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
   # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
@@ -103,4 +104,4 @@
   cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
   trustExitCode = true
 [mergetool "vscode"]
-      cmd = code --wait $MERGED
+  cmd = code --wait $MERGED

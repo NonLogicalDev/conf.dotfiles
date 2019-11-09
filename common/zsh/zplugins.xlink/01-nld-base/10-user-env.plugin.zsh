@@ -14,13 +14,14 @@ set -o ignoreeof
 unsetopt nomatch
 
 setopt share_history
+setopt extendedhistory
 setopt histignorespace
 setopt HIST_IGNORE_DUPS
 setopt autocd autopushd pushdignoredups
 
 export HISTFILE="${HOME}/.cache/zsh/history"  # The path to the history file.
 if [ ! -d "$(dirname $HISTFILE)" ]; then
-  mkdir -p "$(dirname $HISTFILE)"  
+  mkdir -p "$(dirname $HISTFILE)"
 fi
 export HISTSIZE=1000000 # The maximum number of events to save in the internal history.
 export SAVEHIST=1000000 # The maximum number of events to save in the history file.

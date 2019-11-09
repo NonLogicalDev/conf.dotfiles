@@ -1,6 +1,7 @@
 " vim: ft=vim
 colorscheme dmod
 
+set fillchars=vborder:'|'
 set vicmd=nvim
 set nofollowlinks
 set viewcolumns=-{name},6{size},15{mtime}

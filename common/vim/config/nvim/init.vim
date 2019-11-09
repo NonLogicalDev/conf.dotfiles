@@ -812,9 +812,9 @@ endfunc
 " Substitute the ZSH file format to SH cause highlighting is better
 autocmd BufRead * call s:ftZSHtoSH()
 func! s:ftZSHtoSH()
-  if &filetype == "zsh"
-    setlocal filetype=sh
-  endif
+  " if &filetype == "zsh"
+  "   setlocal filetype=sh
+  " endif
 endfunc
 
 " autocmd BufRead * call AliasZSH()

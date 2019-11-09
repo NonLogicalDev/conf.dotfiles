@@ -6,8 +6,8 @@ function init.iterm {
   if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
     echo "INIT | iTerm..."
 
-    . "${HOME}/.iterm2_shell_integration.zsh"
-    INIT_LIST+=("iTerm")
+    source "${HOME}/.iterm2_shell_integration.zsh"
+    INIT_LIST+=("iterm")
   fi
 }
 
@@ -44,9 +44,8 @@ function init.vm.node {
   if [[ -s "$NVM_DIR/nvm.sh" ]]; then
     echo "INIT | Node..."
 
-    . "$NVM_DIR/nvm.sh"
-    NVM_VER=`nvm use node`
-    INIT_LIST+=("node.vm ($NVM_VER)")
+    source "$NVM_DIR/nvm.sh"
+    INIT_LIST+=("node.vm ($(node -v))")
   fi
 }
 
@@ -54,22 +53,59 @@ function init.vm.node {
 function init.vm.java {
   export JVM_DIR="$HOME/.jenv"
 
-  if [[ $+commands[jenv] ]]; then 
+  if (( $+commands[jenv] )); then 
     echo "INIT | JVM..."
+    path_prepend "$JVM_DIR"
 
-    path=("$JVM_DIR" $path)
     source <(jenv init -)
-    INIT_LIST+=("java.vm")
+    INIT_LIST+=("java.vm ($(java --version | head -n1))")
+  fi
+}
+
+## Adding Rust Version Manger
+function init.vm.rust {
+  export CARGO_DIR="$HOME/.cargo"
+
+  if [[ -s "$CARGO_DIR/env" ]]; then
+    echo "INIT | RUST..."
+    path=("$CARGO_DIR/bin" $path)
+
+    source "$CARGO_DIR/env"
+    INIT_LIST+=("rust.vm ($(cargo --version))")
+  fi
+}
+
+## Adding Go Version Manger
+function init.vm.go {
+  export GIMME_DIR="$HOME/.gimme"
+
+  if (( $+commands[gimme] )); then 
+    echo "INIT | GO..."
+    path_prepend "${GIMME_DIR}/go/bin"
+
+    export GOPATH="${GIMME_DIR}/go"
+    export GIMME_GO_VERSION="$(cat ${GIMME_DIR}/DEFAULT)"
+
+    if [[ -z $GIMME_GO_VERSION ]]; then
+      GIMME_GO_VERSION="$(gimme -k | tail -n1)"
+      echo "Go Version Selected: $GIMME_GO_VERSION"
+      echo "$GIMME_GO_VERSION" > "${GIMME_DIR}/DEFAULT"
+    fi
+
+    eval "$(GIMME_SILENT_ENV=1 gimme)" > /dev/null
+    INIT_LIST+=("go.vm ($(go version))")
   fi
 }
 
 function init.vmset.basic {
   init.iterm
-  init.vm.asdf
 }
 
 function init.vmset.full {
   init.vmset.basic
   init.vm.node
+  init.vm.java
+  init.vm.rust
+  init.vm.go
 }
 
