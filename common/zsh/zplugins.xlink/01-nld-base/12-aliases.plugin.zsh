@@ -20,6 +20,8 @@ alias go.dots='cd ~/.local/share/dotter'
 alias go.conf='cd ~/.config/'
 alias go.data='cd ~/.local/share/'
 
+alias lst="tree -L 2"
+
 #######################################################################
 #                                MacOS                                #
 #######################################################################

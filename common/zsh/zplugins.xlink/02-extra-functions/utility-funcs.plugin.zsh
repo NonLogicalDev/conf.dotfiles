@@ -8,6 +8,13 @@ function wanip {
   dig @resolver1.opendns.com ANY myip.opendns.com +short
 }
 
+function pps {
+ pid=$$
+ while true; do 
+   ps -p $pid -o 'pid= command=' || break
+   pid=$(ps -p $pid -o 'ppid=')
+ done
+}
 
 # `refresh cmd` executes clears the terminal and prints
 # the output of `cmd` in it.

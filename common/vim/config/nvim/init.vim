@@ -731,7 +731,9 @@ let g:deoplete#enable_at_startup = 1
 
 let g:go_fmt_experimental = 1
 
-let s:mac_clang_locaction = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
+" let s:mac_clang_locaction = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
+" let s:mac_clang_locaction = "/Applications/Xcode.app/Contents/Frameworks/libclang.dylib" 
+let s:mac_clang_locaction = "/usr/local/Cellar/llvm/9.0.0_1/lib/libclang.dylib" 
 if filereadable(s:mac_clang_locaction)
   let g:deoplete#sources#clang#libclang_path = s:mac_clang_locaction
 endif
