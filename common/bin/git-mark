@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Go to the specified dir if supplied.
+if [[ ! -z $1 ]]; then
+  cd "$1"
+fi
+
+
+GIT_WD=$(git rev-parse --show-toplevel)
+if [[ $? -ne 0 ]]; then
+  echo "ERROR: Not in a git directory."
+  exit 1
+fi
+
+MARK=$(
+  while [[ $PWD != /  ]] ; do
+    if [[ -f .gitmark ]] ; then
+      cat "$PWD/.gitmark"
+      exit 0
+    fi
+    cd ..
+  done
+  exit 1
+)
+if [[ $? -ne 0 ]]; then
+  echo "ERROR: No .gitmark file found in parents."
+  exit 1
+fi
+
+IFS="" read -p "Mark is [$MARK], is that good? (newline to accept): " -n 1 USER_KEY 
+if [[ $USER_KEY != "" ]]; then 
+  echo "Aborting"
+  exit 1
+fi
+
+git log --format=%B -n1 \
+  | perl -0pe 's:^(\[.*?\] )?:['$(printf "$MARK")'] :g' \
+  | git commit --amend -F - -e

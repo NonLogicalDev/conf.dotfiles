@@ -28,12 +28,12 @@ alias lst="tree -L 2"
 
 if [[ $PLATFORM == "MAC" ]]; then
   alias go.docs='cd ~/Documents'
+  alias go.dev='cd ~/Documents/Developer'
   alias go.pics='cd ~/Pictures'
 
   alias go.note='cd ~/Documents/Notes'
 
   alias x.curl='curl --cert $CU_CERT'
-
   alias x.copy="pbcopy"
   alias x.paste="pbpaste"
 

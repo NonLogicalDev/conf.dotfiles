@@ -1,0 +1,46 @@
+#!/bin/bash
+PROG="$(basename $0)"
+
+_help() {
+  if [[ -n $1 ]]; then
+    echo "ERROR: $1"
+    echo
+  fi
+  echo "INFO:"
+  echo "  A utility for snapshotting a tree from a given commit."
+  echo "  Useful for situation when you need to access code written in a different commit."
+  echo "Usage:"
+  echo "  $PROG SHA OUT_DIR [DIR]"
+  echo "Parameters:"
+  echo "  - SHA    : Is the sha from which to make a snapshot."
+  echo "  - OUT_DIR: Is the ouput directory, into which to chekout the snapshot. "
+  echo "  - DIR    : Directory which to snapshot. (defaults to '.', i.e. current dir)"
+  exit 1
+}
+
+[[ -z "$1" ]] && _help "Must provide SHA"
+SHA="$1"; shift
+
+[[ -z "$1" ]] && _help "Must provide OUT-DIR"
+OUT="$1"; shift
+
+DIR="$1"; shift
+[[ -z $DIR ]] && DIR="."
+
+( set -x -e
+  mkdir -p "${OUT}"
+
+  export GIT_INDEX_FILE="${OUT}/.git.idx"
+  rm -rf "${GIT_INDEX_FILE}"
+
+  DIR=$(
+    cd $DIR && git rev-parse --show-prefix
+  )
+
+  TREE=$(
+    git rev-parse "${SHA}:${DIR}"
+  )
+
+  git read-tree "${TREE}"
+  git --work-tree="${OUT}" checkout-index -f -a
+)

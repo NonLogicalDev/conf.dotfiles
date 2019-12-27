@@ -10,7 +10,7 @@ SCRIPT_DIR=`dirname ${BASH_SOURCE:-$0}`
 # Requirement is python and fzf
 function exists { which $1 &> /dev/null }
 
-if exists 'python' && exists 'fzf'; then
+if exists 'python' && exists 'fzf' && false; then
     __fzfz_join_by() { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
 
     if [[ $OSTYPE == darwin* ]]; then

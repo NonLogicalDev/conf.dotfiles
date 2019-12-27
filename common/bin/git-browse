@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Examples:
+# git phab
+# git phab master
+# git phab <name>/feature-branch
+# git phab 45bf56
+
+GIT_REF=$1
+if [ -z "$GIT_REF" ]; then
+  GIT_REF="HEAD"
+fi
+
+GIT_SHA=$(git rev-parse $GIT_REF)
+GIT_BRANCH=$(git rev-parse --abbrev-ref $GIT_REF)
+if [ -n "$GIT_BRANCH" ]; then
+  FEATURE=$(arc feature --output json | jq  ".[]|select(.name==\"$GIT_BRANCH\" and .revision!=.null)|\"D\"+.revision" -r)
+fi
+
+if [ -n "$FEATURE" ]; then
+  arc browse $FEATURE
+elif [ -n "$GIT_BRANCH" ] && (git show-ref $GIT_BRANCH | grep -q "remotes/"); then
+  echo "$GIT_BRANCH"
+  arc browse $GIT_BRANCH
+else
+  arc browse $GIT_SHA
+fi

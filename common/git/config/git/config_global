@@ -13,10 +13,14 @@
   algorithm = histogram
 [pager]
   lg = false
+[commit]
+  verbose = true
 [alias]
   root = rev-parse --show-toplevel
   upstream = !git rev-parse --abbrev-ref @{upstream} 
-  run = "!f() { "$@" "`git root`"; }; f"
+
+  run = "!f() { ( cd "`git root`"; "$@" ) }; f"
+
   checkoud-submodules = submodule update -f --checkout
   changes = status --porcelain=1 -uall
   affected = !git show --format="" --name-only
@@ -47,6 +51,8 @@
 
   f = fetch -n
   b = branch
+  i = !git st && echo "= = = = = = = = =" && git lg -n 3
+  ii = !git st && echo "= = = = = = = = =" && git diff HEAD && echo "= = = = = = = = =" && git lg -n 3
   st = status
   co = checkout
 
@@ -89,6 +95,8 @@
   track = update-index --no-assume-unchanged
 
   untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
+
+  rmu = !git status --porcelain | cut -c 4- | xargs -t rm -rf
 
   # oldest-ancestor = !bash -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
   # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f

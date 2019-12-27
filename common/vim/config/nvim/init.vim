@@ -239,7 +239,7 @@ Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
 " }}}
 " Colorschemes: {{{
 
-Plug 'nonlogicaldev/gruvbox'
+Plug 'nonlogicaldev/vim.color.gruvbox'
 
 " }}}
 " Interface Plugins: {{{

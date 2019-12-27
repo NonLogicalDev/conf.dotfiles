@@ -14,4 +14,10 @@ filextype *.pdf, *.jpg
 map o :!open %f<CR>
 map O :!qlmanage -p %f > /dev/null 2>/dev/null &<CR>
 
+map .c :!code %f > /dev/null 2>/dev/null &<CR>
+map .i :!idea %f > /dev/null 2>/dev/null &<CR>
+
+fileview */ tree -C -L 1 %c 
+fileview *.zip unzip -vl %c
+
 command link :execute '!ln -s %d/%f %D'

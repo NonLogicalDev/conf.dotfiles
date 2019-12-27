@@ -1,0 +1,43 @@
+#!/bin/zsh
+PROG="$(basename $0)"
+PREFIX="refs/heads/$(whoami)/stash"
+
+_help() {
+  if [[ -n $1 ]]; then
+    echo "ERROR: $1"
+    echo
+  fi
+  echo "INFO:"
+  echo "  A utility for stashing branches to a remote."
+  echo "  It stashes given commits under: [REMOTE]/${PREFIX}"
+  echo "Usage:"
+  echo "  $PROG REMOTE [SPEC...]"
+  echo "Parameters:"
+  echo "  - REMOTE: git remote to use as a remote stash"
+  echo "  - SPEC: git refspec, ex: HEAD:<remote_name>"
+  exit 1
+}
+
+[[ -z $1 ]] && _help "Remote not specified."
+if [[ $1 != "-d" ]] && ! ( git remote | grep -e "$1" -q ); then
+  _help "Remote $1 not found."
+fi
+REMOTE="$1"; shift
+
+[[ -z "$@" ]] && _help "Must provide at leas one spec."
+
+GIT_ARGS=()
+for arg in "$@"; do
+  local A=(${(s_:_)arg})
+
+  local L=${A[1]};
+  local R=${(j_:_)${A[@]:1}}; [[ -z $R ]] && R=$L
+
+  GIT_ARGS+="${L}:${PREFIX}/${R}"
+done
+
+if [[ $REMOTE != "-d" ]]; then
+  ( set -x; git push -f $REMOTE $GIT_ARGS )
+else
+  echo git push -f '<test>' $GIT_ARGS
+fi
