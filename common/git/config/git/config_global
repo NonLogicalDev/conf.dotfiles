@@ -82,7 +82,7 @@
 
   # run -- Runs a command from the Git Root as Working Directory.
   # Usage: git run <command to run>
-  run = "!f() { ( cd "`git root`"; "$@" ) }; f"
+  run = "!f() { cd \"`git root`\"; \"$@\"; }; f"
 
   # changes -- Displays changes done against HEAD commit.
   # Usage: git changes [<ref>]
