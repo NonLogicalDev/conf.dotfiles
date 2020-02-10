@@ -1,110 +1,135 @@
 # vim: ft=gitconfig
 [core]
   excludesfile = ./ignore_global
-[rerere]
-  enabled = true
+[pager]
+  lg = false
+[alias]
+  # [Basics]
+  ################################################################################
+  
+  f = fetch -n
+  b = branch
+  co = checkout
+
+  # [Logging]
+  ################################################################################
+  
+  lg = log --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
+  lgg = lg --graph
+  lgu = !git lg -n 100 $(git upstream)..HEAD
+  lguu = !git lg -n 100 HEAD..$(git upstream)
+  lgf = lg --follow
+
+  # [FastForward]
+  ################################################################################
+  
+  ffpull = pull --ff-only
+  ffmerge = merge --ff-only
+
+  # [Status]
+  ################################################################################
+  
+  i = !git st && echo "= = = = = = = = =" && git lg -n 3
+  ii = !git st && echo "= = = = = = = = =" && git diff HEAD && echo "= = = = = = = = =" && git lg -n 3
+  st = status
+  lsa = ls-files --exclude-standard
+
+  # [DiffDisplay]
+  ################################################################################
+  
+  d = diff
+  dc = diff --cached
+  diffc = diff --cached
+
+  # [Commits]
+  ################################################################################
+  
+  cc = commit
+  cca = commit --amend -C HEAD
+  ccam = commit --amend
+  cm = commit -m
+  cma = commit --all -m
+
+  # [Rebase]
+  ################################################################################
+  
+  rb = rebase
+  rbu = !git rebase $(git upstream)
+  rbi = rb -i
+  cp = cherry-pick
+
+  # [Submodules]
+  ################################################################################
+
+  su = submodule update
+  suc = submodule update --checkout
+
+  # [FileTracking]
+  ################################################################################
+
+  untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
+  untrack = update-index --assume-unchanged
+  track = update-index --no-assume-unchanged
+
+  # [Extended Commands]
+  ################################################################################
+  
+  # root -- Returns the root folder of the Current Git Repo.
+  root = rev-parse --show-toplevel
+  
+  # upstream -- Returns the upstream of the current branch.
+  upstream = !git rev-parse --abbrev-ref @{upstream} 
+
+  # run -- Runs a command from the Git Root as Working Directory.
+  # Usage: git run <command to run>
+  run = "!f() { ( cd "`git root`"; "$@" ) }; f"
+
+  # changes -- Displays changes done against HEAD commit.
+  # Usage: git changes [<ref>]
+  changes = status --porcelain=1 -uall
+  
+  # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
+  # Usage: git affected [<ref>]
+  affected = show --format="" --name-status
+
+  # [Custom Extensions]
+  ################################################################################
+  x = ext
+  xphab = ext phab
+  xmark = ext meta
+  xstack = ext stack
+  xlabel = !git ext stack label && git lg
+  xlabeld = ext stack label -d
+  xedit = ext stack edit
+  xland = !git x phab sync && git x phab land
+  # xupload = !git branch | cut -c 3- | grep 'D/.*' | xargs git-rstash origin
+  # xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
+
+  # [Deprecated]
+  ################################################################################
+  
+  # rmu = !git status --porcelain | cut -c 4- | xargs -t rm -rf
+  # oldest-ancestor = !bash -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
+  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
+  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
+  # dirty = ls-files -o --exclude-standard
+  # changed = !git ls-files -t -c -d -m -k -o --directory --exclude-standard | grep -v "^H" | cut -d\" \" -f 2
+  # stag = ext stack label
+  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
+  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
+  # dephab = !git tag | grep phabricator | xargs -n 1 git tag -d
+[commit]
+  verbose = true
+[diff]
+  tool = vimdiff
+  algorithm = histogram
 [push]
   default = simple
 [merge]
   tool = vimdiff
   conflictstyle = diff3
-[diff]
-  tool = vimdiff
-  algorithm = histogram
-[pager]
-  lg = false
-[commit]
-  verbose = true
-[alias]
-  root = rev-parse --show-toplevel
-  upstream = !git rev-parse --abbrev-ref @{upstream} 
-
-  run = "!f() { ( cd "`git root`"; "$@" ) }; f"
-
-  checkoud-submodules = submodule update -f --checkout
-  changes = status --porcelain=1 -uall
-  affected = !git show --format="" --name-only
-  showd = show --format=""
-  dirty = ls-files -o --exclude-standard
-  changed = !git ls-files -t -c -d -m -k -o --directory --exclude-standard | grep -v "^H" | cut -d\" \" -f 2
-
-  x = ext
-
-  xphab = ext phab
-  xmark = ext meta
-  xstack = ext stack
-
-  xlabel = !git ext stack label && git lg
-  xlabeld = ext stack label -d
-
-  xedit = ext stack edit
-
-  xland = !git x phab sync && git x phab land
-  xupload = !git branch | cut -c 3- | grep 'D/.*' | xargs git-rstash origin
-  xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
-
-  # stag = ext stack label
-  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
-  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
-
-  dephab = !git tag | grep phabricator | xargs -n 1 git tag -d
-
-  f = fetch -n
-  b = branch
-  i = !git st && echo "= = = = = = = = =" && git lg -n 3
-  ii = !git st && echo "= = = = = = = = =" && git diff HEAD && echo "= = = = = = = = =" && git lg -n 3
-  st = status
-  co = checkout
-
-  d = diff
-  dc = diff --cached
-  diffc = diff --cached
-
-  cm = commit -m
-  cma = commit --all -m
-
-  cc = commit
-  cca = commit --amend -C HEAD
-  ccam = commit --amend
-
-  cp = cherry-pick
-
-  rb = rebase
-  rbu = !git rebase $(git upstream)
-  rbi = rb -i
-
-  su = submodule update
-  suc = submodule update --checkout
-
-  lsa = ls-files --exclude-standard
-
-  lgf = lg --follow
-
-  lg = log --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
-  lgg = log --graph --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
-
-  lgd = !git lg -n 100 HEAD..
-
-  lgud = !git lg -n 100 $(git upstream)..HEAD
-  lgdu = !git lg -n 100 HEAD..$(git upstream)
-
-  fpull = pull --ff-only
-  fmerge = merge --ff-only
-
-  untrack = update-index --assume-unchanged
-  track = update-index --no-assume-unchanged
-
-  untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
-
-  rmu = !git status --porcelain | cut -c 4- | xargs -t rm -rf
-
-  # oldest-ancestor = !bash -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
-  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
-  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
-[tig "color"]
-  cursor = green black
-  title-focus = green black
-  title-blur = white black
+[rerere]
+  enabled = true
 [difftool "sourcetree"]
   cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\"
   path = 
@@ -113,3 +138,7 @@
   trustExitCode = true
 [mergetool "vscode"]
   cmd = code --wait $MERGED
+[tig "color"]
+  cursor = green black
+  title-focus = green black
+  title-blur = white black
