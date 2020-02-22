@@ -4,6 +4,13 @@
 # vim: foldmethod=syntax foldlevel=1 foldnestmax=1
 
 # `wanip` returns the current ip as seen from the internet.
+function lk {
+  if [[ -d  "$1" ]]; then
+    ls -al "$1"
+  fi
+}
+
+# `wanip` returns the current ip as seen from the internet.
 function wanip {
   dig @resolver1.opendns.com ANY myip.opendns.com +short
 }

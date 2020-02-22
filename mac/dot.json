@@ -6,7 +6,8 @@
   "copy_mode": "rlink",
 
   "dirconf": {
-    "hammerspoon": { "dir_mode": "id", "copy_mode": "link" }
+    "hammerspoon": { "dir_mode": "id", "copy_mode": "link" },
+    "vscode": { "copy_mode": "rlink", "dot_mode": "no_dot" }
   },
 
   "ignore": [ ".DS_Store", "*.bak", ".gitkeep", ".idea/*"]

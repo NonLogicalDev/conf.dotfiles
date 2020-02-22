@@ -97,6 +97,10 @@ function init.vm.go {
   fi
 }
 
+function init.ls {
+  echo $INIT_LIST
+}
+
 function init.vmset.basic {
   init.iterm
 }

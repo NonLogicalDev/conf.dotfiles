@@ -3,6 +3,19 @@
 #                              Functions                              #
 #######################################################################
 
+function cpd() {
+  if [[ ${#*[@]} -le 1 ]]; then
+    echo "Usage: [srcs...] [DST]"
+    exit 1
+  fi
+  local target="${@[-1]}"
+  local target_dir=$(dirname "$target")
+  if [[ ! -a $dst ]]; then
+    mkdir -p $target_dir
+  fi
+  cp "$@"
+}
+
 function git() {
   local GIT_DIR=$(command git rev-parse --show-toplevel 2>/dev/null)
   if [[ $? -ne 0 ]]; then

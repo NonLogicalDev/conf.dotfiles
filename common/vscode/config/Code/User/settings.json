@@ -1,0 +1,88 @@
+// Place your settings in this file to overwrite the default settings
+{
+    "files.trimTrailingWhitespace": true,
+    "files.autoSave": "onFocusChange",
+
+	"go.gopath": "/Users/oleg.utkin/go",
+	"go.toolsGopath": "/Users/oleg.utkin/go",
+    "go.formatTool": "goreturns",
+    "go.useLanguageServer": true,
+
+    "go.buildOnSave": true,
+    "go.lintOnSave": true,
+    "go.vetOnSave": true,
+    "go.buildFlags": [],
+    "go.lintFlags": [],
+    "go.vetFlags": [],
+    "go.coverOnSave": false,
+    "go.useCodeSnippetsOnFunctionSuggest": false,
+
+    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
+    "editor.lineHeight": 16,
+    "editor.fontSize": 16,
+    "editor.suggestFontSize": 16,
+    "editor.fontLigatures": true,
+    "editor.tabSize": 2,
+    "editor.formatOnType": true,
+    "editor.scrollBeyondLastLine": false,
+
+    "files.exclude": {
+        "**/.tmp": true,
+        "vendor": true,
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "go-build/.go": true,
+        "**/*.test": true,
+        "Godeps/_workspace": true,
+        "**/coverage.html": true,
+        "**/_build": true
+    },
+
+    "workbench.tree.indent": 20,
+    "workbench.tree.renderIndentGuides": "always",
+    "workbench.fontAliasing": "none",
+
+    "workbench.iconTheme": "vscode-icons",
+    "workbench.colorTheme": "Atom One Dark",
+    "oneDarkPro.italic": false,
+
+    "workbench.colorCustomizations": {
+        "[Atom One Dark]": {
+            "activityBar.background": "#36354F",
+
+            "editor.background": "#242437",
+            "editor.selectionBackground": "#35324D",
+
+            "list.activeSelectionBackground": "#1C1B2C",
+            "list.inactiveSelectionBackground": "#35324D",
+
+            "editorGutter.background": "#1E1E2C",
+            "editorLineNumber.activeForeground": "#C2C1C1",
+            "editorLineNumber.foreground": "#474569",
+            "editor.lineHighlightBackground": "#1C1B2C",
+
+            "editorWidget.background": "#1A1A26",
+
+            "input.background": "#1C1B2C",
+            "list.focusBackground": "#1A1A26",
+
+            "sideBar.background": "#2C2C3F",
+            "sideBarSectionHeader.background": "#1C1B2C",
+
+            "statusBar.background": "#28283A",
+            "statusBarItem.activeBackground": "#3D3C58",
+            "statusBarItem.hoverBackground": "#1A1A26",
+
+            "tab.activeBackground": "#3D3C58",
+            "tab.hoverBackground": "#1A1A26",
+            "tab.inactiveBackground": "#28283A",
+            "editorGroupHeader.tabsBackground": "#1E1E2C",
+
+            "titleBar.activeBackground": "#1E1E2C",
+        }
+    },
+
+    "customizeUI.stylesheet": {
+        ".monaco-workbench.monaco-font-aliasing-none": "-webkit-font-smoothing: auto",
+    },
+}
