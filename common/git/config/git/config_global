@@ -103,7 +103,7 @@
   xlabeld = ext stack label -d
   xedit = ext stack edit
   xland = !git x phab sync && git x phab land
-  # xupload = !git branch | cut -c 3- | grep 'D/.*' | xargs git-rstash origin
+  xreview = !git x phab diff
   # xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
 
   # [Deprecated]
