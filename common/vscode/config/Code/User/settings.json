@@ -21,8 +21,7 @@
     "editor.lineHeight": 16,
     "editor.fontSize": 16,
     "editor.suggestFontSize": 16,
-    "editor.fontLigatures": true,
-    "editor.tabSize": 2,
+    "editor.fontLigatures": false,
     "editor.formatOnType": true,
     "editor.scrollBeyondLastLine": false,
 

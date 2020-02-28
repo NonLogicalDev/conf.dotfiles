@@ -79,7 +79,7 @@
   root = rev-parse --show-toplevel
   
   # upstream -- Returns the upstream of the current branch.
-  upstream = !git rev-parse --abbrev-ref @{upstream} 
+  upstream = "!f() { git rev-parse --abbrev-ref ${1:-HEAD}@{upstream}; }; f"
 
   # run -- Runs a command from the Git Root as Working Directory.
   # Usage: git run <command to run>
