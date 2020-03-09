@@ -3,6 +3,8 @@
   excludesfile = ./ignore_global
 [pager]
   lg = false
+[pretty]
+  nice = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset
 [alias]
   # [Basics]
   ################################################################################
@@ -15,8 +17,8 @@
   # [Logging]
   ################################################################################
   
-  lg = log --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit -n 10
-  lgg = lg --graph
+  lg = log -n 10 --first-parent --pretty=nice
+  lgg = log -n 10 --graph --pretty=nice
   lgu = !git lg -n 100 $(git upstream)..HEAD
   lguu = !git lg -n 100 HEAD..$(git upstream)
   lgf = lg --follow
