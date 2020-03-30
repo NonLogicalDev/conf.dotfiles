@@ -222,14 +222,18 @@ else
   if (( $+commands[xclip] )); then
     alias pbcopy='xclip -selection clipboard -in'
     alias pbpaste='xclip -selection clipboard -out'
-  elif (( $+commands[xsel] )); then
+  fi
+
+  if (( $+commands[xsel] )); then
     alias pbcopy='xsel --clipboard --input'
     alias pbpaste='xsel --clipboard --output'
   fi
-fi
 
-alias pbc='pbcopy'
-alias pbp='pbpaste'
+  if (( $+commands[wl-copy] )); then
+    alias pbcopy='wl-copy'
+    alias pbpaste='wl-paste'
+  fi
+fi
 
 # File Download
 if (( $+commands[curl] )); then

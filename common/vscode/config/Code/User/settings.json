@@ -1,7 +1,5 @@
 // Place your settings in this file to overwrite the default settings
 {
-    "python.jediEnabled": false,
-
     "files.trimTrailingWhitespace": true,
     "files.autoSave": "onFocusChange",
     "files.exclude": {
@@ -16,18 +14,13 @@
         "**/_build": true
     },
 
-    "go.gopath": "${env:HOME}/go",
-    "go.toolsGopath": "${env:HOME}/go",
-    "go.formatTool": "goimports",
-    "go.useLanguageServer": true,
-    "go.useCodeSnippetsOnFunctionSuggest": true,
-
     "window.zoomLevel": 0,
 
     "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
     "editor.lineHeight": 16,
     "editor.fontSize": 16,
-    "editor.suggestFontSize": 16, "editor.fontLigatures": false,
+    "editor.suggestFontSize": 16,
+    "editor.fontLigatures": false,
     "editor.formatOnType": true,
     "editor.scrollBeyondLastLine": false,
     "editor.cursorSmoothCaretAnimation": true,
@@ -81,6 +74,10 @@
 
     "oneDarkPro.italic": false,
 
+    //------------------------------------------------------------------------------
+    // Vim:
+    //------------------------------------------------------------------------------
+
     "vim.easymotion": true,
     "vim.foldfix": true,
     "vim.leader": " ",
@@ -88,29 +85,38 @@
     "vim.enableNeovim": true,
     "vim.highlightedyank.enable": true,
 
-    // "vim.insertModeKeyBindings": [
-    //     { "before": ["up"], "after": ["<C-o>", "g", "k"] },
-    //     { "before": ["down"], "after": ["<C-o>", "g", "j"] },
-    // ],
-    // "vim.normalModeKeyBindings": [
-    //     { "before": ["k"], "after": ["g", "k"] },
-    //     { "before": ["j"], "after": ["g", "j"] },
-    // ],
+    "vim.insertModeKeyBindings": [
+        { "before": ["up"], "after": ["<C-o>", "g", "k"] },
+        { "before": ["down"], "after": ["<C-o>", "g", "j"] },
+    ],
+    "vim.normalModeKeyBindings": [
+        { "before": ["k"], "after": ["g", "k"] },
+        { "before": ["j"], "after": ["g", "j"] },
+    ],
 
     "gitlens.views.repositories.files.layout": "tree",
+
     "diffEditor.ignoreTrimWhitespace": true,
     "diffEditor.renderSideBySide": true,
 
-    "typescript.updateImportsOnFileMove.enabled": "always",
-    "javascript.updateImportsOnFileMove.enabled": "always",
+    //------------------------------------------------------------------------------
+    // Languages:
+    //------------------------------------------------------------------------------
 
+    "typescript.updateImportsOnFileMove.enabled": "always",
+
+    "javascript.updateImportsOnFileMove.enabled": "always",
 
     "python.languageServer": "Microsoft",
     "python.pythonPath": "/usr/local/bin/python3",
+    "python.jediEnabled": false,
+
+    "go.gopath": "${env:HOME}/go",
+    "go.toolsGopath": "${env:HOME}/go",
+    "go.formatTool": "goimports",
+    "go.useLanguageServer": true,
+    "go.useCodeSnippetsOnFunctionSuggest": true,
     "go.trace.server": "verbose",
-    "yaml.schemas": {
-        "file:///Users/oleg.utkin/.vscode/extensions/atlassian.atlascode-2.8.2/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
-    },
-    "atlascode.jira.enabled": true,
-    "atlascode.bitbucket.enabled": false,
+
+    "platformio-ide.disablePIOHomeStartup": true
 }

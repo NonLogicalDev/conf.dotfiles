@@ -4,16 +4,37 @@
 #                               Global                                #
 #######################################################################
 
-# function git() {
-#   GIT_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
-#   if [[ $? == 0 ]]; then
-#     while [[ -f "$GIT_DIR/index.lock" ]]; do
-#       echo "Waiting on the lock file."
-#       sleep 1
-#     done
-#   fi
-#   command git "$@"
-# }
+# Correctly display UTF-8 with combining characters.
+if [[ -z "$TERM" ]]; then
+  export TERM=dumb
+fi
+
+# Correctly display UTF-8 with combining characters.
+if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
+  setopt combiningchars
+fi
+
+[ -r "/etc/zshrc_$TERM_PROGRAM" ] && . "/etc/zshrc_$TERM_PROGRAM"
+
+# Add completions.
+if [ -d ${HOME}/.local/bin/completions ]; then
+  export fpath=(${HOME}/.local/bin/completions $fpath)
+fi
+
+#######################################################################
+#                               Plugins                               #
+#######################################################################
+
+# Add zsh plugins
+if [[ -d ${ZDOTDIR:-$HOME}/.zplugins ]]; then
+  for plugin in ${ZDOTDIR:-$HOME}/.zplugins/**/*.plugin.zsh; do
+    source $plugin
+  done
+fi
+
+#######################################################################
+#                               Safety                                #
+#######################################################################
 
 function rm() {
   local IS_R=0
@@ -63,29 +84,6 @@ function rm() {
 
   command rm -v $@
 }
-
-# Correctly display UTF-8 with combining characters.
-if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
-	setopt combiningchars
-fi
-
-[ -r "/etc/zshrc_$TERM_PROGRAM" ] && . "/etc/zshrc_$TERM_PROGRAM"
-
-# Add completions.
-if [ -d ${HOME}/.local/bin/completions ]; then
-  export fpath=(${HOME}/.local/bin/completions $fpath)
-fi
-
-#######################################################################
-#                               Plugins                               #
-#######################################################################
-
-# Add zsh plugins
-if [[ -d ${ZDOTDIR:-$HOME}/.zplugins ]]; then
-  for plugin in ${ZDOTDIR:-$HOME}/.zplugins/**/*.plugin.zsh; do
-    source $plugin
-  done
-fi
 
 #######################################################################
 #                               Imports                               #

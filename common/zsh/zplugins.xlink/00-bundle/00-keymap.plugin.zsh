@@ -14,44 +14,46 @@ if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
   ZLE_KEYS=1
 fi
 
-# create a zkbd compatible hash;
-# to add other keys to this hash, see: man 5 terminfo
-# Use human-friendly identifiers.
-typeset -g -A key
-key=(
-  'Tab'          '	'
-  'ShiftTab'     '^[[Z'
-  'Control'      '\C-'
-  'ControlLeft'  '\e[1;5D \e[5D \e\e[D \eOd'
-  'ControlRight' '\e[1;5C \e[5C \e\e[C \eOc'
-  'Escape'       '\e'
-  'Meta'         '\M-'
-  'Backspace'    "^?"
-  'Delete'       "^[[3~"
+if [[ ZSH_INTERACTIVE -eq 1 ]]; then
+  # create a zkbd compatible hash;
+  # to add other keys to this hash, see: man 5 terminfo
+  # Use human-friendly identifiers.
+  typeset -g -A key
+  key=(
+    'Tab'          '	'
+    'ShiftTab'     '^[[Z'
+    'Control'      '\C-'
+    'ControlLeft'  '\e[1;5D \e[5D \e\e[D \eOd'
+    'ControlRight' '\e[1;5C \e[5C \e\e[C \eOc'
+    'Escape'       '\e'
+    'Meta'         '\M-'
+    'Backspace'    "^?"
+    'Delete'       "^[[3~"
 
-  'F1'           "$terminfo[kf1]"
-  'F2'           "$terminfo[kf2]"
-  'F3'           "$terminfo[kf3]"
-  'F4'           "$terminfo[kf4]"
-  'F5'           "$terminfo[kf5]"
-  'F6'           "$terminfo[kf6]"
-  'F7'           "$terminfo[kf7]"
-  'F8'           "$terminfo[kf8]"
-  'F9'           "$terminfo[kf9]"
-  'F10'          "$terminfo[kf10]"
-  'F11'          "$terminfo[kf11]"
-  'F12'          "$terminfo[kf12]"
-  'Insert'       "$terminfo[kich1]"
-  'Home'         "$terminfo[khome]"
-  'PageUp'       "$terminfo[kpp]"
-  'End'          "$terminfo[kend]"
-  'PageDown'     "$terminfo[knp]"
-  'Up'           "$terminfo[kcuu1]"
-  'Left'         "$terminfo[kcub1]"
-  'Down'         "$terminfo[kcud1]"
-  'Right'        "$terminfo[kcuf1]"
-  'BackTab'      "$terminfo[kcbt]"
-)
+    'F1'           "$terminfo[kf1]"
+    'F2'           "$terminfo[kf2]"
+    'F3'           "$terminfo[kf3]"
+    'F4'           "$terminfo[kf4]"
+    'F5'           "$terminfo[kf5]"
+    'F6'           "$terminfo[kf6]"
+    'F7'           "$terminfo[kf7]"
+    'F8'           "$terminfo[kf8]"
+    'F9'           "$terminfo[kf9]"
+    'F10'          "$terminfo[kf10]"
+    'F11'          "$terminfo[kf11]"
+    'F12'          "$terminfo[kf12]"
+    'Insert'       "$terminfo[kich1]"
+    'Home'         "$terminfo[khome]"
+    'PageUp'       "$terminfo[kpp]"
+    'End'          "$terminfo[kend]"
+    'PageDown'     "$terminfo[knp]"
+    'Up'           "$terminfo[kcuu1]"
+    'Left'         "$terminfo[kcub1]"
+    'Down'         "$terminfo[kcud1]"
+    'Right'        "$terminfo[kcuf1]"
+    'BackTab'      "$terminfo[kcbt]"
+  )
+fi
 
 #######################################################################
 #                        Setup default keymap.                        #
@@ -82,7 +84,6 @@ fi
 zmodload zsh/complist
 
 if (( ZLE_KEYS )); then
-  bindkey -M menuselect -- "${key[Tab]}"       menu-complete 
+  bindkey -M menuselect -- "${key[Tab]}"       menu-complete
   bindkey -M menuselect -- "${key[ShiftTab]}"  reverse-menu-complete
 fi
-

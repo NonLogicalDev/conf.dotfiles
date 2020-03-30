@@ -2,23 +2,20 @@
 #                               Aliases                               #
 #######################################################################
 
-alias cdb='cd "+1"'
-alias cdr='cd "$(realpath .)"'
-
 alias oops='sudo $(fc -ln -1)'
 alias grepl='grep --line-buffered'
 
-alias x.copy=":"
-alias x.paste=":"
+alias cdb='cd "+1"'
+if (( $+commands[realpath] )); then
+  alias cdr='cd "$(realpath .)"'
+fi
 
-alias tm.paste='tmux saveb - | x.copy'
-alias tm.snap='tmux show-buffer | x.copy'
+alias tmpaste='tmux saveb - | pbpaste'
+alias tmcopy='tmux show-buffer | pbcopy'
 
 # Location Aliases
 alias go:conf='cd ~/.config/'
 alias go:data='cd ~/.local/share/'
-
-alias lst="tree -L 2"
 
 #######################################################################
 #                                MacOS                                #
@@ -33,10 +30,3 @@ fi
 #######################################################################
 #                                Linux                                #
 #######################################################################
-
-if [[ $PLATFORM == "LINUX" ]]; then
-  if (( $+commands[xsel] )); then
-    alias x.copy=":"
-    alias x.paste=":"
-  fi
-fi
