@@ -21,10 +21,17 @@ function git() {
   if [[ $? -ne 0 ]]; then
     exit 1
   fi
-  ( until [[ ! -f "${GIT_DIR}/.git/index.lock" ]]; do
-      echo "Waiting for Git Lock" >&2
+
+  # Support detatched WorkTrees
+  if [[ -f "${GIT_DIR}/.git" ]]; then
+    GIT_DIR=$(cat "${GIT_DIR}/.git" | grep gitdir | sed 's/.*: //')
+  fi
+
+  # Wait until git index becomes available.
+  ( until [[ ! -f "${GIT_DIR}/.git/index.lock" && ! -f "${GIT_DIR}/index.lock" ]]; do
+      echo "Waiting for Git Index Lock" >&2
       sleep 0.5;
-    done 
+    done
   ) && command git "$@"
 }
 

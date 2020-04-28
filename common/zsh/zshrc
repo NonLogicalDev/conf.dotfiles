@@ -4,6 +4,17 @@
 #                               Global                                #
 #######################################################################
 
+# function git() {
+#   GIT_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+#   if [[ $? == 0 ]]; then
+#     while [[ -f "$GIT_DIR/index.lock" ]]; do
+#       echo "Waiting on the lock file."
+#       sleep 1
+#     done
+#   fi
+#   command git "$@"
+# }
+
 function rm() {
   local IS_R=0
   local IS_F=0
@@ -24,17 +35,17 @@ function rm() {
       IS_R=1
     fi
 
-    if [[ $arg == $HOME ]]; then 
+    if [[ $arg == $HOME ]]; then
       HAS_HOME=1
     fi
 
-    if [[ $arg == "/" ]]; then 
+    if [[ $arg == "/" ]]; then
       HAS_HOME=1
     fi
   done
 
   if [[ $IS_F -eq 1 && $IS_R -eq 1 ]]; then
-    if [[ $HAS_HOME -eq 1 || $HAS_ROOT -eq 1 ]]; then 
+    if [[ $HAS_HOME -eq 1 || $HAS_ROOT -eq 1 ]]; then
       echo "ERROR: Did you just??? rm $@" >&2
       echo "ERROR: You fucking stupid? I ain't doing that for you." >&2
       return 128
@@ -85,3 +96,6 @@ if [[ ! -f ${ZDOTDIR-$HOME}/.zshrc.local ]]; then
   touch ${ZDOTDIR:-$HOME}/.zshrc.local
 fi
 source ${ZDOTDIR:-$HOME}/.zshrc.local
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/local/bin/vault vault

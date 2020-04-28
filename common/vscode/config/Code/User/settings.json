@@ -2,32 +2,6 @@
 {
     "files.trimTrailingWhitespace": true,
     "files.autoSave": "onFocusChange",
-
-	// "go.gopath": "$HOME/go",
-    // "go.toolsGopath": "$HOME/go",
-
-    "go.formatTool": "goreturns",
-    "go.useLanguageServer": true,
-
-    "go.buildOnSave": true,
-    "go.lintOnSave": true,
-    "go.vetOnSave": true,
-    "go.buildFlags": [],
-    "go.lintFlags": [],
-    "go.vetFlags": [],
-    "go.coverOnSave": false,
-    "go.useCodeSnippetsOnFunctionSuggest": false,
-
-    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
-    "editor.lineHeight": 16,
-    "editor.fontSize": 16,
-    "editor.suggestFontSize": 16,
-    "editor.fontLigatures": false,
-    "editor.formatOnType": true,
-    "editor.scrollBeyondLastLine": false,
-
-    "terminal.integrated.fontSize": 16,
-
     "files.exclude": {
         "**/.tmp": true,
         "vendor": true,
@@ -40,13 +14,32 @@
         "**/_build": true
     },
 
+    "go.gopath": "${env:HOME}/go",
+    "go.toolsGopath": "${env:HOME}/go",
+    "go.formatTool": "goreturns",
+    "go.useLanguageServer": true,
+    "go.useCodeSnippetsOnFunctionSuggest": true,
+
+    "window.zoomLevel": 0,
+
+    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
+    "editor.lineHeight": 16,
+    "editor.fontSize": 16,
+    "editor.suggestFontSize": 16, "editor.fontLigatures": false,
+    "editor.formatOnType": true,
+    "editor.scrollBeyondLastLine": false,
+    "editor.cursorSmoothCaretAnimation": true,
+
+    "terminal.integrated.fontSize": 16,
+
     "workbench.tree.indent": 20,
     "workbench.tree.renderIndentGuides": "always",
     "workbench.fontAliasing": "auto",
+    "workbench.list.multiSelectModifier": "alt",
+    "workbench.list.keyboardNavigation": "filter",
 
     "workbench.iconTheme": "vscode-icons",
     "workbench.colorTheme": "Atom One Dark",
-    "oneDarkPro.italic": false,
 
     "workbench.colorCustomizations": {
         "[Atom One Dark]": {
@@ -56,6 +49,7 @@
             "editor.selectionBackground": "#35324D",
 
             "list.activeSelectionBackground": "#1C1B2C",
+            "list.focusBackground": "#35324D",
             "list.inactiveSelectionBackground": "#35324D",
 
             "editorGutter.background": "#1E1E2C",
@@ -66,7 +60,6 @@
             "editorWidget.background": "#1A1A26",
 
             "input.background": "#1C1B2C",
-            "list.focusBackground": "#1A1A26",
 
             "sideBar.background": "#2C2C3F",
             "sideBarSectionHeader.background": "#1C1B2C",
@@ -80,35 +73,27 @@
             "tab.inactiveBackground": "#28283A",
             "editorGroupHeader.tabsBackground": "#1E1E2C",
 
-            "titleBar.activeBackground": "#1E1E2C",
+            "titleBar.activeBackground": "#1E1E2C"
         }
     },
 
-    "window.zoomLevel": 0,
+    "oneDarkPro.italic": false,
+
     "vim.easymotion": true,
     "vim.foldfix": true,
     "vim.leader": " ",
     "vim.visualstar": true,
-    "editor.cursorSmoothCaretAnimation": true,
 
-    "vim.insertModeKeyBindings": [
-        {
-            "before": ["up"],
-            "after": ["<C-o>", "g", "k"]
-        },
-        {
-            "before": ["down"],
-            "after": ["<C-o>", "g", "j"]
-        },
-    ],
-    "vim.normalModeKeyBindings": [
-        {
-            "before": ["k"],
-            "after": ["g", "k"]
-        },
-        {
-            "before": ["j"],
-            "after": ["g", "j"]
-        },
-    ]
+    // "vim.insertModeKeyBindings": [
+    //     { "before": ["up"], "after": ["<C-o>", "g", "k"] },
+    //     { "before": ["down"], "after": ["<C-o>", "g", "j"] },
+    // ],
+    // "vim.normalModeKeyBindings": [
+    //     { "before": ["k"], "after": ["g", "k"] },
+    //     { "before": ["j"], "after": ["g", "j"] },
+    // ],
+
+    "diffEditor.ignoreTrimWhitespace": true,
+    "diffEditor.renderSideBySide": true,
+    "typescript.updateImportsOnFileMove.enabled": "always"
 }
