@@ -28,15 +28,6 @@ function git() {
   ) && command git "$@"
 }
 
-function __cmd() {
-  local cmdpath=`whence -ap "$1" | head -n 1`
-  if [[ -x "$cmdpath" ]]; then
-    echo "$cmdpath"
-    return 0
-  fi
-  return 1
-}
-
 if (( $+commands[fzf] )); then
   function cdp {
     cd "$(dbranch | fzf)"
@@ -63,14 +54,14 @@ if [[ -v commands[memo] ]]; then
 fi
 
 if [[ "$PLATFORM" == 'LINUX' ]]; then
-  export OPEN_CMD=$(__cmd xdg-open)
+  export OPEN_CMD=${commands[xdg-open]}
 elif [[ "$PLATFORM" == 'MAC' ]]; then
-  export OPEN_CMD=$(__cmd open)
+  export OPEN_CMD=${commands[open]}
 fi
 
 if [ -x $OPEN_CMD ]; then
   function open() {
-    "$OPEN_CMD" $* > /dev/null 2>&1 & disown
+    "$OPEN_CMD" "$@" 1> /dev/null 2> /dev/null & disown
   }
 fi
 

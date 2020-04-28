@@ -1,5 +1,5 @@
 " vim: ft=vim
-colorscheme dmod
+colorscheme dmoda
 
 set fillchars=vborder:'│'
 set vicmd=nvim
