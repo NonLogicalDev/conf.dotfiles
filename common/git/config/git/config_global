@@ -36,6 +36,7 @@
   i = !git st && echo "= = = = = = = = =" && git lg -n 3
   ii = !git st && echo "= = = = = = = = =" && git diff HEAD && echo "= = = = = = = = =" && git lg -n 3
   st = status
+  stu = status -uno
   lsa = ls-files --exclude-standard
 
   # [DiffDisplay]

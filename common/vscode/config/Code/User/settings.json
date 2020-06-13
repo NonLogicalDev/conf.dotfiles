@@ -1,5 +1,7 @@
 // Place your settings in this file to overwrite the default settings
 {
+    "python.jediEnabled": false,
+
     "files.trimTrailingWhitespace": true,
     "files.autoSave": "onFocusChange",
     "files.exclude": {
@@ -95,5 +97,6 @@
 
     "diffEditor.ignoreTrimWhitespace": true,
     "diffEditor.renderSideBySide": true,
-    "typescript.updateImportsOnFileMove.enabled": "always"
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "gitlens.views.repositories.files.layout": "tree"
 }

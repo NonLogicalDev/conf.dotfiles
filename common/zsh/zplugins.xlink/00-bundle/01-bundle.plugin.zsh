@@ -1,10 +1,11 @@
 PLUGINS="
 mafredri/zsh-async
+NonLogicalDev/fork.util.zsh.pure-prompt
+
+changyuheng/fz
 
 zsh-users/zsh-completions
 zsh-users/zsh-history-substring-search
-
-NonLogicalDev/fork.util.zsh.pure-prompt
 
 zsh-users/zsh-syntax-highlighting
 "
@@ -12,7 +13,7 @@ zsh-users/zsh-syntax-highlighting
 # highlighting should be pinned at: d766243 for now.
 
 if which antibody 2>&1 > /dev/null; then
-  if [ ! -f $HOME/.cache/zsh/antibody.zsh ]; then
+  if [[ ! -f $HOME/.cache/zsh/antibody.zsh ]]; then
     antibody init > $HOME/.cache/zsh/antibody.zsh
   fi
 
@@ -33,7 +34,7 @@ prompt_pure_setup
 # zsh-users/zsh-history-substring-search
 #=======================================
 
-if [ ! -z "$ZSH_ANTIBODY" ]; then 
+if [[ ! -z "$ZSH_ANTIBODY" ]]; then 
   HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
 
   [[ -n "${key[Up]}"   ]] && bindkey -- "${key[Up]}"   history-substring-search-up
@@ -45,5 +46,4 @@ fi
 #=======================================
 
 ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
-
 

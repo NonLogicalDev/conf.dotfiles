@@ -1,5 +1,6 @@
 # Make sure the terminal is in application mode, when zle is
 # active. Only then are the values from $terminfo valid.
+ZLE_KEYS=0
 if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
   function zle-line-init () {
     printf '%s' "${terminfo[smkx]}"
@@ -9,6 +10,8 @@ if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
   }
   zle -N zle-line-init
   zle -N zle-line-finish
+
+  ZLE_KEYS=1
 fi
 
 # create a zkbd compatible hash;
@@ -54,28 +57,32 @@ key=(
 #                        Setup default keymap.                        #
 #######################################################################
 
-bindkey -- "${key[Home]}"      beginning-of-line
-bindkey -- "${key[End]}"       end-of-line
+if (( ZLE_KEYS )); then
+  bindkey -- "${key[Home]}"      beginning-of-line
+  bindkey -- "${key[End]}"       end-of-line
 
-bindkey -- "${key[PageUp]}"    beginning-of-buffer-or-history
-bindkey -- "${key[PageDown]}"  end-of-buffer-or-history
+  bindkey -- "${key[PageUp]}"    beginning-of-buffer-or-history
+  bindkey -- "${key[PageDown]}"  end-of-buffer-or-history
 
-bindkey -- "${key[Up]}"        up-line-or-history
-bindkey -- "${key[Down]}"      down-line-or-history
+  bindkey -- "${key[Up]}"        up-line-or-history
+  bindkey -- "${key[Down]}"      down-line-or-history
 
-bindkey -- "${key[Left]}"      backward-char
-bindkey -- "${key[Right]}"     forward-char
+  bindkey -- "${key[Left]}"      backward-char
+  bindkey -- "${key[Right]}"     forward-char
 
-bindkey -- "${key[Backspace]}" backward-delete-char
-bindkey -- "${key[Delete]}"    delete-char
+  bindkey -- "${key[Backspace]}" backward-delete-char
+  bindkey -- "${key[Delete]}"    delete-char
 
-bindkey -- "${key[Insert]}"    overwrite-mode
+  bindkey -- "${key[Insert]}"    overwrite-mode
+fi
 
 #######################################################################
 #                            Menu Complete                            #
 #######################################################################
 zmodload zsh/complist
 
-bindkey -M menuselect -- "${key[Tab]}"       menu-complete 
-bindkey -M menuselect -- "${key[ShiftTab]}"  reverse-menu-complete
+if (( ZLE_KEYS )); then
+  bindkey -M menuselect -- "${key[Tab]}"       menu-complete 
+  bindkey -M menuselect -- "${key[ShiftTab]}"  reverse-menu-complete
+fi
 
