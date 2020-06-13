@@ -4,6 +4,8 @@ mafredri/zsh-async
 changyuheng/fz
 
 zsh-users/zsh-completions
+nnao45/zsh-kubectl-completion
+
 zsh-users/zsh-history-substring-search
 zsh-users/zsh-syntax-highlighting
 

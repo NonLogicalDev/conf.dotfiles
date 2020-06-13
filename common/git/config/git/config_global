@@ -3,10 +3,12 @@
   excludesfile = ./ignore_global
 [pager]
   lg = false
+[stgit.alias]
+  ls = stg series
+  lg = stg series -d
 [pretty]
   nice = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%ar)%Creset
-[stgit.alias]
-  ls = stg series -d
+  nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
 [alias]
   # [Basics]
   ################################################################################
