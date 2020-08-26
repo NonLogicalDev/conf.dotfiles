@@ -39,6 +39,8 @@
   stu = status -uno
   lsa = ls-files --exclude-standard
 
+  stat = show --stat
+
   # [DiffDisplay]
   ################################################################################
   
@@ -49,11 +51,12 @@
   # [Commits]
   ################################################################################
   
-  cc = commit
-  cca = commit --amend -C HEAD
-  ccam = commit --amend
+  c = commit
   cm = commit -m
-  cma = commit --all -m
+
+  ca = commit --amend
+  cah = commit --amend -C HEAD
+  caha = commit --amend -C HEAD -a
 
   # [Rebase]
   ################################################################################
@@ -63,6 +66,7 @@
   rbc = rebase --continue
   rbi = rebase -i
   rbu = !git rebase $(git upstream)
+
   cp = cherry-pick
 
   # [Submodules]
@@ -101,16 +105,19 @@
 
   # [Custom Extensions]
   ################################################################################
-  x = ext
-  xphab = ext phab
-  xmark = ext meta
-  xstack = ext stack
-  xlabel = !git ext stack label && git lg
-  xlabeld = ext stack label -d
-  xedit = ext stack edit
-  xland = !git x phab sync && git x phab land
-  xreview = !git x phab diff
+  # x = ext
+  # xphab = ext phab
+  # xmark = ext meta
+  # xstack = ext stack
+  # xlabel = !git ext stack label && git lg
+  # xlabeld = ext stack label -d
+  # xedit = ext stack edit
+  # xland = !git x phab sync && git x phab land
+  # xreview = !git x phab diff
   # xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
+
+  upload = !arc diff --base="git:HEAD~1"
+  upload-all = !git add -A && git cah && git upload
 
   # [Deprecated]
   ################################################################################

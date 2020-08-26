@@ -17,22 +17,47 @@ function cpd() {
 }
 
 function git() {
-  local GIT_DIR=$(command git rev-parse --show-toplevel 2>/dev/null)
+  TS=$(date '+%s')
+
+  echo "> $TS: $@" >> ~/.gitlog
+
+  local GIT_ROOT_DIR=$(command git rev-parse --show-toplevel 2>/dev/null)
   if [[ $? -ne 0 ]]; then
     exit 1
   fi
 
-  # Support detatched WorkTrees
-  if [[ -f "${GIT_DIR}/.git" ]]; then
-    GIT_DIR=$(cat "${GIT_DIR}/.git" | grep gitdir | sed 's/.*: //')
+  # Find Index file:
+  local GIT_INDEX_PATH=""
+  if [[ ! -z $GIT_INDEX_FILE ]]; then
+      # Index can be set manually:
+      GIT_INDEX_PATH="${GIT_ROOT_DIR}/${GIT_INDEX_FILE}"
+  else
+    # Support detatched WorkTrees
+    if [[ -f "${GIT_ROOT_DIR}/.git" ]]; then
+      # If .git is a file, then this repo is a detached worktree.
+      # Parse out the location of the worktree dir:
+      GIT_WORKTREE_DIR=$(cat "${GIT_ROOT_DIR}/.git" | grep gitdir | sed 's/.*: //')
+      GIT_INDEX_PATH="${GIT_WORKTREE_DIR}/index"
+    else
+      # In default case index is under .git dir:
+      GIT_INDEX_PATH="${GIT_ROOT_DIR}/.git/index"
+    fi
   fi
 
-  # Wait until git index becomes available.
-  ( until [[ ! -f "${GIT_DIR}/.git/index.lock" && ! -f "${GIT_DIR}/index.lock" ]]; do
-      echo "Waiting for Git Index Lock" >&2
-      sleep 0.5;
-    done
-  ) && command git "$@"
+  echo ">>: $GIT_INDEX_PATH" >> ~/.gitlog
+
+  if [[ $1 != "st" && $1 != "lg" && $1 != "rev-parse" && $1 != "symbolic-rev" ]]; then
+    # Wait until git index becomes available.
+    ( until [[ ! -f "${GIT_INDEX_PATH}.lock" ]]; do
+        echo "Waiting for Git Index Lock" >&2
+        sleep 0.2;
+      done
+    ) 
+  fi
+
+  command git "$@"
+
+  echo "< $TS: $@" >> ~/.gitlog
 }
 
 if (( $+commands[fzf] )); then

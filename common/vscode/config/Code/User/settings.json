@@ -18,8 +18,8 @@
 
     "go.gopath": "${env:HOME}/go",
     "go.toolsGopath": "${env:HOME}/go",
-    "go.formatTool": "goreturns",
-    "go.useLanguageServer": true,
+    "go.formatTool": "goimports",
+    "go.useLanguageServer": false,
     "go.useCodeSnippetsOnFunctionSuggest": true,
 
     "window.zoomLevel": 0,
@@ -98,5 +98,7 @@
     "diffEditor.ignoreTrimWhitespace": true,
     "diffEditor.renderSideBySide": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
-    "gitlens.views.repositories.files.layout": "tree"
+    "gitlens.views.repositories.files.layout": "tree",
+    "python.languageServer": "Microsoft",
+    "javascript.updateImportsOnFileMove.enabled": "always"
 }
