@@ -5,7 +5,9 @@ fi
 
 # Setting up Python3
 if [[ "$PLATFORM" == "MAC" ]]; then
-  path_prepend "$HOME/Library/Python/3.7/bin"
+  for p in "$HOME/Library/Python/"*"/bin"; do
+    path_prepend "$p"
+  done
 fi
 
 # Add local Bin dirs

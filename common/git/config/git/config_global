@@ -8,7 +8,7 @@
 [alias]
   # [Basics]
   ################################################################################
-  
+
   f = fetch -n
   b = branch
   bf = !git b --list f/*
@@ -17,7 +17,7 @@
 
   # [Logging]
   ################################################################################
-  
+
   lg = log -n 10 --first-parent --pretty=nice
   lgg = log -n 10 --graph --pretty=nice
   lgu = !git lg -n 100 $(git upstream)..HEAD
@@ -26,13 +26,13 @@
 
   # [FastForward]
   ################################################################################
-  
+
   ffpull = pull --ff-only
   ffmerge = merge --ff-only
 
   # [Status]
   ################################################################################
-  
+
   i = !git st && echo "= = = = = = = = =" && git lg -n 3
   ii = !git st && echo "= = = = = = = = =" && git diff HEAD && echo "= = = = = = = = =" && git lg -n 3
   st = status
@@ -43,14 +43,14 @@
 
   # [DiffDisplay]
   ################################################################################
-  
+
   d = diff
   dc = diff --cached
   diffc = diff --cached
 
   # [Commits]
   ################################################################################
-  
+
   c = commit
   cm = commit -m
 
@@ -60,7 +60,7 @@
 
   # [Rebase]
   ################################################################################
-  
+
   rb = rebase
   rbe = rebase --edit
   rbc = rebase --continue
@@ -84,10 +84,10 @@
 
   # [Extended Commands]
   ################################################################################
-  
+
   # root -- Returns the root folder of the Current Git Repo.
   root = rev-parse --show-toplevel
-  
+
   # upstream -- Returns the upstream of the current branch.
   upstream = "!f() { git rev-parse --abbrev-ref ${1:-HEAD}@{upstream}; }; f"
 
@@ -98,10 +98,12 @@
   # changes -- Displays changes done against HEAD commit.
   # Usage: git changes [<ref>]
   changes = status --porcelain=1 -uall
-  
+
   # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
+  sum = show --format=medium --stat
   affected = show --format="" --name-status
+  affected-list = show --format="" --name-only
 
   # [Custom Extensions]
   ################################################################################
@@ -116,6 +118,7 @@
   # xreview = !git x phab diff
   # xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
 
+  check = !mono-check
   upload = !arc diff --base="git:HEAD~1"
   upload-all = !git add -A && git cah && git upload
 
@@ -145,7 +148,7 @@
   enabled = true
 [difftool "sourcetree"]
   cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\"
-  path = 
+  path =
 [mergetool "sourcetree"]
   cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
   trustExitCode = true

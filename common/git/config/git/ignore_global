@@ -1,4 +1,7 @@
 # vim: ft=gitignore
+.vscode
+.idea
+
 buck-out
 
 .gitrefs
