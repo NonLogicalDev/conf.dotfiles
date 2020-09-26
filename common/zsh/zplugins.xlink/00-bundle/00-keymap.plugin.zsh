@@ -14,7 +14,7 @@ if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
   ZLE_KEYS=1
 fi
 
-if [[ ZSH_INTERACTIVE -eq 1 ]]; then
+if (( ZLE_KEYS )); then
   # create a zkbd compatible hash;
   # to add other keys to this hash, see: man 5 terminfo
   # Use human-friendly identifiers.
@@ -53,13 +53,11 @@ if [[ ZSH_INTERACTIVE -eq 1 ]]; then
     'Right'        "$terminfo[kcuf1]"
     'BackTab'      "$terminfo[kcbt]"
   )
-fi
 
-#######################################################################
-#                        Setup default keymap.                        #
-#######################################################################
+  #######################################################################
+  #                        Setup default keymap.                        #
+  #######################################################################
 
-if (( ZLE_KEYS )); then
   bindkey -- "${key[Home]}"      beginning-of-line
   bindkey -- "${key[End]}"       end-of-line
 
@@ -76,14 +74,12 @@ if (( ZLE_KEYS )); then
   bindkey -- "${key[Delete]}"    delete-char
 
   bindkey -- "${key[Insert]}"    overwrite-mode
-fi
 
-#######################################################################
-#                            Menu Complete                            #
-#######################################################################
-zmodload zsh/complist
+  #######################################################################
+  #                            Menu Complete                            #
+  #######################################################################
+  zmodload zsh/complist
 
-if (( ZLE_KEYS )); then
   bindkey -M menuselect -- "${key[Tab]}"       menu-complete
   bindkey -M menuselect -- "${key[ShiftTab]}"  reverse-menu-complete
 fi
