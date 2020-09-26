@@ -9,9 +9,9 @@
 " Env Setup: {{{
 
 " This line is important, some backwards compatible features break my setup.
-set nocompatible 
+set nocompatible
 
-let $NVIM_TUI_ENABLE_TRUE_COLOR=1 
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 " let &t_SI = "\<Esc>]1337;CursorShape=1\x7"
 " let &t_EI = "\<Esc>]1337;CursorShape=0\x7"
 
@@ -29,7 +29,7 @@ func! s:File(path)
   return a:path
 endfunc
 
-func! s:VimConfig(path) 
+func! s:VimConfig(path)
   if has("nvim")
     return expand("~/.config/nvim/" . a:path)
   else
@@ -38,7 +38,7 @@ func! s:VimConfig(path)
 endfunc
 call s:Dir(s:VimConfig(""))
 
-func! s:VimData(path) 
+func! s:VimData(path)
   if has("nvim")
     return expand("~/.local/share/nvim/". a:path)
   else
@@ -48,17 +48,17 @@ endfunc
 call s:Dir(s:VimData(""))
 
 " Set up Python on macOS:
-if filereadable("/usr/local/opt/asdf/shims/python2")
-  let g:python_host_prog = '/usr/local/opt/asdf/shims/python2'
-elseif filereadable("/usr/local/bin/python2")
-  let g:python_host_prog = '/usr/local/bin/python2'
-endif
-
-if filereadable("/usr/local/opt/asdf/shims/python3")
-  let g:python3_host_prog = '/usr/local/opt/asdf/shims/python3'
-elseif filereadable("/usr/local/bin/python3")
-  let g:python3_host_prog = '/usr/local/bin/python3'
-endif
+" if filereadable("/usr/local/opt/asdf/shims/python2")
+"   let g:python_host_prog = '/usr/local/opt/asdf/shims/python2'
+" elseif filereadable("/usr/local/bin/python2")
+"   let g:python_host_prog = '/usr/local/bin/python2'
+" endif
+"
+" if filereadable("/usr/local/opt/asdf/shims/python3")
+"   let g:python3_host_prog = '/usr/local/opt/asdf/shims/python3'
+" elseif filereadable("/usr/local/bin/python3")
+"   let g:python3_host_prog = '/usr/local/bin/python3'
+" endif
 
 " }}}
 " Plugin Manager Setup: {{{
@@ -74,7 +74,7 @@ command! -nargs=* -bar PlugInstall
 if ! exists("*s:PlugInitBegin")
   func! s:PlugInitBegin()
     if empty(glob(g:PlugHomePath))
-      " vim-plug (https://github.com/junegunn/vim-plug) settings 
+      " vim-plug (https://github.com/junegunn/vim-plug) settings
       " Automatically install vim-plug and run PlugInstall if vim-plug not found
       let curl_cmd = "curl -fLo " . g:PlugHomePath . " --create-dirs " . g:PlugRepoURL
       call system(curl_cmd)
@@ -101,7 +101,7 @@ if ! exists("*s:PlugInitEnd")
     catch /.*/
     endtry
 
-    if ! g:PlugInitialized 
+    if ! g:PlugInitialized
       PlugInstall
     endif
   endfunc
@@ -198,7 +198,7 @@ imap <C-j> <CR><C-o>O
 
 " By default this calls up man command on whaterver is under the cursor it is
 " kinda slow, and I don't use it.
-autocmd VimEnter * nmap K <nop> 
+autocmd VimEnter * nmap K <nop>
 
 xnoremap p pgvy
 
@@ -211,7 +211,7 @@ call s:PlugInitBegin()
 "===============================================================================
 " Libraries: {{{
 
-Plug 'vim-scripts/ingo-library' " Utility library needed for some plugins
+Plug 'vim-scripts/ingo-library'
 Plug 'tpope/vim-repeat'
 Plug 'Shougo/unite.vim'
 Plug 'rizzatti/funcoo.vim'
@@ -219,13 +219,6 @@ Plug 'rizzatti/funcoo.vim'
 " }}}
 " Language Definitions: {{{
 
-Plug 'chr4/nginx.vim'
-Plug 'keith/swift.vim',                   { 'for':'swift'          }
-Plug 'hdima/python-syntax',               { 'for':'python'         }
-Plug 'fatih/vim-go',                      { 'for':'go'             }
-Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
-Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
-Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
 Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
 Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
 Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
@@ -235,6 +228,14 @@ Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
 
 Plug 'mattn/emmet-vim',        {'for':'html'} " Faster way to write HTML
 Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
+
+" Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
+" Plug 'chr4/nginx.vim'
+" Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
+" Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
+" Plug 'keith/swift.vim',                   { 'for':'swift'          }
+" Plug 'fatih/vim-go',                      { 'for':'go'             }
+" Plug 'hdima/python-syntax',               { 'for':'python'         }
 
 " }}}
 " Colorschemes: {{{
@@ -247,19 +248,19 @@ Plug 'nonlogicaldev/vim.color.gruvbox'
 Plug 'vimwiki/vimwiki'       " Personal Wiki
 
 Plug 'scrooloose/nerdtree'   " Ex Browser Replacement
-Plug 'Shougo/vimfiler.vim'   " Adding Navigator to vim
+" Plug 'Shougo/vimfiler.vim'   " Adding Navigator to vim
 
 Plug 'itchyny/lightline.vim' " Status Line Replacement
-Plug 'kien/ctrlp.vim'        " Quick Finder
+" Plug 'kien/ctrlp.vim'        " Quick Finder
 
-Plug 'kien/rainbow_parentheses.vim'  " Rainbow parenthetical expressions
 Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
+" Plug 'kien/rainbow_parentheses.vim'  " Rainbow parenthetical expressions
 
 
 " Making editing colors in vim a little easier
-Plug 'iandoe/vim-osx-colorpicker'
-Plug 'skammer/vim-css-color'
-Plug 'vim-scripts/Colorizer'
+" Plug 'iandoe/vim-osx-colorpicker'
+" Plug 'skammer/vim-css-color'
+" Plug 'vim-scripts/Colorizer'
 
 " }}}
 " Behavior Engancements: {{{
@@ -292,12 +293,12 @@ if (!(version < 704) && (has("python") || has("python3")) )
 endif
 
 if has('nvim')
-  Plug 'neomake/neomake' " On the fly code checker
+  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 
-  Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
-  Plug 'zchee/deoplete-go', { 'do': 'make'}
-  Plug 'zchee/deoplete-clang'
-  Plug 'wokalski/autocomplete-flow',
+  " Plug 'neomake/neomake' " On the fly code checker
+  " Plug 'zchee/deoplete-go',    { 'do': 'make' }
+  " Plug 'zchee/deoplete-clang'
+  " Plug 'wokalski/autocomplete-flow',
 endif
 
 " }}}
@@ -439,22 +440,22 @@ endf
 " unintuitive.
 
 command! WP call WordProcessorMode()
-func! WordProcessorMode() 
+func! WordProcessorMode()
   setlocal spell spelllang=en_gb
-  " setlocal formatoptions=1 
+  " setlocal formatoptions=1
   " setlocal formatprg=par
-  
+
   map j gj
   map k gk
 
   setlocal complete+=s
-  setlocal wrap 
-  setlocal linebreak 
+  setlocal wrap
+  setlocal linebreak
   setlocal nocursorline
 endfunc
 " }}}
 " Diff With Saved State: {{{
-  
+
 command! DiffSaved call s:DiffWithSaved()
 func! s:DiffWithSaved()
     let filetype=&ft
@@ -500,7 +501,7 @@ nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
 " }}}
 " Open Scratch Buffer: {{{
 
-command! Scratch call s:OpenScratch() 
+command! Scratch call s:OpenScratch()
 func! s:OpenScratch()
   botright new
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
@@ -590,7 +591,7 @@ let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exac
 nmap <silent> <leader>m :NERDTreeCWD<cr>
 nmap <silent> <leader>n :ToggleNav<cr>
 command! ToggleNav call s:ToggleNav()
-func! s:ToggleNav() 
+func! s:ToggleNav()
   if exists(":NERDTabsTreeToggle")
     exec ":NERDTreeTabsToggle"
   elseif exists(":NERDTreeToggle")
@@ -694,7 +695,7 @@ let g:semanticContainedlistOverride = {
         \ 'jsFutureKeys',
       \], ","),
       \ }
-      
+
 let g:semanticBlacklistOverride = {
       \ 'go': [
         \ 'break',
@@ -731,9 +732,9 @@ let g:deoplete#enable_at_startup = 1
 
 let g:go_fmt_experimental = 1
 
-" let s:mac_clang_locaction = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib" 
-" let s:mac_clang_locaction = "/Applications/Xcode.app/Contents/Frameworks/libclang.dylib" 
-let s:mac_clang_locaction = "/usr/local/Cellar/llvm/9.0.0_1/lib/libclang.dylib" 
+" let s:mac_clang_locaction = "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib"
+" let s:mac_clang_locaction = "/Applications/Xcode.app/Contents/Frameworks/libclang.dylib"
+let s:mac_clang_locaction = "/usr/local/Cellar/llvm/9.0.0_1/lib/libclang.dylib"
 if filereadable(s:mac_clang_locaction)
   let g:deoplete#sources#clang#libclang_path = s:mac_clang_locaction
 endif
@@ -757,7 +758,7 @@ autocmd BufEnter *.snippets setf snippets
 " in ultisnips snippet files, we want actual tabs instead of spaces for
 " indents. us will use those tabs and convert them to spaces if expandtab is set when
 " the user wants to insert the snippet.
-autocmd filetype snippets setlocal noexpandtab 
+autocmd filetype snippets setlocal noexpandtab
 inoremap <silent> <Tab> <C-R>=g:SmartTab()<cr>
 inoremap <silent> <S-Tab> <C-R>=g:SmartSTab()<cr>
 "au VimEnter * exec "inoremap <silent> <Tab> <C-R>=g:UltiSnips_Complete()<cr>"
@@ -851,8 +852,8 @@ if exists("neovim_dot_app")
 endif
 
 try
-  colo gruvbox
-  set background=dark 
+  colo monokaiz
+  set background=dark
 catch /.*/
 endtry
 
@@ -870,7 +871,7 @@ if has('nvim')
 
   tnoremap <C-\><C-[> <C-\><C-n>
   tnoremap <C-\><C-]> <C-\><C-n>pi
-  
+
   let g:terminal_color_0  = '#2e3436'
   let g:terminal_color_1  = '#cc0000'
   let g:terminal_color_2  = '#4e9a06'

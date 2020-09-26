@@ -19,7 +19,7 @@
     "go.gopath": "${env:HOME}/go",
     "go.toolsGopath": "${env:HOME}/go",
     "go.formatTool": "goimports",
-    "go.useLanguageServer": false,
+    "go.useLanguageServer": true,
     "go.useCodeSnippetsOnFunctionSuggest": true,
 
     "window.zoomLevel": 0,
@@ -44,39 +44,39 @@
     "workbench.colorTheme": "Atom One Dark",
 
     "workbench.colorCustomizations": {
-        "[Atom One Dark]": {
-            "activityBar.background": "#36354F",
+        // "[Atom One Dark]": {
+        //     "activityBar.background": "#36354F",
 
-            "editor.background": "#242437",
-            "editor.selectionBackground": "#35324D",
+        //     "editor.background": "#242437",
+        //     "editor.selectionBackground": "#35324D",
 
-            "list.activeSelectionBackground": "#1C1B2C",
-            "list.focusBackground": "#35324D",
-            "list.inactiveSelectionBackground": "#35324D",
+        //     "list.activeSelectionBackground": "#1C1B2C",
+        //     "list.focusBackground": "#35324D",
+        //     "list.inactiveSelectionBackground": "#35324D",
 
-            "editorGutter.background": "#1E1E2C",
-            "editorLineNumber.activeForeground": "#C2C1C1",
-            "editorLineNumber.foreground": "#474569",
-            "editor.lineHighlightBackground": "#1C1B2C",
+        //     "editorGutter.background": "#1E1E2C",
+        //     "editorLineNumber.activeForeground": "#C2C1C1",
+        //     "editorLineNumber.foreground": "#474569",
+        //     "editor.lineHighlightBackground": "#1C1B2C",
 
-            "editorWidget.background": "#1A1A26",
+        //     "editorWidget.background": "#1A1A26",
 
-            "input.background": "#1C1B2C",
+        //     "input.background": "#1C1B2C",
 
-            "sideBar.background": "#2C2C3F",
-            "sideBarSectionHeader.background": "#1C1B2C",
+        //     "sideBar.background": "#2C2C3F",
+        //     "sideBarSectionHeader.background": "#1C1B2C",
 
-            "statusBar.background": "#28283A",
-            "statusBarItem.activeBackground": "#3D3C58",
-            "statusBarItem.hoverBackground": "#1A1A26",
+        //     "statusBar.background": "#28283A",
+        //     "statusBarItem.activeBackground": "#3D3C58",
+        //     "statusBarItem.hoverBackground": "#1A1A26",
 
-            "tab.activeBackground": "#3D3C58",
-            "tab.hoverBackground": "#1A1A26",
-            "tab.inactiveBackground": "#28283A",
-            "editorGroupHeader.tabsBackground": "#1E1E2C",
+        //     "tab.activeBackground": "#3D3C58",
+        //     "tab.hoverBackground": "#1A1A26",
+        //     "tab.inactiveBackground": "#28283A",
+        //     "editorGroupHeader.tabsBackground": "#1E1E2C",
 
-            "titleBar.activeBackground": "#1E1E2C"
-        }
+        //     "titleBar.activeBackground": "#1E1E2C"
+        // }
     },
 
     "oneDarkPro.italic": false,
@@ -85,6 +85,8 @@
     "vim.foldfix": true,
     "vim.leader": " ",
     "vim.visualstar": true,
+    "vim.enableNeovim": true,
+    "vim.highlightedyank.enable": true,
 
     // "vim.insertModeKeyBindings": [
     //     { "before": ["up"], "after": ["<C-o>", "g", "k"] },
@@ -95,10 +97,20 @@
     //     { "before": ["j"], "after": ["g", "j"] },
     // ],
 
+    "gitlens.views.repositories.files.layout": "tree",
     "diffEditor.ignoreTrimWhitespace": true,
     "diffEditor.renderSideBySide": true,
+
     "typescript.updateImportsOnFileMove.enabled": "always",
-    "gitlens.views.repositories.files.layout": "tree",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+
+
     "python.languageServer": "Microsoft",
-    "javascript.updateImportsOnFileMove.enabled": "always"
+    "python.pythonPath": "/usr/local/bin/python3",
+    "go.trace.server": "verbose",
+    "yaml.schemas": {
+        "file:///Users/oleg.utkin/.vscode/extensions/atlassian.atlascode-2.8.2/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml"
+    },
+    "atlascode.jira.enabled": true,
+    "atlascode.bitbucket.enabled": false,
 }

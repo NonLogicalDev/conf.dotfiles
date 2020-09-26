@@ -4,7 +4,9 @@
 [pager]
   lg = false
 [pretty]
-  nice = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset
+  nice = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%ar)%Creset
+[stgit.alias]
+  ls = stg series -d
 [alias]
   # [Basics]
   ################################################################################
@@ -14,6 +16,8 @@
   bf = !git b --list f/*
   co = checkout
   wt = worktree
+
+  bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2\n <- $1/' | uniq
 
   # [Logging]
   ################################################################################
@@ -85,6 +89,8 @@
   # [Extended Commands]
   ################################################################################
 
+  sum = show --format=medium --stat
+
   # root -- Returns the root folder of the Current Git Repo.
   root = rev-parse --show-toplevel
 
@@ -101,39 +107,15 @@
 
   # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
-  sum = show --format=medium --stat
   affected = show --format="" --name-status
   affected-list = show --format="" --name-only
 
-  # [Custom Extensions]
-  ################################################################################
-  # x = ext
-  # xphab = ext phab
-  # xmark = ext meta
-  # xstack = ext stack
-  # xlabel = !git ext stack label && git lg
-  # xlabeld = ext stack label -d
-  # xedit = ext stack edit
-  # xland = !git x phab sync && git x phab land
-  # xreview = !git x phab diff
-  # xsw = "!f() { git commit --all -m 'SQUASH' && git checkout $1; }; f"
 
+  # arc integration
   check = !mono-check
   upload = !arc diff --base="git:HEAD~1"
   upload-all = !git add -A && git cah && git upload
 
-  # [Deprecated]
-  ################################################################################
-  # rmu = !git status --porcelain | cut -c 4- | xargs -t rm -rf
-  # oldest-ancestor = !bash -c 'diff --old-line-format='' --new-line-format='' <(git rev-list --first-parent "${1:-master}") <(git rev-list --first-parent "${2:-HEAD}") | head -1' -
-  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
-  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
-  # dirty = ls-files -o --exclude-standard
-  # changed = !git ls-files -t -c -d -m -k -o --directory --exclude-standard | grep -v "^H" | cut -d\" \" -f 2
-  # stag = ext stack label
-  # stag = !git log $(git merge-base $(git upstream) HEAD)~1..HEAD --format='%H' | tail -r | nl -ba -s ' ' -n rz -w 2 -v 0 | sed 's:^:D/:g' | xargs -n 2 git branch --create-reflog -f
-  # dstag = !git branch | grep -E 'D/\\d+' | xargs -n 1 git branch --create-reflog -D
-  # dephab = !git tag | grep phabricator | xargs -n 1 git tag -d
 [commit]
   verbose = true
 [diff]
