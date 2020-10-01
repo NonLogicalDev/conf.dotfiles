@@ -1,6 +1,7 @@
 # Make sure the terminal is in application mode, when zle is
 # active. Only then are the values from $terminfo valid.
 ZLE_KEYS=0
+
 if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
   function zle-line-init () {
     printf '%s' "${terminfo[smkx]}"

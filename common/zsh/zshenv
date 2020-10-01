@@ -9,30 +9,30 @@ tt () {
   gdate +%s%3N
 }
 
-# if [[ ! -z "$ZSH_COMPILE_SOURCE" ]]; then
-#   echo "COMPILING ON.."
-#   source () {
-#     [[ ! "$0.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
-#       ( echo "Compiling $0" && zcompile $1 )
-#
-#     local t0=`tt`
-#     builtin source $@
-#     echo "SOURCED $(( $(tt) - $t0 )) > $1"
-#   }
-#
-#   . () {
-#     [[ ! "$0.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
-#       ( echo "Compiling $0" && zcompile $1 )
-#
-#     local t0=`tt`
-#     builtin . $@
-#     echo "SOURCED $(( $(tt) - $t0 )) > $1"
-#   }
-# fi
-# 
-# if [ ! -z "ZSH_PROFILE" ]; then
-#   zmodload zsh/zprof
-# fi
+if [[ ! -z "$ZSH_COMPILE_SOURCE" ]]; then
+  echo "COMPILING ON.."
+  source () {
+    [[ ! "$0.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
+      ( echo "Compiling $0" && zcompile $1 )
+
+    local t0=`tt`
+    builtin source $@
+    echo "SOURCED $(( $(tt) - $t0 )) > $1"
+  }
+
+  . () {
+    [[ ! "$0.zwc" -nt "$1" || ! -f "$1.zwc" ]] || \
+      ( echo "Compiling $0" && zcompile $1 )
+
+    local t0=`tt`
+    builtin . $@
+    echo "SOURCED $(( $(tt) - $t0 )) > $1"
+  }
+fi
+
+if [ ! -z "ZSH_PROFILE" ]; then
+  zmodload zsh/zprof
+fi
 
 #######################################################################
 #                           Define Platform                           #
