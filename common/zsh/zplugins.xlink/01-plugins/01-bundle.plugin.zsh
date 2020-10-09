@@ -1,26 +1,34 @@
-PLUGINS="
-mafredri/zsh-async
+declare -a __ZSH_ANTIBODY_PLUGINS=(
+  "mafredri/zsh-async"
 
-changyuheng/fz
+  "zsh-users/zsh-completions"
+  "nnao45/zsh-kubectl-completion"
 
-zsh-users/zsh-completions
-nnao45/zsh-kubectl-completion
+  "zsh-users/zsh-history-substring-search"
+  "NonLogicalDev/fork.util.zsh.pure-prompt"
 
-zsh-users/zsh-history-substring-search
-zsh-users/zsh-syntax-highlighting
+  "rupa/z"
+  "changyuheng/fz"
 
-NonLogicalDev/fork.util.zsh.pure-prompt
-"
+  "zsh-users/zsh-syntax-highlighting"
+)
 
-if which antibody 2>&1 > /dev/null; then
-  if [[ ! -f $HOME/.cache/zsh/antibody.zsh ]]; then
-    antibody init > $HOME/.cache/zsh/antibody.zsh
+ZSH_CACHE_DIR="$HOME/.cache/zsh"
+
+if (( $+commands[antibody] )); then
+  local _ANTIBODY_PLUGIN_LIST="$ZSH_CACHE_DIR/antibody.plugins.txt"
+  local _ANTIBODY_PLUGIN_INIT="$ZSH_CACHE_DIR/antibody.plugins.zsh"
+
+  antibody-compile() {
+    echo "COMPILING: $_ANTIBODY_PLUGIN_INIT"
+    echo ${(j:\n:)__ZSH_ANTIBODY_PLUGINS} > "$_ANTIBODY_PLUGIN_LIST"
+    antibody bundle < "$_ANTIBODY_PLUGIN_LIST" > "$_ANTIBODY_PLUGIN_INIT"
+  }
+
+  if [[ ! -f $_ANTIBODY_PLUGIN_INIT ]]; then
+    antibody-compile
   fi
-
-  source $HOME/.cache/zsh/antibody.zsh
-  echo $PLUGINS | antibody bundle
-
-  export ZSH_ANTIBODY="loaded"
+  source "$_ANTIBODY_PLUGIN_INIT"
 fi
 
 #######################################################################
@@ -29,6 +37,16 @@ fi
 
 autoload -Uz promptinit
 promptinit && prompt_pure_setup
+
+#=======================================
+# rupa/z
+#=======================================
+export _Z_DATA_DIR="$HOME/.cache/zsh/z"
+export _Z_DATA="$_Z_DATA_DIR/z"
+if [[ ! -d $_Z_DATA_DIR ]]; then
+  rm -rf $_Z_DATA_DIR
+  mkdir -p $_Z_DATA_DIR
+fi
 
 #=======================================
 # zsh-users/zsh-history-substring-search

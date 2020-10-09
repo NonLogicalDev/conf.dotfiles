@@ -69,7 +69,7 @@ function git() {
     fi
   fi
 
-  if [[ $1 != "st" && $1 != "lg" && $1 != "rev-parse" && $1 != "symbolic-rev" ]]; then
+  if [[ $1 != "st" && $1 != "lg" && $1 != "rev-parse" && $1 != "symbolic-ref" ]]; then
     # Wait until git index becomes available.
     ( until [[ ! -f "${GIT_INDEX_PATH}.lock" ]]; do
         echo "Waiting for Git Index Lock" >&2
@@ -81,8 +81,8 @@ function git() {
   command git "$@"
 
   TS2=$(millis)
-
-  echo "$GIT_INDEX_PATH :: $TS1, $TS2, $(($TS2 - $TS1))  :: [$@] " >> ~/.gitlog
+  local CALLER=$(ps -o command=,pid= $(ps -o ppid= $$))
+  echo "$GIT_INDEX_PATH :: $CALLER :: $(($TS2 - $TS1))ms  :: [$@] " >> ~/.gitlog
 }
 
 if (( $+commands[fzf] )); then

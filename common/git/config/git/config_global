@@ -6,10 +6,17 @@
 [stgit.alias]
   ls = stg series
   lg = stg series -d
+  gn = git stg-gn
+  gp = git stg-gp
 [pretty]
   nice = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%ar)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
 [alias]
+  # [Stacked Git]
+  ################################################################################
+  stg-gp = !stg goto $(stg prev)
+  stg-gn = !stg goto $(stg next)
+
   # [Basics]
   ################################################################################
 
