@@ -547,6 +547,25 @@ for line in lines:
 EOF
 endfunc
 " }}}
+" Diff Fold: {{{
+function! DiffFold(lnum)
+  let line = getline(a:lnum)
+  if line =~ '^\(diff\|---\|+++\|@@\) '
+    return 1
+  elseif line[0] =~ '[-+ ]'
+    return 2
+  else
+    return 0
+  endif
+endfunction
+
+func! s:EnableDiffFold()
+  setlocal foldmethod=expr foldexpr=DiffFold(v:lnum)
+  set foldlevel=0
+endfunc
+
+command! EnableDiffFold call s:EnableDiffFold()
+" }}}
 "                           Plugin Confugurations:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " GruvBox: {{{

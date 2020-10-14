@@ -114,6 +114,13 @@
   # Usage: git changes [<ref>]
   changes = status --porcelain=1 -uall
 
+  # xadd -- Interactively select files to add
+  xadd = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git add --
+
+  # xres -- Interactively select files to revert 
+  xres = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git reset --
+
+
   # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
   affected = show --format="" --name-status
