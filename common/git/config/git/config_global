@@ -1,6 +1,6 @@
 # vim: ft=gitconfig
 [core]
-  excludesfile = ./ignore_global
+  excludesfile = ~/.config/git/ignore_global
 [pager]
   lg = false
 [stgit.alias]
