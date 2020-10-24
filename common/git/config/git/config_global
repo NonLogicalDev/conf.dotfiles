@@ -3,6 +3,9 @@
   excludesfile = ~/.config/git/ignore_global
 [pager]
   lg = false
+[pretty]
+  nice = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
+  nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
 [stgit.alias]
   ls = stg series
   lg = stg series -d
@@ -17,6 +20,8 @@
   ################################################################################
   stg-gp = !stg goto $(stg prev)
   stg-gn = !stg goto $(stg next)
+  stg-upload = "!f() { git push \"$@\" \"HEAD:$(stg top)\"; }; f"
+
 
   # [Basics]
   ################################################################################
@@ -42,14 +47,13 @@
   # [FastForward]
   ################################################################################
 
-  ffpull = pull --ff-only
-  ffmerge = merge --ff-only
+  pullr = pull --rebase
+  pullff = pull --ff-only
+  mergeff = merge --ff-only
 
   # [Status]
   ################################################################################
 
-  i = !git st && echo "= = = = = = = = =" && git lg -n 3
-  ii = !git st && echo "= = = = = = = = =" && git diff HEAD && echo "= = = = = = = = =" && git lg -n 3
   st = status
   stu = status -uno
   lsa = ls-files --exclude-standard

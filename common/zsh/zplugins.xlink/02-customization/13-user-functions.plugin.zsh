@@ -69,7 +69,17 @@ function git() {
     fi
   fi
 
-  if [[ $1 != "st" && $1 != "lg" && $1 != "rev-parse" && $1 != "symbolic-ref" ]]; then
+  if [[ 
+    $1 != "" 
+    && $1 != "st" 
+    && $1 != "lg" 
+    && $1 != "rev-parse" 
+    && $1 != "symbolic-ref" 
+    && $1 != "show" 
+    && $1 != "merge-base" 
+    && $1 != "info" 
+    && $1 != "upstream" 
+  ]]; then
     # Wait until git index becomes available.
     ( until [[ ! -f "${GIT_INDEX_PATH}.lock" ]]; do
         echo "Waiting for Git Index Lock" >&2
