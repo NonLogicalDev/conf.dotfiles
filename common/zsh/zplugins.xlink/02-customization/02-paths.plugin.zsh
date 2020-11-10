@@ -10,6 +10,9 @@ if [[ "$PLATFORM" == "MAC" ]]; then
   done
 fi
 
+# Setting up Kubeclt Krew
+path_prepend "$HOME/.krew/bin"
+
 # Add local Bin dirs
 path_prepend "$HOME/.local/bin"
 path_prepend "$HOME/bin"

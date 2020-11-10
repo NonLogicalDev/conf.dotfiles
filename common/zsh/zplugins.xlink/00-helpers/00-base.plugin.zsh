@@ -2,6 +2,13 @@
 #                       Path Related Functions                        #
 #######################################################################
 
+function path_list {
+  for p in $path
+  do
+    echo $p
+  done
+}
+
 function path_dedup {
   if [ -n "$PATH" ]; then
     old_PATH=$PATH:; PATH=

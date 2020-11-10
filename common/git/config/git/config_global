@@ -6,15 +6,14 @@
 [pretty]
   nice = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
+  nice = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar)%C(yellow)%d%Creset
+  nice-old = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
+  nice-cols = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
   ls = stg series
   lg = stg series -d
   gn = git stg-gn
   gp = git stg-gp
-[pretty]
-  nice = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar)%C(yellow)%d%Creset
-  nice-old = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
-  nice-cols = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [alias]
   # [Stacked Git]
   ################################################################################
@@ -32,7 +31,7 @@
   co = checkout
   wt = worktree
 
-  bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2\n <- $1/' | uniq
+  bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' | column -tx -s "%%"
 
   # [Logging]
   ################################################################################
@@ -108,6 +107,9 @@
 
   # root -- Returns the root folder of the Current Git Repo.
   root = rev-parse --show-toplevel
+  
+  # root -- Returns the root folder of the Current Git Repo.
+  dir = rev-parse --git-dir
 
   # upstream -- Returns the upstream of the current branch.
   upstream = "!f() { git rev-parse --abbrev-ref ${1:-HEAD}@{upstream}; }; f"
