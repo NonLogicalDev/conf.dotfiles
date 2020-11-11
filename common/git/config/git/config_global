@@ -14,12 +14,13 @@
   lg = stg series -d
   gn = git stg-gn
   gp = git stg-gp
+  rstash = git stg-rstash
 [alias]
   # [Stacked Git]
   ################################################################################
   stg-gp = !stg goto $(stg prev)
   stg-gn = !stg goto $(stg next)
-  stg-upload = "!f() { git push \"$@\" \"HEAD:$(stg top)\"; }; f"
+  stg-rstash = "!f() { git rstash \"$@\" -- \"HEAD:$(stg top)\"; }; f"
 
 
   # [Basics]
