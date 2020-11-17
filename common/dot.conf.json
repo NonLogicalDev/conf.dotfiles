@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "root": "~/",
+    "add_dot": true,
+
+    "dir_mode": "root",
+    "dot_mode": "top_level",
+    "copy_mode": "rlink"
+  },
+
+  "patterns": {
+    "bin": {
+      "add_dot": false,
+
+      "dir_mode": "id",
+      "copy_mode": "copy"
+    },
+    "irssi": {
+      "copy_mode": "copy",
+      "dir_mode": "id"
+    },
+    "taskwarrior": {
+      "dir_mode": "id"
+    }
+  },
+
+  "disabled" : [ "@hooks" ],
+  "ignore" : [".DS_Store", "*.bak", ".gitkeep", ".idea/*", "__pycache__/*"]
+}

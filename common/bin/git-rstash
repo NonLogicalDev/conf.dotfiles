@@ -1,15 +1,30 @@
 #!/bin/zsh
 PROG="$(basename $0)"
-PREFIX="refs/heads/$(whoami)/stash"
+
+REF_FOLDER=$(git config --get rstash.ref)
+if [[ -z $REF_FOLDER ]]; then
+  REF_FOLDER=$(whoami)
+fi
+REF_PREFIX=$(git config --get rstash.prefix)
+if [[ -z $REF_PREFIX ]]; then
+  REF_PREFIX=refs/heads
+fi
+REF_REMOTE=$(git config --get rstash.remote)
+if [[ -z $REF_REMOTE ]]; then
+  REF_REMOTE=origin
+fi
+
+REMOTE_REF="${REF_PREFIX}/${REF_FOLDER}"
 
 _help() {
   if [[ -n $1 ]]; then
     echo "ERROR: $1"
     echo
   fi
+
   echo "INFO:"
   echo "  A utility for stashing branches to a remote."
-  echo "  It stashes given commits under: [REMOTE]/${PREFIX}"
+  echo "  It stashes given commits under: [REMOTE]/${REMOTE_REF}"
   echo "Usage:"
   echo "  $PROG REMOTE [SPEC...]"
   echo "Parameters:"
@@ -18,26 +33,90 @@ _help() {
   exit 1
 }
 
-[[ -z $1 ]] && _help "Remote not specified."
-if [[ $1 != "-d" ]] && ! ( git remote | grep -e "$1" -q ); then
-  _help "Remote $1 not found."
-fi
-REMOTE="$1"; shift
+_remote_stash() {
+  local REMOTE="$1"
+  local DRY_RUN=
 
-[[ -z "$@" ]] && _help "Must provide at leas one spec."
+  shift
 
-GIT_ARGS=()
-for arg in "$@"; do
-  local A=(${(s_:_)arg})
 
-  local L=${A[1]};
-  local R=${(j_:_)${A[@]:1}}; [[ -z $R ]] && R=$L
+  [[ -z $REMOTE ]] && _help "Remote not specified."
+  if [[ $REMOTE == "-d" ]]; then
+    DRY_RUN=true
+  fi
 
-  GIT_ARGS+="${L}:${PREFIX}/${R}"
-done
+  if [[ -z $DRY_RUN ]] && ! ( git remote | grep -e "$REMOTE" -q ); then
+    _help "Remote $REMOTE not found."
+  fi
 
-if [[ $REMOTE != "-d" ]]; then
-  ( set -x; git push -f $REMOTE $GIT_ARGS )
-else
-  echo git push -f '<test>' $GIT_ARGS
-fi
+  [[ -z "$@" ]] && _help "Must provide at least one spec."
+
+  GIT_ARGS=()
+  for arg in "$@"; do
+    local A=(${(s_:_)arg})
+
+    local L=${A[1]};
+    local R=${(j_:_)${A[@]:1}}
+
+    if [[ -z $R ]]; then
+      if [[ $L == "HEAD" ]]; then
+        R=$(git rev-parse --abbrev-ref HEAD)
+      else
+        R=$L
+      fi
+    fi
+
+    GIT_ARGS+="${L}:${REMOTE_REF}/${R}"
+  done
+
+  if [[ -z $DRY_RUN ]]; then
+    ( set -x; git push -f $REMOTE $GIT_ARGS )
+  else
+    echo git push -f '<test>' $GIT_ARGS
+  fi
+}
+
+_main() {
+  if [[ ${#@} -eq 0 ]]; then
+    _remote_stash ${REF_REMOTE} HEAD
+  fi
+
+  for i in "$@"; do
+    case $i; in
+      --set-ref)
+        shift 1
+        git config rstash.ref $1
+        break
+        ;;
+
+      --set-remote)
+        shift 1
+        git config rstash.remote $1
+        break
+        ;;
+
+      --get)
+        echo "rstash.ref: $REF_FOLDER"
+        echo "rstash.prefix: $REF_PREFIX"
+        echo "rstash.remote: $REF_REMOTE"
+        echo
+        echo "remote-ref: $REMOTE_REF"
+        break
+        ;;
+
+      --)
+        shift 1
+        _remote_stash $REF_REMOTE "$@"
+        break
+        ;;
+
+      *)
+        _remote_stash "$@"
+        break
+        ;;
+    esac
+  done
+}
+
+_main "$@"
+
