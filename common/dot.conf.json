@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "root": "~/temp-root",
+    "root": "~/",
 
     "add_dot": true,
     "use_contents": true,
