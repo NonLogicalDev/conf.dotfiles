@@ -1,29 +1,37 @@
 {
   "defaults": {
-    "root": "~/",
+    "root": "~/temp-root",
+
     "add_dot": true,
+    "use_contents": true,
 
-    "dir_mode": "root",
-    "dot_mode": "top_level",
-    "copy_mode": "rlink"
+    "link_mode": "recursive_link",
+    "recursive_modifiers": {
+      "link": ".xlink",
+      "touch": ".xtouch",
+      "copy": ".xcopy"
+    },
+
+    "ignore" : [
+      "*/.DS_Store",
+      "*/*.bak",
+      "*/.gitkeep",
+      "*/.idea/*",
+      "*/__pycache__/*"
+    ]
   },
-
-  "patterns": {
+  "overrides": {
     "bin": {
       "add_dot": false,
-
-      "dir_mode": "id",
-      "copy_mode": "copy"
+      "use_contents": false,
+      "link_mode": "copy"
     },
     "irssi": {
-      "copy_mode": "copy",
-      "dir_mode": "id"
+      "link_mode": "copy"
     },
     "taskwarrior": {
-      "dir_mode": "id"
+      "use_contents": false
     }
   },
-
-  "disabled" : [ "@hooks" ],
-  "ignore" : [".DS_Store", "*.bak", ".gitkeep", ".idea/*", "__pycache__/*"]
+  "disabled": []
 }
