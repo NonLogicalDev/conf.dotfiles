@@ -10,6 +10,7 @@
   nice-old = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
+  bb = stg branch
   ls = stg series
   lg = stg series -d
   gn = git stg-gn
@@ -108,7 +109,7 @@
 
   # root -- Returns the root folder of the Current Git Repo.
   root = rev-parse --show-toplevel
-  
+
   # root -- Returns the root folder of the Current Git Repo.
   dir = rev-parse --git-dir
 
@@ -119,22 +120,16 @@
   # Usage: git run <command to run>
   run = "!f() { cd \"`git root`\"; \"$@\"; }; f"
 
-  # changes -- Displays changes done against HEAD commit.
-  # Usage: git changes [<ref>]
-  changes = status --porcelain=1 -uall
+  # iadd -- Interactively select files to add
+  iadd = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git add --
 
-  # xadd -- Interactively select files to add
-  xadd = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git add --
-
-  # xres -- Interactively select files to revert
-  xres = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git reset --
-
+  # ireset -- Interactively select files to revert
+  ireset = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git reset --
 
   # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
   affected = show --format="" --name-status
   affected-list = show --format="" --name-only
-
 
   # arc integration
   check = !mono-check
