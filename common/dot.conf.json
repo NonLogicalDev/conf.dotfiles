@@ -20,7 +20,10 @@
       "*/__pycache__/*"
     ]
   },
-  "overrides": {
+  "topics": {
+    "tmux-bin": {
+      "add_dot": false
+    },
     "bin": {
       "add_dot": false,
       "use_contents": false,

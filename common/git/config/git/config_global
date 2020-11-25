@@ -11,6 +11,7 @@
   nice-cols = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
   bb = stg branch
+  rff = stg refresh --force
   ls = stg series
   lg = stg series -d
   gn = git stg-gn

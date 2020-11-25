@@ -52,7 +52,7 @@ fi
 # zsh-users/zsh-history-substring-search
 #=======================================
 
-if [[ ! -z "$ZSH_ANTIBODY" ]]; then
+if (( $+commands[antibody] )); then
   HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
   [[ -n "${key[Up]}"   ]] && bindkey -- "${key[Up]}"   history-substring-search-up
   [[ -n "${key[Down]}" ]] && bindkey -- "${key[Down]}" history-substring-search-down

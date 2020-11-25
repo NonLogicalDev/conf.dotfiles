@@ -106,7 +106,7 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
 
-    "python.languageServer": "Microsoft",
+    "python.languageServer": "Pylance",
     "python.pythonPath": "/usr/local/bin/python3",
     "python.jediEnabled": false,
 
@@ -117,5 +117,11 @@
     "go.useCodeSnippetsOnFunctionSuggest": true,
     "go.trace.server": "verbose",
 
-    "platformio-ide.disablePIOHomeStartup": true
+    "platformio-ide.disablePIOHomeStartup": true,
+    "workbench.editorAssociations": [
+        {
+            "viewType": "jupyter.notebook.ipynb",
+            "filenamePattern": "*.ipynb"
+        }
+    ]
 }
