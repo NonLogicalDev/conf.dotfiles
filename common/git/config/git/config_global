@@ -40,8 +40,8 @@
   ################################################################################
 
   lg = log -n 10 --first-parent --pretty=nice
+  lgg = log -n 10 --graph --pretty=nice
   lgt = !git lg --pretty=nice-cols --color | column -xt -s "::"
-  lgg = lg --graph
   lgu = !git lg -n 100 $(git upstream)..HEAD
   lguu = !git lg -n 100 HEAD..$(git upstream)
   lgf = lg --follow
