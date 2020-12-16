@@ -106,7 +106,7 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
 
-    "python.languageServer": "Pylance",
+    // "python.languageServer": "Pylance",
     "python.pythonPath": "/usr/local/bin/python3",
     "python.jediEnabled": false,
 
@@ -123,5 +123,6 @@
             "viewType": "jupyter.notebook.ipynb",
             "filenamePattern": "*.ipynb"
         }
-    ]
+    ],
+    "python.languageServer": "Microsoft"
 }

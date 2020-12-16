@@ -14,7 +14,7 @@ if [[ -z $REF_REMOTE ]]; then
   REF_REMOTE=origin
 fi
 
-REMOTE_REF="${REF_PREFIX}/${REF_FOLDER}"
+REMOTE_PREFIX="${REF_PREFIX}/${REF_FOLDER}"
 
 _help() {
   if [[ -n $1 ]]; then
@@ -24,12 +24,19 @@ _help() {
 
   echo "INFO:"
   echo "  A utility for stashing branches to a remote."
-  echo "  It stashes given commits under: [REMOTE]/${REMOTE_REF}"
+  echo "  It stashes given commits under: [REMOTE]/${REMOTE_PREFIX}"
   echo "Usage:"
   echo "  $PROG REMOTE [SPEC...]"
   echo "Parameters:"
   echo "  - REMOTE: git remote to use as a remote stash"
   echo "  - SPEC: git refspec, ex: HEAD:<remote_name>"
+  echo "Variations:"
+  echo "  -- [SPEC...]          : to use default remote"
+  echo "Settings:"
+  echo "  --set-ref <ref>       : to set which remote prefix to use"
+  echo "  --set-remote <remote> : to set which remote to use by default"
+  echo "  --get                 : to get current settings"
+
   exit 1
 }
 
@@ -66,7 +73,7 @@ _remote_stash() {
       fi
     fi
 
-    GIT_ARGS+="${L}:${REMOTE_REF}/${R}"
+    GIT_ARGS+="${L}:${REMOTE_PREFIX}/${R}"
   done
 
   if [[ -z $DRY_RUN ]]; then
@@ -96,11 +103,11 @@ _main() {
         ;;
 
       --get)
-        echo "rstash.ref: $REF_FOLDER"
-        echo "rstash.prefix: $REF_PREFIX"
-        echo "rstash.remote: $REF_REMOTE"
+        echo "rstash.ref    : $REF_FOLDER"
+        echo "rstash.prefix : $REF_PREFIX"
+        echo "rstash.remote : $REF_REMOTE"
         echo
-        echo "remote-ref: $REMOTE_REF"
+        echo "remote-prefix : $REMOTE_PREFIX"
         break
         ;;
 

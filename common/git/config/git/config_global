@@ -10,29 +10,36 @@
   nice-old = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
-  bb = stg branch
   rff = stg refresh --force
-  ls = stg series
-  lg = stg series -d
+  rfi = stg refresh --index
+
+  bb = stg branch
+  ls = stg series -d
+  lg = stg ls
+  sw = git stg-sw
+
   gn = git stg-gn
   gp = git stg-gp
   rstash = git stg-rstash
 [alias]
+  q = !stg
   # [Stacked Git]
   ################################################################################
   stg-gp = !stg goto $(stg prev)
   stg-gn = !stg goto $(stg next)
   stg-rstash = "!f() { git rstash \"$@\" -- \"HEAD:$(stg top)\"; }; f"
-
+  stg-sw = !git branch | cut -c 3- | grep .stgit | sed s:.stgit:: | fzf | xargs git switch
 
   # [Basics]
   ################################################################################
 
   f = fetch -n
   b = branch
+  sw = switch
   bf = !git b --list f/*
   co = checkout
   wt = worktree
+  a = add -u
 
   bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' | column -tx -s "%%"
 
@@ -57,7 +64,7 @@
   ################################################################################
 
   st = status
-  stu = status -uno
+  stu = status -u
   lsa = ls-files --exclude-standard
 
   stat = show --stat
@@ -131,11 +138,13 @@
   # Usage: git affected [<ref>]
   affected = show --format="" --name-status
   affected-list = show --format="" --name-only
+  conflicts = diff --name-status --diff-filter=U
+  conflicts-list = diff --name-only --diff-filter=U
 
   # arc integration
   check = !mono-check
   upload = !arc diff --base="git:HEAD~1"
-  upload-all = !git add -A && git cah && git upload
+  upload-wip = !git upload --plan-change --nounit --nolint --excuse WIP
 
 [commit]
   verbose = true

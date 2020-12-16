@@ -1,0 +1,10 @@
+{
+    "topics": {
+        "hammerspoon": {
+            "use_contents": false
+        },
+        "vscode": {
+            "add_dot": false
+        }
+    }
+}
