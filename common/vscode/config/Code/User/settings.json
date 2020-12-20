@@ -7,9 +7,7 @@
         "vendor": true,
         "**/.git": true,
         "**/.DS_Store": true,
-        "go-build/.go": true,
-        "**/*.test": true,
-        "Godeps/_workspace": true,
+        "go-build/.go": true, "**/*.test": true, "Godeps/_workspace": true,
         "**/coverage.html": true,
         "**/_build": true
     },
@@ -106,7 +104,6 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
 
-    // "python.languageServer": "Pylance",
     "python.pythonPath": "/usr/local/bin/python3",
     "python.jediEnabled": false,
 
@@ -124,5 +121,10 @@
             "filenamePattern": "*.ipynb"
         }
     ],
-    "python.languageServer": "Microsoft"
+    "vs-kubernetes": {
+        "vs-kubernetes.knownKubeconfigs": [
+            "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
+        ],
+        "vs-kubernetes.kubeconfig": "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
+    }
 }
