@@ -114,6 +114,10 @@
     "go.trace.server": "verbose",
 
     "platformio-ide.disablePIOHomeStartup": true,
-    "workbench.editorAssociations": [],
-    "python.languageServer": "Microsoft"
+    "vs-kubernetes": {
+        "vs-kubernetes.knownKubeconfigs": [
+            "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
+        ],
+        "vs-kubernetes.kubeconfig": "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
+    }
 }
