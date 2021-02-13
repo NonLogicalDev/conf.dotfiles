@@ -32,7 +32,7 @@
     "workbench.list.keyboardNavigation": "filter",
 
     "workbench.iconTheme": "vscode-icons",
-    "workbench.colorTheme": "Atom One Dark",
+    "workbench.colorTheme": "GitHub Light",
 
     "workbench.colorCustomizations": {
         // "[Atom One Dark]": {
@@ -104,7 +104,6 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "javascript.updateImportsOnFileMove.enabled": "always",
 
-    "python.pythonPath": "/usr/local/bin/python3",
     "python.jediEnabled": false,
 
     "go.gopath": "${env:HOME}/go",
@@ -115,16 +114,6 @@
     "go.trace.server": "verbose",
 
     "platformio-ide.disablePIOHomeStartup": true,
-    "workbench.editorAssociations": [
-        {
-            "viewType": "jupyter.notebook.ipynb",
-            "filenamePattern": "*.ipynb"
-        }
-    ],
-    "vs-kubernetes": {
-        "vs-kubernetes.knownKubeconfigs": [
-            "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
-        ],
-        "vs-kubernetes.kubeconfig": "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
-    }
+    "workbench.editorAssociations": [],
+    "python.languageServer": "Microsoft"
 }

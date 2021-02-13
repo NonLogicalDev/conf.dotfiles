@@ -1,6 +1,7 @@
 # vim: ft=gitconfig
 [core]
   excludesfile = ~/.config/git/ignore_global
+  hooksPath = "~/bin/git-hooks"
 [pager]
   lg = false
 [pretty]
@@ -14,8 +15,8 @@
   rfi = stg refresh --index
 
   bb = stg branch
-  ls = stg series -d
-  lg = stg ls
+  ls = stg series --noprefix
+  lg = stg series -d
   sw = git stg-sw
 
   gn = git stg-gn

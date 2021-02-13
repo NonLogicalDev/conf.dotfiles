@@ -2,15 +2,15 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
   "mafredri/zsh-async"
 
   "zsh-users/zsh-completions"
-  "nnao45/zsh-kubectl-completion"
-
+  "zsh-users/zsh-syntax-highlighting"
   "zsh-users/zsh-history-substring-search"
-  "NonLogicalDev/fork.util.zsh.pure-prompt"
+
+  "nnao45/zsh-kubectl-completion"
 
   "rupa/z"
   "changyuheng/fz"
-
-  "zsh-users/zsh-syntax-highlighting"
+  
+  "NonLogicalDev/fork.util.zsh.pure-prompt"
 )
 
 ZSH_CACHE_DIR="$HOME/.cache/zsh"
