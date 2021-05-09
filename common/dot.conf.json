@@ -27,7 +27,7 @@
     "bin": {
       "add_dot": false,
       "use_contents": false,
-      "link_mode": "copy"
+      "link_mode": "recursive_link"
     },
     "irssi": {
       "link_mode": "copy"

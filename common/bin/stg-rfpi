@@ -1,0 +1,6 @@
+#!/bin/bash
+set -ex
+
+git diff --cached > ~/Desktop/patchname.txt
+stg refresh --index
+cat ~/Desktop/patchname.txt | git apply -R

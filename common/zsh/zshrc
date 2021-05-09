@@ -97,3 +97,7 @@ source ${ZDOTDIR:-$HOME}/.zshrc.local
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/local/bin/vault vault
+
+if   [[ -n $ZSH_EXTRA_SOURCE ]]
+then source "$ZSH_EXTRA_SOURCE"
+fi

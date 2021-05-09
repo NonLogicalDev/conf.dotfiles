@@ -1,0 +1,172 @@
+#!/bin/zsh
+
+# DEPENDENCIES: git-rstash, 
+
+#######################################################################
+#                          Stacked Git Utils                          #
+#######################################################################
+
+stg-info() {
+  #: stg-info - prints status and expanded information about the current stack.
+
+  echo "## Status:"
+  stg status \
+    | sed 's:^:    :'
+
+  echo
+
+  echo "## Stack:"
+  stg lg \
+    | sed 's:^:    :'
+}
+
+stg-lg() {
+  #: stg-lg - prints expanded information about the current stack.
+
+  while read line; do
+    echo "$line"
+
+    git_sha=$(echo $line | awk '{print $2}' | xargs stg id | xargs git rev-parse --short)
+    extra_info=$(
+      echo "git-sha $git_sha"
+      git notes show "$git_sha" 2>/dev/null
+    )
+    git_notes=$(
+       echo "$extra_info" \
+        | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
+        | column -tx -s " " \
+        | sed 's:^:    :'
+    )
+    echo "$git_notes"
+
+    echo
+  done << EOF
+$(stg series -d "$@")
+EOF
+}
+
+
+stg-gn() {
+  #: stg-gn - go to next patch in the stack.
+
+  stg goto "$(stg next)"
+}
+
+stg-gp() {
+  #: stg-gp - go to previous patch in the stack.
+
+  stg goto "$(stg prev)"
+}
+
+stg-swi() {
+  #: stg-swi - interactively switch stacked git branch.
+
+  stg-branches | fzf | xargs git switch
+}
+
+stg-branches() {
+  git branch | cut -c 3- | grep .stgit | sed s:.stgit::
+}
+
+stg-rstash() {
+  #: stg-rstash - interactively switch stacked git branch.
+
+  git rstash "$@" -- "HEAD:$(stg top)";
+}
+
+stg-refs() {
+  local REFS=()
+  for i in $(seq 0 $(stg series |wc -l)); do
+    REFS+=("HEAD~$i")
+  done
+  if [[ $1 == "-n" ]]; then
+    echo "${REFS[@]}"
+  else
+    printf "%s\n" "${REFS[@]}"
+  fi
+}
+
+stg-overview() {
+  stg-branches | xargs -I {} sh -c 'echo "::::: {}" && stg series -b {} && echo'
+}
+
+#######################################################################
+#                            Git Utilites                             #
+#######################################################################
+
+git-swi() {
+  git-branch-log | grep -v ".stgit" | fzf | xargs git switch
+}
+
+
+git-branch-history() {
+  git reflog -n 10000 \
+    | grep 'checkout: moving from' \
+    | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' \
+    | column -tx -s "%%" \
+    | less
+}
+
+git-branch-log() {
+  git reflog -n 10000 \
+    | grep 'checkout: moving from' \
+    | perl -pe 's/.*moving from (.+) to (.+)/$2/'  \
+    | awk '!x[$0]++'
+}
+
+#######################################################################
+#                           FARC Extensions                           #
+#######################################################################
+
+stg-farc() {
+  stg-refs | farc-bulk --stdin --fzf $@ 
+}
+
+farc-bulk() {
+  local FARC_CMD=$1; shift
+  local REFS=()
+  local ARGS=()
+
+  local _fzf=0
+  local _rest=0
+  local _stdin=0
+  while [[ $# -gt 0 ]]; do 
+    if [[ $1 == '--' ]]; then
+      _rest=1
+      shift
+    elif [[ $1 == '--fzf' ]]; then
+      _fzf=1
+      shift
+    elif [[ $1 == '--stdin' ]]; then
+      _stdin=1
+      shift
+    elif [[ _rest -eq 1 ]]; then
+      REFS+=($1)
+      shift
+    else
+      ARGS+=($1)
+      shift
+    fi
+  done
+
+  if [[ _stdin -eq 1 ]]; then
+    while IFS="" read -r REF || [ -n "$REF" ]; do
+      REFS+=($REF)
+    done 
+  fi
+  
+  if [[ ${#REFS[@]} -lt 1 ]]; then
+    REFS+=(HEAD)
+  fi
+
+  local RESULTS=$(printf "%s\n" "${REFS[@]}")
+  if [[ _fzf -eq 1 ]]; then
+    RESULTS=$(echo "$RESULTS" | fzf -m --preview="git show --oneline --name-status {}")
+  fi
+
+  echo -n "$RESULTS" | xargs -p -I %REF% echo farc "$FARC_CMD" "%REF%" "${ARGS[@]}"
+}
+
+#######################################################################
+
+"$@"

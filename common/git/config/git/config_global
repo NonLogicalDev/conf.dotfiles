@@ -17,31 +17,37 @@
   bb = stg branch
   ls = stg series --noprefix
   lg = stg series -d
-  sw = git stg-sw
 
-  gn = git stg-gn
-  gp = git stg-gp
-  rstash = git stg-rstash
-[alias]
-  q = !stg
-  # [Stacked Git]
   ################################################################################
-  stg-gp = !stg goto $(stg prev)
-  stg-gn = !stg goto $(stg next)
-  stg-rstash = "!f() { git rstash \"$@\" -- \"HEAD:$(stg top)\"; }; f"
-  stg-sw = !git branch | cut -c 3- | grep .stgit | sed s:.stgit:: | fzf | xargs git switch
+  # EXTENSIONS:
+  ################################################################################
+  
+  info   = git-utils stg-info
+  lg     = git-utils stg-lg
+
+  gn     = git-utils stg-gn
+  gp     = git-utils stg-gp
+  swi    = git-utils stg-swi
+
+  refs   = git-utils stg-refs
+
+  rstash = git-utils stg-rstash
+[alias]
+  q     = !stg
+  queue = !stg
 
   # [Basics]
   ################################################################################
 
   f = fetch -n
   b = branch
-  sw = switch
-  bf = !git b --list f/*
+  sw  = switch
+  swi = !git-utils git-swi
   co = checkout
   wt = worktree
   a = add -u
 
+  bls = !git branch | grep ctx/ | grep -v .stgit
   bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' | column -tx -s "%%"
 
   # [Logging]
@@ -142,10 +148,21 @@
   conflicts = diff --name-status --diff-filter=U
   conflicts-list = diff --name-only --diff-filter=U
 
+  #check = !mono-check
+
   # arc integration
-  check = !mono-check
+  stack = !farc upload HEAD~1..HEAD
+  stack-all = !farc upload
+  stack-land = !arc stack --keep-branch
+  stack-sync = !farc sync-from-phab
+
+  lint = !arc lint --rev HEAD~1 --trace --apply-patches
+  unit = !arc unit --rev HEAD~1 --trace
+  check = !git lint && git unit
+
   upload = !arc diff --base="git:HEAD~1"
   upload-wip = !git upload --plan-change --nounit --nolint --excuse WIP
+  upload-draft = !git upload --only
 
 [commit]
   verbose = true

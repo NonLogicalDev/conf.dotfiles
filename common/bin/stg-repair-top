@@ -1,0 +1,13 @@
+#!/bin/bash
+set -uxe
+
+CUR_SHA=$(git rev-parse HEAD)
+STG_TOP_SHA=$(stg id $(stg top))
+
+git reset ${STG_TOP_SHA}
+stg refresh --force
+
+cat <<EOS | stg edit -f -
+$(stg edit --save-template=- | head -n 3)
+$(git log -n 1 --format=%B $CUR_SHA)
+EOS

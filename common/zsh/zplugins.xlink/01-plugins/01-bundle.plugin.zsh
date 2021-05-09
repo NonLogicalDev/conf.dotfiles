@@ -36,7 +36,9 @@ fi
 #######################################################################
 
 autoload -Uz promptinit
-promptinit && prompt_pure_setup
+if [[ -z $ZSH_DISABLE_PROMPT ]]; then
+  promptinit && prompt_pure_setup
+fi
 
 #=======================================
 # rupa/z

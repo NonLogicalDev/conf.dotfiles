@@ -12,18 +12,16 @@
         "**/_build": true
     },
 
-    "window.zoomLevel": 0,
-
-    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
-    "editor.lineHeight": 16,
-    "editor.fontSize": 16,
-    "editor.suggestFontSize": 16,
-    "editor.fontLigatures": false,
-    "editor.formatOnType": true,
-    "editor.scrollBeyondLastLine": false,
+    "editor.fontFamily": "'Fira Code', 'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
+    // "editor.lineHeight": 16,
+    "editor.fontSize": 12,
+    // "editor.suggestFontSize": 16,
+    // "editor.fontLigatures": false,
+    // "editor.formatOnType": true,
+    // "editor.scrollBeyondLastLine": false,
     "editor.cursorSmoothCaretAnimation": true,
 
-    "terminal.integrated.fontSize": 16,
+    "terminal.integrated.fontSize": 12,
 
     "workbench.tree.indent": 20,
     "workbench.tree.renderIndentGuides": "always",
@@ -32,7 +30,7 @@
     "workbench.list.keyboardNavigation": "filter",
 
     "workbench.iconTheme": "vscode-icons",
-    "workbench.colorTheme": "GitHub Light",
+    "workbench.colorTheme": "Gatito Theme",
 
     "workbench.colorCustomizations": {
         // "[Atom One Dark]": {
@@ -114,10 +112,10 @@
     "go.trace.server": "verbose",
 
     "platformio-ide.disablePIOHomeStartup": true,
-    "vs-kubernetes": {
-        "vs-kubernetes.knownKubeconfigs": [
-            "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
-        ],
-        "vs-kubernetes.kubeconfig": "/Users/nonlogical/Documents/Developer/HomeAutomation/HomeLab/Secrets/kubeconf.yml"
-    }
+    "workbench.editorAssociations": [
+        {
+            "viewType": "jupyter.notebook.ipynb",
+            "filenamePattern": "*.ipynb"
+        }
+    ],
 }

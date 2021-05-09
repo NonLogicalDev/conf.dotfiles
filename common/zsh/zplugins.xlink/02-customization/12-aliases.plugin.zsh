@@ -17,6 +17,29 @@ alias tmcopy='tmux show-buffer | pbcopy'
 alias go:conf='cd ~/.config/'
 alias go:data='cd ~/.local/share/'
 
+if (( $+commands[docker] )); then
+  function drun() {
+    local PRE_ARGS=()
+    local ARGS=()
+    while [[ $# -gt 0 ]]; do
+      if [[ $1 == '--here' ]]; then
+        PRE_ARGS+=(
+          "-v" "$(pwd):/srv/mnt"
+          "-w" "/srv/mnt"
+        )
+        shift
+      else
+        ARGS+=($1)
+        shift
+      fi
+    done
+    docker run --rm -ti "${PRE_ARGS[@]}" "${ARGS[@]}"
+  }
+  function dexec() {
+    docker exec -ti "$@"
+  }
+fi
+
 #######################################################################
 #                           Developer Tools                           #
 #######################################################################
