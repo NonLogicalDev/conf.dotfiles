@@ -12,6 +12,7 @@
         "**/_build": true
     },
 
+<<<<<<< HEAD
     "editor.fontFamily": "'Fira Code', 'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
     // "editor.lineHeight": 16,
     "editor.fontSize": 12,
@@ -19,6 +20,25 @@
     // "editor.fontLigatures": false,
     // "editor.formatOnType": true,
     // "editor.scrollBeyondLastLine": false,
+||||||| parent of e15e64c... update | home mac
+    "window.zoomLevel": 0,
+
+    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
+    "editor.lineHeight": 16,
+    "editor.fontSize": 16,
+    "editor.suggestFontSize": 16,
+    "editor.fontLigatures": false,
+    "editor.formatOnType": true,
+    "editor.scrollBeyondLastLine": false,
+=======
+    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
+    "editor.lineHeight": 16,
+    "editor.fontSize": 16,
+    "editor.suggestFontSize": 16,
+    "editor.fontLigatures": false,
+    "editor.formatOnType": true,
+    "editor.scrollBeyondLastLine": false,
+>>>>>>> e15e64c... update | home mac
     "editor.cursorSmoothCaretAnimation": true,
 
     "terminal.integrated.fontSize": 12,
@@ -112,10 +132,12 @@
     "go.trace.server": "verbose",
 
     "platformio-ide.disablePIOHomeStartup": true,
+    "python.languageServer": "Microsoft",
+
     "workbench.editorAssociations": [
         {
             "viewType": "jupyter.notebook.ipynb",
             "filenamePattern": "*.ipynb"
         }
-    ],
+    ]
 }
