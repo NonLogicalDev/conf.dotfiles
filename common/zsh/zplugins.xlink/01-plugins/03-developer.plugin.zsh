@@ -1,8 +1,12 @@
 typeset -aU INIT_LIST
 export INIT_LIST=()
 
+function init.list {
+  echo $INIT_LIST
+}
+
 ## iTerm Integration
-function init.iterm {
+function init.term.iterm {
   if [[ -s "${HOME}/.iterm2_shell_integration.zsh" ]]; then
     echo "INIT | iTerm..."
 
@@ -18,20 +22,20 @@ function init.vm.asdf {
     export ASDF_DIR="/usr/local/opt/asdf"
   fi
 
-  if [[ -v ASDF_DIR && -d $ASDF_DIR ]]; then 
+  if [[ -v ASDF_DIR && -d $ASDF_DIR ]]; then
     echo "INIT | ASDF..."
 
     . "$ASDF_DIR/asdf.sh"
     . "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
     INIT_LIST+=("asdf.vm")
   fi
-  
+
   # declare -a plugins=(
   #   "ruby"
   #   "python"
   #   "lua"
   # )
-  
+
   # for plug in "$plugins"; do
   #   asdf plugin-add $plug &> /dev/null
   # done
@@ -53,7 +57,7 @@ function init.vm.node {
 function init.vm.java {
   export JVM_DIR="$HOME/.jenv"
 
-  if (( $+commands[jenv] )); then 
+  if (( $+commands[jenv] )); then
     echo "INIT | JVM..."
     path_prepend "$JVM_DIR"
 
@@ -79,7 +83,7 @@ function init.vm.rust {
 function init.vm.go {
   export GIMME_DIR="$HOME/.gimme"
 
-  if (( $+commands[gimme] )); then 
+  if (( $+commands[gimme] )); then
     echo "INIT | GO..."
     path_prepend "${GIMME_DIR}/go/bin"
 
@@ -97,12 +101,8 @@ function init.vm.go {
   fi
 }
 
-function init.ls {
-  echo $INIT_LIST
-}
-
 function init.vmset.basic {
-  init.iterm
+  init.term.iterm
 }
 
 function init.vmset.full {

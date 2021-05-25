@@ -27,12 +27,13 @@
 
   gn     = git-utils stg-gn
   gp     = git-utils stg-gp
-  swi    = git-utils stg-swi
+  ctx    = git-utils stg-ctx
 
   refs   = git-utils stg-refs
 
   rstash = git-utils stg-rstash
 [alias]
+  fk    = git-utils farc-quick
   q     = !stg
   queue = !stg
 
@@ -41,12 +42,10 @@
 
   f = fetch -n
   b = branch
-  sw  = switch
-  swi = !git-utils git-swi
   co = checkout
-  wt = worktree
   a = add -u
 
+  ctx = !git-utils git-ctx -q "ctx/"
   bls = !git branch | grep ctx/ | grep -v .stgit
   bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' | column -tx -s "%%"
 

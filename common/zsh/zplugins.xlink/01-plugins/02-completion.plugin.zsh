@@ -3,51 +3,49 @@ if [[ "$TERM" == 'dumb' ]]; then
   return 1
 fi
 
+# Ensure Cache dir exists.
+__zsh_cache_dir="${ZSH_CACHE_DIR:-$HOME/.cache/zsh}"
+if [[ ! -d $__zsh_cache_dir ]]; then
+  mkdir -p $__zsh_cache_dir
+fi
+
 # Add zsh-completions to $fpath.
 fpath=("${0:h}/external/src" $fpath)
 
-#
-# Options
-#
-
-setopt COMPLETE_IN_WORD    # Complete from both ends of a word.
-setopt ALWAYS_TO_END       # Move cursor to the end of a completed word.
-setopt PATH_DIRS           # Perform path search even on command names with slashes.
-setopt AUTO_MENU           # Show completion menu on a successive tab press.
-setopt AUTO_LIST           # Automatically list choices on ambiguous completion.
-setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash.
-setopt EXTENDED_GLOB       # Needed for file modification glob modifiers with compinit
-unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
-unsetopt FLOW_CONTROL      # Disable start/stop characters in shell editor.
+#-------------------------------------------------------------------------------
 
 # Load and initialize the completion system ignoring insecure directories with a
 # cache time of 20 hours, so it should almost always regenerate the first time a
 # shell is opened each day.
+
 autoload -Uz compinit
-_comp_files=(${ZDOTDIR:-$HOME}/.zcompdump(Nm-20))
-if (( $#_comp_files )); then
-  compinit -i -C
+
+_zsh_comp_files=(${__zsh_cache_dir}/compdump(Nm-20))
+if (( $#_zsh_comp_files )); then
+  compinit -i -C -d ${_zsh_cache_dir}/compdump
 else
-  compinit -i
+  compinit -i -d ${_zsh_cache_dir}/compdump
 fi
-unset _comp_files
+unset _zsh_comp_files
+
+# Use caching to make completion for commands such as dpkg and apt usable.
+zstyle ':completion::complete:*' use-cache on
+zstyle ':completion::complete:*' cache-path "${_zsh_cache_dir}/compcache"
+
+#-------------------------------------------------------------------------------
 
 #
 # Styles
 #
 
-# Use caching to make completion for commands such as dpkg and apt usable.
-zstyle ':completion::complete:*' use-cache on
-zstyle ':completion::complete:*' cache-path "${ZDOTDIR:-$HOME}/.zcompcache"
-
 # Case-insensitive (all), partial-word, and then substring completion.
-if zstyle -t ':prezto:module:completion:*' case-sensitive; then
-  zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-  setopt CASE_GLOB
-else
+# if zstyle -t ':prezto:module:completion:*' case-sensitive; then
+#   zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+#   setopt CASE_GLOB
+# else
   zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
   unsetopt CASE_GLOB
-fi
+# fi
 
 # Group matches and describe.
 zstyle ':completion:*:*:*:*:*' menu select

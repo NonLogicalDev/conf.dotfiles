@@ -17,7 +17,7 @@ fi
 [ -r "/etc/zshrc_$TERM_PROGRAM" ] && . "/etc/zshrc_$TERM_PROGRAM"
 
 # Add completions.
-if [ -d ${HOME}/.local/bin/completions ]; then
+if [[ -d ${HOME}/.local/bin/completions ]]; then
   export fpath=(${HOME}/.local/bin/completions $fpath)
 fi
 
@@ -36,54 +36,6 @@ fi
 #                               Safety                                #
 #######################################################################
 
-function rm() {
-  local IS_R=0
-  local IS_F=0
-  local HAS_HOME=0
-  local HAS_ROOT=0
-
-  for arg in ${@}; do
-    if [[ $arg == "-f" ]]; then
-      IS_F=1
-    fi
-
-    if [[ $arg == "-r" ]]; then
-      IS_R=1
-    fi
-
-    if [[ $arg == "-rf" || $arg == "-fr" ]]; then
-      IS_F=1
-      IS_R=1
-    fi
-
-    if [[ $arg == $HOME ]]; then
-      HAS_HOME=1
-    fi
-
-    if [[ $arg == "/" ]]; then
-      HAS_HOME=1
-    fi
-  done
-
-  if [[ $IS_F -eq 1 && $IS_R -eq 1 ]]; then
-    if [[ $HAS_HOME -eq 1 || $HAS_ROOT -eq 1 ]]; then
-      echo "ERROR: Did you just??? rm $@" >&2
-      echo "ERROR: You fucking stupid? I ain't doing that for you." >&2
-      return 128
-    fi
-
-    echo "Just Checking in..." >&2
-    echo "You are running 'rm $@'" >&2
-    echo "Are you totally sure? (y/n)" >&2
-    read REPLY\?""
-    if [[ $REPLY != "y" && $REPLY != "yes" ]]; then
-      echo "ERROR: Abortring..." >&2
-      return 128
-    fi
-  fi
-
-  command rm -v $@
-}
 
 #######################################################################
 #                               Imports                               #
@@ -98,6 +50,6 @@ source ${ZDOTDIR:-$HOME}/.zshrc.local
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/local/bin/vault vault
 
-if   [[ -n $ZSH_EXTRA_SOURCE ]]
-then source "$ZSH_EXTRA_SOURCE"
+if [[ -n $ZSH_EXTRA_SOURCE ]]; then
+  source "$ZSH_EXTRA_SOURCE"
 fi

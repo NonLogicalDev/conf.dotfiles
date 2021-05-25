@@ -3,48 +3,74 @@
 #                              Functions                              #
 #######################################################################
 
-## Set up Open Command:
-if [[ "$PLATFORM" == 'LINUX' ]]; then
-  export OPEN_CMD=${commands[xdg-open]}
-  function open() {
-    "$OPEN_CMD" "$@" 1> /dev/null 2> /dev/null & disown
-  }
-elif [[ "$PLATFORM" == 'MAC' ]]; then
-  export OPEN_CMD=${commands[open]}
-fi
-
-function cpd() {
-  if [[ ${#*[@]} -le 1 ]]; then
-    echo "Usage: [srcs...] [DST]"
-    exit 1
-  fi
-  local target="${@[-1]}"
-  local target_dir=$(dirname "$target")
-  if [[ ! -a $dst ]]; then
-    mkdir -p $target_dir
-  fi
-  cp "$@"
-}
-
-
-if [[ "$PLATFORM" == 'LINUX' ]]; then
-  millis() {
+if [[ "$OSTYPE" == linux* ]]; then
+  __millis() {
     date '+%s%3N'
   }
-elif [[ "$PLATFORM" == 'MAC' ]]; then
+elif [[ "$OSTYPE" == darwin* ]]; then
   if (( $+commands[gdate] )); then
-    millis() {
+    __millis() {
       gdate '+%s%3N'
     }
   else
-    millis() {
+    __millis() {
       python -c "import time; print(int(time.time()*1000))";
     }
   fi
 fi
 
+function rm() {
+  local IS_R=0
+  local IS_F=0
+  local HAS_HOME=0
+  local HAS_ROOT=0
+
+  for arg in ${@}; do
+    if [[ $arg == "-f" ]]; then
+      IS_F=1
+    fi
+
+    if [[ $arg == "-r" ]]; then
+      IS_R=1
+    fi
+
+    if [[ $arg == "-rf" || $arg == "-fr" ]]; then
+      IS_F=1
+      IS_R=1
+    fi
+
+    if [[ $arg == $HOME ]]; then
+      HAS_HOME=1
+    fi
+
+    if [[ $arg == "/" ]]; then
+      HAS_HOME=1
+    fi
+  done
+
+  if [[ $IS_F -eq 1 && $IS_R -eq 1 ]]; then
+    if [[ $HAS_HOME -eq 1 || $HAS_ROOT -eq 1 ]]; then
+      echo "ERROR: Did you just??? rm $@" >&2
+      echo "ERROR: Are you drunk? I ain't doing that for you." >&2
+      return 128
+    fi
+
+    echo "Just Checking in..." >&2
+    echo "You are running 'rm $@'" >&2
+    echo "Are you totally sure? (y/n)" >&2
+    read REPLY\?""
+
+    if [[ $REPLY != "y" && $REPLY != "yes" ]]; then
+      echo "ERROR: Abortring..." >&2
+      return 128
+    fi
+  fi
+
+  command rm -v $@
+}
+
 function git() {
-  TS1=$(millis)
+  TS1=$(__millis)
 
   local GIT_ROOT_DIR=$(command git rev-parse --show-toplevel 2>/dev/null)
   if [[ $? -ne 0 ]]; then
@@ -69,16 +95,16 @@ function git() {
     fi
   fi
 
-  if [[ 
-    $1 != "" 
-    && $1 != "st" 
-    && $1 != "lg" 
-    && $1 != "rev-parse" 
-    && $1 != "symbolic-ref" 
-    && $1 != "show" 
-    && $1 != "merge-base" 
-    && $1 != "info" 
-    && $1 != "upstream" 
+  if [[
+    $1 != ""
+    && $1 != "st"
+    && $1 != "lg"
+    && $1 != "rev-parse"
+    && $1 != "symbolic-ref"
+    && $1 != "show"
+    && $1 != "merge-base"
+    && $1 != "info"
+    && $1 != "upstream"
   ]]; then
     # Wait until git index becomes available.
     ( until [[ ! -f "${GIT_INDEX_PATH}.lock" ]]; do
@@ -90,40 +116,7 @@ function git() {
 
   command git "$@"
 
-  TS2=$(millis)
+  TS2=$(__millis)
   local CALLER=$(ps -o command=,pid= $(ps -o ppid= $$))
   echo "$GIT_INDEX_PATH :: $CALLER :: $(($TS2 - $TS1))ms  :: [$@] " >> ~/.gitlog
-}
-
-if (( $+commands[fzf] )); then
-  function cdp {
-    cd "$(dbranch | fzf)"
-  }
-fi
-
-function vimd() {
-  local OLD_PWD=$(pwd)
-  cd $1 && vim .
-  cd "$OLD_PWD"
-}
-
-if (( $+commands[tree] )); then
-  function lst() {
-    tree -L 2 -C $* | less
-  }
-fi
-
-if (( $+commands[memo] )); then
-  function meme() {
-    memo read memes.yaml |
-      python -c 'import yaml; import sys; import json; print json.dumps(yaml.load(sys.stdin))'
-  }
-fi
-
-function lspath() {
-  echo $PATH | tr ":" "\n"
-}
-
-function zsh-compile-dir() {
-  find $1 -type f -iname $2 -exec zsh -c 'echo "Compiling: {}" && zcompile "{}"' \;
 }

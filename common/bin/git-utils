@@ -1,10 +1,17 @@
 #!/bin/zsh
 
-# DEPENDENCIES: git-rstash, 
+# DEPENDENCIES: git-rstash
+
+SCRIPT_PATH=$0
+
+help() {
+  cat ${SCRIPT_PATH} | grep "^ *#:" | sed 's/^ *#: *//g'
+}
 
 #######################################################################
 #                          Stacked Git Utils                          #
 #######################################################################
+
 
 stg-info() {
   #: stg-info - prints status and expanded information about the current stack.
@@ -58,10 +65,10 @@ stg-gp() {
   stg goto "$(stg prev)"
 }
 
-stg-swi() {
-  #: stg-swi - interactively switch stacked git branch.
+stg-ctx() {
+  #: stg-ctx - interactively switch stacked git branch.
 
-  stg-branches | fzf | xargs git switch
+  stg-branches | fzf "$@" | xargs git switch
 }
 
 stg-branches() {
@@ -94,29 +101,55 @@ stg-overview() {
 #                            Git Utilites                             #
 #######################################################################
 
-git-swi() {
-  git-branch-log | grep -v ".stgit" | fzf | xargs git switch
+git-ctx() {
+  git-branch-log 100 \
+  | grep -v ".stgit" \
+  | fzf +s "$@" --preview='git-utils git-quick-log -n 5 {}' --height "100%" --preview-window="right:60%" \
+  | xargs git switch
 }
 
-
 git-branch-history() {
-  git reflog -n 10000 \
-    | grep 'checkout: moving from' \
-    | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' \
+  local __max_num=${1:-20}
+
+  git-branch-history-list ${__max_num} \
+    | awk '{print $2 "%%" "<-" "%%" $1}' \
     | column -tx -s "%%" \
     | less
 }
 
 git-branch-log() {
-  git reflog -n 10000 \
-    | grep 'checkout: moving from' \
-    | perl -pe 's/.*moving from (.+) to (.+)/$2/'  \
+  local __max_num=${1:-20}
+
+  git-branch-history-list ${__max_num} \
+    | awk '{print $2}' \
     | awk '!x[$0]++'
+}
+
+git-branch-history-list() {
+  local __max_num=$1
+
+  git reflog \
+    | grep --line-buffered 'checkout: moving from' \
+    | perl -pe 's/.*moving from (.+) to (.+)/$1 $2/'  \
+    | head -n ${__max_num}
+}
+
+git-quick-log() {
+  git log -n 3 --format="%h %al (%ar)%n  %s" "$@"
 }
 
 #######################################################################
 #                           FARC Extensions                           #
 #######################################################################
+
+farc-quick() {
+  local ARGS=()
+  while [[ $# -gt 0 ]]; do 
+    ARGS+=($1)
+    shift
+  done
+  farc "${ARGS[@]}"
+}
 
 stg-farc() {
   stg-refs | farc-bulk --stdin --fzf $@ 
