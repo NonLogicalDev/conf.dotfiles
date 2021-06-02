@@ -18,15 +18,14 @@
   ls = stg series --noprefix
   lg = stg series -d
 
+  add = git add
+
   ################################################################################
   # EXTENSIONS:
   ################################################################################
   
+  sd     = git-utils stg-lg
   info   = git-utils stg-info
-  lg     = git-utils stg-lg
-
-  gn     = git-utils stg-gn
-  gp     = git-utils stg-gp
   ctx    = git-utils stg-ctx
 
   refs   = git-utils stg-refs

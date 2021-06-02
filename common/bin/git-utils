@@ -27,6 +27,12 @@ stg-info() {
     | sed 's:^:    :'
 }
 
+stg-showstat() {
+  #: stg-showstat - prints the modified files 
+  
+  stg show -O "--name-status" "$@"
+}
+
 stg-lg() {
   #: stg-lg - prints expanded information about the current stack.
 
@@ -34,35 +40,45 @@ stg-lg() {
     echo "$line"
 
     git_sha=$(echo $line | awk '{print $2}' | xargs stg id | xargs git rev-parse --short)
-    extra_info=$(
-      echo "git-sha $git_sha"
-      git notes show "$git_sha" 2>/dev/null
-    )
-    git_notes=$(
-       echo "$extra_info" \
-        | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
-        | column -tx -s " " \
-        | sed 's:^:    :'
-    )
-    echo "$git_notes"
 
+    git_notes=$(
+      echo "git-sha $git_sha"
+      echo
+
+      git notes show "$git_sha" 2>/dev/null \
+      | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
+      | column -tx -s " "
+    )
+
+    result=$(
+      echo "$git_notes"
+      echo ""
+      git show --name-status --format= "$git_sha"
+    )
+
+    echo "$result" | sed 's:^:    :'
     echo
   done << EOF
 $(stg series -d "$@")
 EOF
 }
 
+stg-bottom() {
+  #: stg-bottom - get the sha of the first commit in the stack.
+  stg ls -A | head -n 1 | xargs stg id
+}
+
 
 stg-gn() {
   #: stg-gn - go to next patch in the stack.
 
-  stg goto "$(stg next)"
+  stg goto "$@" "$(stg next)"
 }
 
 stg-gp() {
   #: stg-gp - go to previous patch in the stack.
 
-  stg goto "$(stg prev)"
+  stg goto "$@" "$(stg prev)"
 }
 
 stg-ctx() {
