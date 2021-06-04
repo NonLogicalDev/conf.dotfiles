@@ -17,19 +17,19 @@ stg-info() {
   #: stg-info - prints status and expanded information about the current stack.
 
   echo "## Status:"
-  stg status \
+  git -c color.status=always status -s \
     | sed 's:^:    :'
 
   echo
 
   echo "## Stack:"
-  stg lg \
+  stg-pretty-series \
     | sed 's:^:    :'
 }
 
 stg-showstat() {
-  #: stg-showstat - prints the modified files 
-  
+  #: stg-showstat - prints the modified files
+
   stg show -O "--name-status" "$@"
 }
 
@@ -37,30 +37,67 @@ stg-lg() {
   #: stg-lg - prints expanded information about the current stack.
 
   while read line; do
-    echo "$line"
+    stg_patch_status=$(echo $line | awk '{print $1}')
+    stg_patch_name_col=$(echo $line | awk '{print substr($0,index($0,$2),index($0,$3) - index($0,$2))}')
+    stg_patch_description_col=$(echo $line | awk '{print substr($0,index($0,$4))}')
+    stg_patch_name=$(echo $line | awk '{print $2}')
 
-    git_sha=$(echo $line | awk '{print $2}' | xargs stg id | xargs git rev-parse --short)
+    git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
 
-    git_notes=$(
-      echo "git-sha $git_sha"
-      echo
+    COLOR=1
+    if [[ $stg_patch_status == "+" ]]; then
+      COLOR=2
+    elif [[ $stg_patch_status == ">" ]]; then
+      COLOR=3
+    fi
+    printf "%s$stg_patch_status $stg_patch_name_col%s $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
+
+    details=$(
+      printf "%sgit-sha%s $git_sha\n\n" $(tput setaf 4) $(tput sgr0)
+
+      git show -s --format=%b "$git_sha" \
+        | fold -w 80 -s \
+        | perl -0pe 's:[\n\s]+$:\n:' \
+        | sed 's:^:'$(tput setaf 1)'\>'$(tput sgr0)'  :'
+      printf "\n"
 
       git notes show "$git_sha" 2>/dev/null \
-      | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
-      | column -tx -s " "
+        | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
+        | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
+        | column -tx -s " "
+      printf "\n"
+
+      git show --name-status --format= "$git_sha" \
+        | perl -pe "s:^(\\s*\\w+)(.*):$(tput setaf 2)\\1$(tput setaf 4)\\2$(tput sgr0):"
     )
 
-    result=$(
-      echo "$git_notes"
-      echo ""
-      git show --name-status --format= "$git_sha"
-    )
-
-    echo "$result" | sed 's:^:    :'
-    echo
+    printf "%s\n \n" $details | sed 's:^:    :'
   done << EOF
 $(stg series -d "$@")
 EOF
+}
+
+stg-pretty-series() {
+  while read line; do
+    stg_patch_status=$(echo $line | awk '{print $1}')
+    stg_patch_name_col=$(echo $line | awk '{print substr($0,index($0,$2),index($0,$3) - index($0,$2))}')
+    stg_patch_description_col=$(echo $line | awk '{print substr($0,index($0,$4))}')
+    stg_patch_name=$(echo $line | awk '{print $2}')
+
+    git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
+
+    COLOR=1
+    if [[ $stg_patch_status == "+" ]]; then
+      COLOR=2
+    elif [[ $stg_patch_status == ">" ]]; then
+      COLOR=3
+    fi
+    printf "%s$stg_patch_status $stg_patch_name_col%s $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
+
+  done << EOF
+$(stg series -d "$@")
+EOF
+
 }
 
 stg-bottom() {
@@ -160,7 +197,7 @@ git-quick-log() {
 
 farc-quick() {
   local ARGS=()
-  while [[ $# -gt 0 ]]; do 
+  while [[ $# -gt 0 ]]; do
     ARGS+=($1)
     shift
   done
@@ -168,7 +205,7 @@ farc-quick() {
 }
 
 stg-farc() {
-  stg-refs | farc-bulk --stdin --fzf $@ 
+  stg-refs | farc-bulk --stdin --fzf $@
 }
 
 farc-bulk() {
@@ -179,7 +216,7 @@ farc-bulk() {
   local _fzf=0
   local _rest=0
   local _stdin=0
-  while [[ $# -gt 0 ]]; do 
+  while [[ $# -gt 0 ]]; do
     if [[ $1 == '--' ]]; then
       _rest=1
       shift
@@ -201,9 +238,9 @@ farc-bulk() {
   if [[ _stdin -eq 1 ]]; then
     while IFS="" read -r REF || [ -n "$REF" ]; do
       REFS+=($REF)
-    done 
+    done
   fi
-  
+
   if [[ ${#REFS[@]} -lt 1 ]]; then
     REFS+=(HEAD)
   fi
