@@ -24,7 +24,7 @@
   # EXTENSIONS:
   ################################################################################
   
-  sd     = git-utils stg-lg
+  sd     = git-utils stg-series-pretty
   info   = git-utils stg-info
   ctx    = git-utils stg-ctx
 

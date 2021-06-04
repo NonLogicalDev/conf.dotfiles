@@ -1,7 +1,5 @@
 #
-# Defines environment variables.
-#
-# Authors:
+# Defines environment variables.  Authors:
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
@@ -57,6 +55,8 @@ export PLATFORM
 #######################################################################
 #                               Imports                               #
 #######################################################################
+
+export ZSH_CACHE_DIR="$HOME/.cache/zsh"
 
 # Ensure that a non-login, non-interactive shell has a defined environment.
 if [[ "$SHLVL" -eq 0 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then

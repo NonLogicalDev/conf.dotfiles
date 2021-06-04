@@ -1,4 +1,3 @@
-
 declare -a __ZSH_ANTIBODY_PLUGINS=(
   "mafredri/zsh-async"
 

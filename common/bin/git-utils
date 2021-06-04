@@ -11,6 +11,11 @@ help() {
 #######################################################################
 #                          Stacked Git Utils                          #
 #######################################################################
+SCRIPT_PATH=$0
+
+help() {
+  cat "$SCRIPT_PATH" | grep '#'':'
+}
 
 
 stg-info() {
@@ -33,8 +38,38 @@ stg-showstat() {
   stg show -O "--name-status" "$@"
 }
 
-stg-lg() {
-  #: stg-lg - prints expanded information about the current stack.
+stg-series-pretty() {
+  #: stg-series-pretty - prints expanded information about the current stack.
+
+  local ARGS=()
+
+  local _full=0
+  local _extra=0
+  local _notes=0
+  local _help=0
+  while [[ $# -gt 0 ]]; do
+    if [[ $1 == (--full|-f) ]]; then
+      _full=1
+      shift
+    elif [[ $1 == (--extra|-e) ]]; then
+      _extra=1
+      shift
+    elif [[ $1 == (--notes|-n) ]]; then
+      _notes=1
+      shift
+    elif [[ $1 == (--help|-h) ]]; then
+      _help=1
+      shift
+    else
+      ARGS+=($1)
+      shift
+    fi
+  done
+
+  if [[ _help -eq 1 ]]; then
+    stg series -h
+    exit $?
+  fi
 
   while read line; do
     stg_patch_status=$(echo $line | awk '{print $1}')
@@ -50,54 +85,59 @@ stg-lg() {
     elif [[ $stg_patch_status == ">" ]]; then
       COLOR=3
     fi
+
     printf "%s$stg_patch_status $stg_patch_name_col%s $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
 
     details=$(
-      printf "%sgit-sha%s $git_sha\n\n" $(tput setaf 4) $(tput sgr0)
+      if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
+        printf "%sgit-sha%s $git_sha\n\n" $(tput setaf 4) $(tput sgr0)
+      fi
 
-      git show -s --format=%b "$git_sha" \
-        | fold -w 80 -s \
-        | perl -0pe 's:[\n\s]+$:\n:' \
-        | sed 's:^:'$(tput setaf 1)'\>'$(tput sgr0)'  :'
-      printf "\n"
+      if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
+        git_commit_msg=$(
+          git show -s --format=%b "$git_sha" \
+            | fold -w 80 -s \
+            | perl -0pe 's:[\n\s]+$:\n:'
+        )
+        if [[ -n $git_commit_msg ]]; then
+          echo "$git_commit_msg" \
+            | sed 's:^:'$(tput setaf 1)'\>'$(tput sgr0)'  :'
+          printf "\n"
+        else
+          echo $(tput setaf 1)'>'$(tput sgr0) "[ No Commit Details ]"
+          printf "\n"
+        fi
+      fi
 
-      git notes show "$git_sha" 2>/dev/null \
-        | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
-        | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
-        | column -tx -s " "
-      printf "\n"
+      if [[ $_full -eq 1 || $_notes -eq 1 ]]; then
+        git_notes=$(
+          git notes show "$git_sha" 2>/dev/null \
+            | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
+        )
+        if [[ -n $git_notes ]]; then
+          echo "$git_notes" \
+            | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
+            | column -tx -s " "
+          printf "\n"
+        fi
+      fi
 
-      git show --name-status --format= "$git_sha" \
-        | perl -pe "s:^(\\s*\\w+)(.*):$(tput setaf 2)\\1$(tput setaf 4)\\2$(tput sgr0):"
+      if [[ $_full -eq 1 ]]; then
+        git show --name-status --format= "$git_sha" \
+          | perl -pe "s:^(\\s*\\w+)(.*):$(tput setaf 2)\\1$(tput setaf 4)\\2$(tput sgr0):"
+      fi
     )
 
-    printf "%s\n \n" $details | sed 's:^:    :'
-  done << EOF
-$(stg series -d "$@")
-EOF
-}
-
-stg-pretty-series() {
-  while read line; do
-    stg_patch_status=$(echo $line | awk '{print $1}')
-    stg_patch_name_col=$(echo $line | awk '{print substr($0,index($0,$2),index($0,$3) - index($0,$2))}')
-    stg_patch_description_col=$(echo $line | awk '{print substr($0,index($0,$4))}')
-    stg_patch_name=$(echo $line | awk '{print $2}')
-
-    git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
-
-    COLOR=1
-    if [[ $stg_patch_status == "+" ]]; then
-      COLOR=2
-    elif [[ $stg_patch_status == ">" ]]; then
-      COLOR=3
+    if [[ -n "$details" ]]; then
+      result=$(
+          printf "%s" "$details"
+          printf "\n \n"
+      )
+      echo "$result" | sed 's:^:    :'
     fi
-    printf "%s$stg_patch_status $stg_patch_name_col%s $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
-
   done << EOF
-$(stg series -d "$@")
+$(stg series -d "${ARGS[@]}")
 EOF
-
 }
 
 stg-bottom() {

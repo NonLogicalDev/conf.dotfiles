@@ -12,17 +12,6 @@
         "**/_build": true
     },
 
-<<<<<<< HEAD
-    "editor.fontFamily": "'Fira Code', 'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
-    // "editor.lineHeight": 16,
-    "editor.fontSize": 12,
-    // "editor.suggestFontSize": 16,
-    // "editor.fontLigatures": false,
-    // "editor.formatOnType": true,
-    // "editor.scrollBeyondLastLine": false,
-||||||| parent of e15e64c... update | home mac
-    "window.zoomLevel": 0,
-
     "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
     "editor.lineHeight": 16,
     "editor.fontSize": 16,
@@ -30,18 +19,9 @@
     "editor.fontLigatures": false,
     "editor.formatOnType": true,
     "editor.scrollBeyondLastLine": false,
-=======
-    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
-    "editor.lineHeight": 16,
-    "editor.fontSize": 16,
-    "editor.suggestFontSize": 16,
-    "editor.fontLigatures": false,
-    "editor.formatOnType": true,
-    "editor.scrollBeyondLastLine": false,
->>>>>>> e15e64c... update | home mac
     "editor.cursorSmoothCaretAnimation": true,
 
-    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.fontSize": 16,
 
     "workbench.tree.indent": 20,
     "workbench.tree.renderIndentGuides": "always",
@@ -139,5 +119,9 @@
             "viewType": "jupyter.notebook.ipynb",
             "filenamePattern": "*.ipynb"
         }
+    ],
+    "yaml.customTags": [
+        "!encrypted/pkcs1-oaep scalar",
+        "!vault scalar"
     ]
 }
