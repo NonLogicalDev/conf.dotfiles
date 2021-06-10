@@ -11,12 +11,6 @@ help() {
 #######################################################################
 #                          Stacked Git Utils                          #
 #######################################################################
-SCRIPT_PATH=$0
-
-help() {
-  cat "$SCRIPT_PATH" | grep '#'':'
-}
-
 
 stg-info() {
   #: stg-info - prints status and expanded information about the current stack.
@@ -161,7 +155,7 @@ stg-gp() {
 stg-ctx() {
   #: stg-ctx - interactively switch stacked git branch.
 
-  stg-branches | fzf "$@" | xargs git switch
+  stg-branches | fzf "$@" --preview 'stg series -b {}' | xargs git switch
 }
 
 stg-branches() {
