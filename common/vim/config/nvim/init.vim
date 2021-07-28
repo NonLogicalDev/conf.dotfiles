@@ -10,8 +10,9 @@
 
 " This line is important, some backwards compatible features break my setup.
 set nocompatible
+set guicursor=
 
-let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+" let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 func! g:Dir(dir)
   if empty(glob(a:dir))
@@ -482,14 +483,21 @@ endfunc
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " GUI Settings: {{{
 
-" Setting Up Colorsheme and fonts
-set nocursorline " improve performance
-let g:lightline={'colorscheme': 'seoul256'}
-set nolazyredraw
+" set nocursorline " improve performance
+" set nolazyredraw
 
+
+" Setting Up Colorsheme and fonts
+
+try
+  let g:lightline={'colorscheme': 'seoul256'}
+  colorscheme Tomorrow
+  set background=light
+catch /.*/
+
+endtry
 if has("gui_running")
   set guifont=menlo:h14
-  "set guifont=dejavu\ sans\ mono\ for\ powerline:h14
   set macmeta
   set transparency=6
   set blurradius=10
@@ -502,26 +510,15 @@ else
   let g:gruvbox_seethru=1
 endif
 
-if exists("neovim_dot_app")
-  call MacSetFont("Menlo", 14)
-endif
-
-
-try
-  colorscheme Tomorrow
-  set background=light
-catch /.*/
-endtry
-
 " }}}
 " NeoVim Settings: {{{
 
 if has('nvim')
   " set termguicolors
 
-  set ttyfast
-  set noshowcmd
-  set nolazyredraw
+  " set ttyfast
+  " set noshowcmd
+  " set nolazyredraw
 
   syntax sync minlines=256
 

@@ -1,8 +1,7 @@
 #!/bin/zsh
-
-# DEPENDENCIES: git-rstash
-
 SCRIPT_PATH=$0
+
+# DEPENDENCIES: git-rstash 
 
 help() {
   cat ${SCRIPT_PATH} | grep "^ *#"":"
@@ -32,6 +31,15 @@ stg-showstat() {
   stg show -O "--name-status" "$@"
 }
 
+stg-list-patches() {
+  #: stg-list-patches - prints undecorated list of patches
+  stg series --noprefix --no-description "$@"
+}
+
+stg-stack-files() {
+  git diff $(stg id $(stg series --noprefix | head -n 1)).. --name-status | cat
+}
+
 stg-series-pretty() {
   #: stg-series-pretty - prints expanded information about the current stack.
 
@@ -41,6 +49,7 @@ stg-series-pretty() {
   local _extra=0
   local _notes=0
   local _help=0
+  local _filter_set=0
   while [[ $# -gt 0 ]]; do
     if [[ $1 == (--full|-f) ]]; then
       _full=1
@@ -54,11 +63,20 @@ stg-series-pretty() {
     elif [[ $1 == (--help|-h) ]]; then
       _help=1
       shift
+    elif [[ $1 == (-a|-A|-U|-H) ]]; then
+      _filter_set=1
+
+      ARGS+=($1)
+      shift
     else
       ARGS+=($1)
       shift
     fi
   done
+
+  if [[ $_filter_set -eq 0 ]]; then
+    ARGS=(-A)
+  fi
 
   if [[ _help -eq 1 ]]; then
     stg series -h
@@ -66,10 +84,27 @@ stg-series-pretty() {
   fi
 
   while read line; do
-    stg_patch_status=$(echo $line | awk '{print $1}')
-    stg_patch_name_col=$(echo $line | awk '{print substr($0,index($0,$2),index($0,$3) - index($0,$2))}')
-    stg_patch_description_col=$(echo $line | awk '{print substr($0,index($0,$4))}')
-    stg_patch_name=$(echo $line | awk '{print $2}')
+    # ZSH-NOTE: ( ${(@f)$( command )} ) splits command output by newline, returns array. (zsh)
+    stg_fields=( "${(@f)$(
+      echo $line | awk '{
+        # stg_patch_status:
+        print $1;
+
+        # stg_patch_name_col:
+        print substr($0, index($0,$2),index($0,$3) - index($0,$2));
+
+        # stg_patch_description_col:
+        print substr($0,index($0,$4));
+
+        # stg_patch_name:
+        print $2
+      }'
+    )}" )
+
+    stg_patch_status=${stg_fields[1]}
+    stg_patch_name_col=${stg_fields[2]}
+    stg_patch_description_col=${stg_fields[3]}
+    stg_patch_name=${stg_fields[4]}
 
     git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
 
@@ -80,7 +115,7 @@ stg-series-pretty() {
       COLOR=3
     fi
 
-    printf "%s$stg_patch_status $stg_patch_name_col%s $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
+    printf "%s$stg_patch_status $stg_patch_name_col%s # $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
 
     details=$(
       if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
@@ -93,14 +128,15 @@ stg-series-pretty() {
             | fold -w 80 -s \
             | perl -0pe 's:[\n\s]+$:\n:'
         )
+
+        commit_prefix="$(tput setaf 1)#$(tput sgr0)"
         if [[ -n $git_commit_msg ]]; then
           echo "$git_commit_msg" \
-            | sed 's:^:'$(tput setaf 1)'\>'$(tput sgr0)'  :'
-          printf "\n"
+            | awk -v prefix="$commit_prefix" '{print prefix " " $0}'
         else
-          echo $(tput setaf 1)'>'$(tput sgr0) "[ No Commit Details ]"
-          printf "\n"
+          echo "$commit_prefix [ No Commit Summary ]"
         fi
+        echo
       fi
 
       if [[ $_full -eq 1 || $_notes -eq 1 ]]; then
@@ -112,7 +148,7 @@ stg-series-pretty() {
           echo "$git_notes" \
             | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
             | column -tx -s " "
-          printf "\n"
+          echo
         fi
       fi
 
@@ -225,6 +261,23 @@ git-quick-log() {
   git log -n 3 --format="%h %al (%ar)%n  %s" "$@"
 }
 
+git-browse-url() {
+  local __file_path=$1
+  local __line_number=$2
+
+  # local __browse_url_tpl=$(git config browse.custom_cmd)
+
+  # if $(git config browse.service) == "sourcegraph"
+  # __url_domain=$(git config browse.domain)
+  # __url_repo=$(git config browse.repo)
+  # __url_tpl=$(git config browse.custom)
+
+  # domain: "https://sourcegraph.com"
+  # repo:   "some-repo-domain/some-repo"
+
+  # echo "${__url_domain}/${__url_repo}/-/blob/${__file_path}#${__line_number}"
+}
+
 #######################################################################
 #                           FARC Extensions                           #
 #######################################################################
@@ -289,4 +342,8 @@ farc-bulk() {
 
 #######################################################################
 
+if [[ "$1" == (-h|--help|-?) ]]; then
+  help
+  exit 125
+fi
 "$@"

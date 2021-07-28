@@ -30,7 +30,7 @@
     "workbench.list.keyboardNavigation": "filter",
 
     "workbench.iconTheme": "vscode-icons",
-    "workbench.colorTheme": "Gatito Theme",
+    "workbench.colorTheme": "GitHub Light Default",
 
     "workbench.colorCustomizations": {
         // "[Atom One Dark]": {
@@ -104,9 +104,16 @@
 
     "python.jediEnabled": false,
 
+    "[go]": {
+        "editor.formatOnSave": false
+    },
+
     "go.gopath": "${env:HOME}/go",
     "go.toolsGopath": "${env:HOME}/go",
-    "go.formatTool": "goimports",
+    "go.formatTool": "gofmt",
+    "gopls": {
+        "formatting.gofumpt": false,
+    },
     "go.useLanguageServer": true,
     "go.useCodeSnippetsOnFunctionSuggest": true,
     "go.trace.server": "verbose",
@@ -114,14 +121,18 @@
     "platformio-ide.disablePIOHomeStartup": true,
     "python.languageServer": "Microsoft",
 
-    "workbench.editorAssociations": [
-        {
-            "viewType": "jupyter.notebook.ipynb",
-            "filenamePattern": "*.ipynb"
-        }
-    ],
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter.notebook.ipynb"
+    },
     "yaml.customTags": [
         "!encrypted/pkcs1-oaep scalar",
         "!vault scalar"
-    ]
+    ],
+    "editor.tabSize": 4,
+    "editor.cursorStyle": "line",
+    "editor.insertSpaces": false,
+    "editor.lineNumbers": "on",
+    "editor.wordSeparators": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-",
+    "editor.wordWrap": "off",
+    "redhat.telemetry.enabled": false
 }

@@ -24,6 +24,7 @@
   # EXTENSIONS:
   ################################################################################
   
+  lsp    = git-utils stg-list-patches
   sd     = git-utils stg-series-pretty
   info   = git-utils stg-info
   ctx    = git-utils stg-ctx
@@ -68,11 +69,11 @@
   # [Status]
   ################################################################################
 
-  st = status
-  stu = status -u
-  lsa = ls-files --exclude-standard
+  st = status -s
+  stu = status -su
+  ls = ls-files --exclude-standard
 
-  stat = show --stat
+  stat = !git --no-pager show --numstat --shortstat --format=
 
   # [DiffDisplay]
   ################################################################################

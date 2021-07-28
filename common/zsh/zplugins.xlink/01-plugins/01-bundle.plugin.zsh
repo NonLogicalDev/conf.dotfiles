@@ -6,6 +6,7 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
   "zsh-users/zsh-history-substring-search"
 
   "nnao45/zsh-kubectl-completion"
+  "hlissner/zsh-autopair"
 
   "rupa/z"
   "changyuheng/fz"

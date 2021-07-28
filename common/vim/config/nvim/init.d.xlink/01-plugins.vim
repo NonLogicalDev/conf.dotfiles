@@ -133,7 +133,7 @@ Plug 'tpope/vim-fugitive' " Git Integration
 
 if (!(version < 704) && (has("python") || has("python3")) )
   " Requires version above 7.4 and a python installed.
-  Plug 'SirVer/ultisnips' " Snippets
+  " Plug 'SirVer/ultisnips' " Snippets
 endif
 
 if has('nvim')
