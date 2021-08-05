@@ -11,6 +11,36 @@ help() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
+stg-apply-set() {
+  #: stg-apply-set - apply patches that match grep expr.
+  local ALL="# ALL #"
+  local ERR="# ERR #"
+
+  local TOAPPLY=$(stg ls -a | grep "$1")
+  local SELECT=$(set -e -o pipefail;
+    ( ( echo "$ALL" && echo "$TOAPPLY" ) | fzf --multi +s ) || echo "$ERR"
+  )
+
+  if [[ $(echo $SELECT | head -n 1) == $ERR ]]; then
+    echo "Aborted" >&2
+    exit 120
+  fi
+  if [[ $(echo $SELECT | head -n 1) != $ALL ]]; then
+    TOAPPLY=$SELECT
+  fi
+
+  echo "APPLYING:"
+  echo "--------"
+  echo "$TOAPPLY"
+  echo "--------"
+
+  stg pop -a
+  (set -e -o pipefail;
+    echo "$TOAPPLY" | xargs -p stg push
+  )
+  return $?
+}
+
 stg-info() {
   #: stg-info - prints status and expanded information about the current stack.
 
@@ -122,7 +152,7 @@ stg-series-pretty() {
         printf "%sgit-sha%s $git_sha\n\n" $(tput setaf 4) $(tput sgr0)
       fi
 
-      if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
+      if [[ $_full -eq 1 ]]; then
         git_commit_msg=$(
           git show -s --format=%b "$git_sha" \
             | fold -w 80 -s \
@@ -139,7 +169,7 @@ stg-series-pretty() {
         echo
       fi
 
-      if [[ $_full -eq 1 || $_notes -eq 1 ]]; then
+      if [[ $_full -eq 1 || $_notes -eq 1 || $_extra -eq 1 ]]; then
         git_notes=$(
           git notes show "$git_sha" 2>/dev/null \
             | perl -pe 's:(arc-revision|depends-on) :$1 D:' \

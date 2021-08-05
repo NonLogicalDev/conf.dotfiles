@@ -32,6 +32,7 @@
   refs   = git-utils stg-refs
 
   rstash = git-utils stg-rstash
+  mpush = git-utils stg-apply-set
 [alias]
   fk    = git-utils farc-quick
   q     = !stg
@@ -115,6 +116,25 @@
   untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
   untrack = update-index --assume-unchanged
   track = update-index --no-assume-unchanged
+  
+  # [Mercurial Queues]
+  ################################################################################
+  qinit = !stg init
+
+  qsd = !stg sd
+  qls = !stg series
+  qseries = !stg series
+  qapplied = !stg series -A
+
+  qnew = !stg new
+  qrefresh = !stg refresh
+
+  qedit = !stg edit
+  qrename = !stg rename
+
+  qpush = !stg push
+  qpop = !stg pop
+  qgoto = !stg goto
 
   # [Extended Commands]
   ################################################################################
