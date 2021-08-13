@@ -31,9 +31,6 @@ if [[ "$OSTYPE" == darwin* ]]; then
   done
 fi
 
-# Setting up Kubeclt Krew
-path_prepend "$HOME/.krew/bin"
-
 #----------------------------------------------------------------------
 # Basic Conf
 #

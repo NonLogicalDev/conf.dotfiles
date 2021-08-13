@@ -101,8 +101,24 @@ function init.vm.go {
   fi
 }
 
+function init.vm.python {
+  if [[ -d "$HOME/.pyenv" ]]; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init --path)"
+
+    INIT_LIST+=("python.vm ($(python --version))")
+  fi
+}
+
+if [[ -d "$HOME/.krew" ]]; then
+  # Setting up Kubeclt Krew
+  path_prepend "$HOME/.krew/bin"
+fi
+
 function init.vmset.basic {
   init.term.iterm
+  init.vm.python
 }
 
 function init.vmset.full {
