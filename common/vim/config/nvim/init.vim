@@ -49,11 +49,15 @@ call g:Dir(g:VimData(""))
 " Set up Python on macOS:
 if filereadable("/usr/local/opt/asdf/shims/python2")
   let g:python_host_prog = '/usr/local/opt/asdf/shims/python2'
+elseif filereadable(expand("~/.pyenv/shims/python2"))
+  let g:python_host_prog = expand('~/.pyenv/shims/python2')
 elseif filereadable("/usr/local/bin/python2")
   let g:python_host_prog = '/usr/local/bin/python2'
 endif
 if filereadable("/usr/local/opt/asdf/shims/python3")
   let g:python3_host_prog = '/usr/local/opt/asdf/shims/python3'
+elseif filereadable(expand("~/.pyenv/shims/python3"))
+  let g:python3_host_prog = expand('~/.pyenv/shims/python3')
 elseif filereadable("/usr/bin/python3")
   let g:python3_host_prog = '/usr/bin/python3'
 endif
