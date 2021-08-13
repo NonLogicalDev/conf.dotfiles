@@ -304,7 +304,6 @@ func! FoldUP()
   set foldenable
   set foldmethod=syntax
   set foldnestmax=1
-  SemanticHighlight
 endf
 
 " }}}
@@ -491,11 +490,11 @@ endfunc
 
 try
   let g:lightline={'colorscheme': 'seoul256'}
-  colorscheme Tomorrow
-  set background=light
+  colorscheme bubblegum
+  " set background=light
 catch /.*/
-
 endtry
+
 if has("gui_running")
   set guifont=menlo:h14
   set macmeta

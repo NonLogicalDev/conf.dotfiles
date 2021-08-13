@@ -63,10 +63,12 @@ Plug 'rizzatti/funcoo.vim'
 " }}}
 " Language Definitions: {{{
 
-Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
 Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
+
 Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
 Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
+
+Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
 Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
 Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
 
@@ -265,7 +267,7 @@ imap <C-Tab> <C-y>,
 " }}}
 " Semantic: {{{
 
-autocmd BufEnter,BufRead,BufWritePost *.go,*.py,*.jsx,*.js call s:Semantic()
+" autocmd BufEnter,BufRead,BufWritePost *.go,*.py,*.jsx,*.js call s:Semantic()
 
 func! s:Semantic()
   try
@@ -295,36 +297,36 @@ let g:semanticContainedlistOverride = {
         \ 'jsFutureKeys',
       \], ","),
       \ }
-
-let g:semanticBlacklistOverride = {
-      \ 'go': [
-        \ 'break',
-        \ 'default',
-        \ 'func',
-        \ 'interface',
-        \ 'select',
-        \ 'case',
-        \ 'defer',
-        \ 'go',
-        \ 'map',
-        \ 'struct',
-        \ 'chan',
-        \ 'else',
-        \ 'goto',
-        \ 'package',
-        \ 'switch',
-        \ 'const',
-        \ 'fallthrough',
-        \ 'if',
-        \ 'range',
-        \ 'type',
-        \ 'continue',
-        \ 'for',
-        \ 'import',
-        \ 'return',
-        \ 'var'
-      \ ]
-\ }
+"
+" let g:semanticBlacklistOverride = {
+"       \ 'go': [
+"         \ 'break',
+"         \ 'default',
+"         \ 'func',
+"         \ 'interface',
+"         \ 'select',
+"         \ 'case',
+"         \ 'defer',
+"         \ 'go',
+"         \ 'map',
+"         \ 'struct',
+"         \ 'chan',
+"         \ 'else',
+"         \ 'goto',
+"         \ 'package',
+"         \ 'switch',
+"         \ 'const',
+"         \ 'fallthrough',
+"         \ 'if',
+"         \ 'range',
+"         \ 'type',
+"         \ 'continue',
+"         \ 'for',
+"         \ 'import',
+"         \ 'return',
+"         \ 'var'
+"       \ ]
+" \ }
 " }}}
 " Deoplete: {{{
 

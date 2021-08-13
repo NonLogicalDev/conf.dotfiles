@@ -1,6 +1,8 @@
 " vim: ft=vim
-" colorscheme dmoda
-" colorscheme Default
+
+colorscheme modern
+
+" ------------------------------------------------------------------------------
 
 set nofollowlinks
 set fillchars=vborder:'│'
@@ -8,19 +10,20 @@ set viewcolumns=-{name},6{size},15{mtime}
 
 set vicmd=nvim
 
+" ------------------------------------------------------------------------------
+
 fileview */ tree -C -L 1 %c 
 fileview *.zip unzip -vl %c
-
-" screen
 filextype *.pdf, *.jpg 
       \ {View in default OSX app} 
       \ open %c
+
+" ------------------------------------------------------------------------------
 
 map o :!open %f<CR>
 map O :!qlmanage -p %f > /dev/null 2>/dev/null &<CR>
 
 map .c :!code %f > /dev/null 2>/dev/null &<CR>
 map .i :!idea %f > /dev/null 2>/dev/null &<CR>
-
 
 command link :execute '!ln -s %d/%f %D'
