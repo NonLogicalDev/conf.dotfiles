@@ -1,10 +1,21 @@
 #!/bin/zsh
 SCRIPT_PATH=$0
 
-# DEPENDENCIES: git-rstash 
-
 help() {
-  cat ${SCRIPT_PATH} | grep "^ *#"":"
+  cat ${SCRIPT_PATH} | grep "^ *#"":" | sed 's/^ *#://'
+}
+
+_die() {
+  if [[ -n $1 ]]; then
+    echo "ERROR: $1" >&2
+    echo
+  fi
+
+  if [[ -n $__DOC__ ]]; then
+    echo "$__DOC__" >&2
+  fi
+
+  exit 128
 }
 
 #######################################################################
@@ -12,7 +23,10 @@ help() {
 #######################################################################
 
 stg-apply-set() {
-  #: stg-apply-set - apply patches that match grep expr.
+  #: stg-apply-set [GREP_EXPR]
+  #:   interactively apply patches on the stack that match $GREP_EXPR
+  #:
+
   local ALL="# ALL #"
   local ERR="# ERR #"
 
@@ -42,7 +56,9 @@ stg-apply-set() {
 }
 
 stg-info() {
-  #: stg-info - prints status and expanded information about the current stack.
+  #: stg-info
+  #:   print status and expanded information about the current stack.
+  #:
 
   echo "## Status:"
   git -c color.status=always status -s \
@@ -51,27 +67,44 @@ stg-info() {
   echo
 
   echo "## Stack:"
-  stg-pretty-series \
+  stg-pretty-series -e \
     | sed 's:^:    :'
 }
 
-stg-showstat() {
-  #: stg-showstat - prints the modified files
 
-  stg show -O "--name-status" "$@"
+stg-overview() {
+  #: stg-overview
+  #:   prints an overview of all currently active stg branches.
+  #:   (i.e. prints out the current stack state)
+  #:
+
+  stg-branches | xargs -I {} sh -c 'echo "::::: {}" && stg series -b {} && echo'
 }
 
 stg-list-patches() {
-  #: stg-list-patches - prints undecorated list of patches
+  #: stg-list-patches [<stg series options>]
+  #:   prints undecorated list of patches
+  #:
+
   stg series --noprefix --no-description "$@"
 }
 
 stg-stack-files() {
+  #: stg-stack-files
+  #:   show all files the patches in the stack modify
+  #:
+
   git diff $(stg id $(stg series --noprefix | head -n 1)).. --name-status | cat
 }
 
 stg-series-pretty() {
-  #: stg-series-pretty - prints expanded information about the current stack.
+  #: stg-series-pretty [-f] [-e] [-n] [<stg series options>]
+  #:   prints expanded information about the patches in the current stack
+  #:
+  #:   -n | --notes : show notes associated with git commit
+  #:   -e | --extra : show git sha, notes
+  #:   -f | --full  : show git sha, notes, commit msg & files affected
+  #:
 
   local ARGS=()
 
@@ -201,42 +234,95 @@ EOF
 }
 
 stg-bottom() {
-  #: stg-bottom - get the sha of the first commit in the stack.
-  stg ls -A | head -n 1 | xargs stg id
+  #: stg-bottom
+  #:   get the sha of the first applied commit in the stack
+  #:
+
+  stg-list-patches -A | head -n 1 | xargs stg id
 }
 
+stg-top() {
+  #: stg-top
+  #:   get the sha of the last applied commit in the stack
+  #:
 
-stg-gn() {
-  #: stg-gn - go to next patch in the stack.
-
-  stg goto "$@" "$(stg next)"
+  stg-list-patches -A | tail -n 1 | xargs stg id
 }
 
-stg-gp() {
-  #: stg-gp - go to previous patch in the stack.
-
-  stg goto "$@" "$(stg prev)"
-}
 
 stg-ctx() {
-  #: stg-ctx - interactively switch stacked git branch.
+  #: stg-ctx
+  #:   interactively switch stacked git branch
+  #:
 
-  stg-branches | fzf "$@" --preview 'stg series -b {}' | xargs git switch
+  stg-branches | fzf "$@" --preview 'stg series -b {}' | xargs stg branch --switch
 }
 
 stg-branches() {
-  git branch | cut -c 3- | grep .stgit | sed s:.stgit::
+  #: stg-ctx
+  #:   list all stacked git enabled branches
+  #:
+
+  git branch | cut -c 3- | grep .stgit | sed 's:.stgit::'
 }
 
 stg-rstash() {
-  #: stg-rstash - interactively switch stacked git branch.
+  #: stg-rstash
+  #:   stash/publish the current patch to the remote
+  #:
 
-  git rstash "$@" -- "HEAD:$(stg top)";
+  # Check that Stg is enabled
+  stg top 2>/dev/null >/dev/null
+  if [[ $? -ne 0 ]]; then
+    _die "stg-rstash: ${GIT_BRANCH}: branch not initialized"
+  fi
+
+  STG_PATCH_NAME=$(stg top)
+
+  git-rstash "$@" -- "HEAD:${STG_PATCH_NAME}"
 }
 
-stg-refs() {
+stg-publish() {
+  #: stg-publish <REMOTE> [REMOTE_BRANCH]
+  #:   publish the current stack to the remote
+  #:
+
+  local REMOTE_NAME="$1"
+  local REMOTE_BRANCH="$2"
+  shift 2
+
+  # Check that Stg is enabled
+  stg top 2>/dev/null >/dev/null
+  if [[ $? -ne 0 ]]; then
+    _die "stg-publish: ${GIT_BRANCH}: branch not initialized"
+  fi
+
+  local GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  local GIT_BRANCH_STG="${GIT_BRANCH}.stgit"
+
+  if [[ -z $REMOTE_BRANCH ]]; then
+    REMOTE_BRANCH="$GIT_BRANCH"
+  fi
+  local REMOTE_BRANCH_STG="${REMOTE_BRANCH}.stgit"
+
+  if [[ -z $(git branch --list ${GIT_BRANCH_STG}) ]]; then
+    _die "stg-rstash: ${GIT_BRANCH_STG}: does not exist"
+  fi
+
+  git push "$REMOTE_NAME" \
+      "${GIT_BRANCH}:${REMOTE_BRANCH}" \
+      "${GIT_BRANCH_STG}:${REMOTE_BRANCH_STG}"
+}
+
+stg-heads() {
+  #: stg-heads [-n]
+  #:   print out HEAD offset references for all applied patches
+  #:
+  #:   (-n): print references in one line, one per line otherwise
+  #:
+
   local REFS=()
-  for i in $(seq 0 $(stg series |wc -l)); do
+  for i in $(seq 0 $(stg series -A |wc -l)); do
     REFS+=("HEAD~$i")
   done
   if [[ $1 == "-n" ]]; then
@@ -246,67 +332,278 @@ stg-refs() {
   fi
 }
 
-stg-overview() {
-  stg-branches | xargs -I {} sh -c 'echo "::::: {}" && stg series -b {} && echo'
-}
-
 #######################################################################
 #                            Git Utilites                             #
 #######################################################################
-
-git-ctx() {
-  git-branch-log 100 \
-  | grep -v ".stgit" \
-  | fzf +s "$@" --preview='git-utils git-quick-log -n 5 {}' --height "100%" --preview-window="right:60%" \
-  | xargs git switch
-}
-
-git-branch-history() {
-  local __max_num=${1:-20}
-
-  git-branch-history-list ${__max_num} \
-    | awk '{print $2 "%%" "<-" "%%" $1}' \
-    | column -tx -s "%%" \
-    | less
-}
-
-git-branch-log() {
-  local __max_num=${1:-20}
-
-  git-branch-history-list ${__max_num} \
-    | awk '{print $2}' \
-    | awk '!x[$0]++'
-}
-
-git-branch-history-list() {
-  local __max_num=$1
-
-  git reflog \
-    | grep --line-buffered 'checkout: moving from' \
-    | perl -pe 's/.*moving from (.+) to (.+)/$1 $2/'  \
-    | head -n ${__max_num}
-}
 
 git-quick-log() {
   git log -n 3 --format="%h %al (%ar)%n  %s" "$@"
 }
 
-git-browse-url() {
-  local __file_path=$1
-  local __line_number=$2
+git-info() {
+  GIT_UPSTREAM=$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null)
 
-  # local __browse_url_tpl=$(git config browse.custom_cmd)
-
-  # if $(git config browse.service) == "sourcegraph"
-  # __url_domain=$(git config browse.domain)
-  # __url_repo=$(git config browse.repo)
-  # __url_tpl=$(git config browse.custom)
-
-  # domain: "https://sourcegraph.com"
-  # repo:   "some-repo-domain/some-repo"
-
-  # echo "${__url_domain}/${__url_repo}/-/blob/${__file_path}#${__line_number}"
+  if [[ -z "$GIT_UPSTREAM" ]]; then
+    git lg -n 5
+  else
+    GIT_MERGEPOINT=$(git merge-base --fork-point $GIT_UPSTREAM)
+    git lg ${GIT_MERGEPOINT}^1..HEAD
+  fi
 }
+
+git-ctx() {
+  #: git-ctx
+  #:   interactively switch to a different branch using FZF with log preview
+  #:
+
+  git-branch-log 100 \
+  | fzf +s "$@" --preview='git-utils git-quick-log -n 5 {}' --height "100%" --preview-window="right:60%" \
+  | xargs git switch
+}
+
+git-branch-log() {
+  #: git-branch-log
+  #:   show branch history, i.e. show branches in the order of last visited
+  #:
+
+  local __max_num=${1:-20}
+
+  git-branch-history-list \
+    | awk '{print $1}' \
+    | awk '!x[$0]++' \
+    | head -n ${__max_num}
+}
+
+git-branch-history() {
+  #: git-branch-history
+  #:   show branch switching history, i.e. show moving between branches in the order of last visited
+  #:
+
+  local __max_num=${1:-20}
+
+  git-branch-history-list \
+    | awk '{print $2 "%%" "<-" "%%" $1}' \
+    | column -tx -s "%%" \
+    | head -n ${__max_num}
+}
+
+
+git-branch-history-list() {
+  git reflog \
+    | grep --line-buffered 'checkout: moving from' \
+    | perl -pe 's/.*moving from (.+) to (.+)/$1\t$2/'
+}
+
+git-browse() {
+  local __url=$(git-browse-url "$@")
+  if [[ -n $__url ]]; then
+    ( set -x; open $__url; )
+  else
+    _die "git-browse not configured"
+  fi
+}
+
+git-browse-url() {
+  # browse.url-file [local]
+  # browse.url-dir [local]
+  #
+  # browse.service [local]
+  # browse.service-default [global]
+  #
+  # browse.sourcegraph.domain [global]
+  # browse.sourcegraph.repo [local]
+  #
+  # browse.github.domain [global]
+  # browse.github.repo [local]
+
+  local __file_path=""
+  if [[ -n $1 ]]; then
+    __file_path=$(git ls-files --full-name "$1")
+  fi
+  local __line=$2
+
+  local __browse_url_file_expr=""
+  local __browse_url_dir_expr=""
+
+  local __browse_service=$(git config browse.service)
+  local __browse_service_default=$(git config browse.service-default)
+  local __origin_url=$(git remote get-url origin)
+
+  if [[ -z $__browse_service ]]; then
+    if [[ $__origin_url =~ ".*github.com.*" ]]; then
+      __browse_service="github"
+    else
+      __browse_service="$__browse_service_default"
+    fi
+  fi
+
+  case $__browse_service in
+    "sourcegraph")
+      local __sg_domain=$(git config browse.sourcegraph.domain) # https://sourcegraph.domain.com
+      local __sg_repo=$(git config browse.sourcegraph.repo)     # repo/path
+
+      if [[ -z $__sg_domain ]]; then
+        __sg_domain="https://sourcegraph.com"
+      fi
+      if [[ -z $__sg_repo ]]; then
+        __sg_repo=$(echo $__origin_url | perl -pe 's/^(.+@)//,s/:/\//')
+      fi
+
+      __browse_url_file_expr='${__sg_domain}/${__sg_repo}/-/blob/${__file_path}#L${__line}'
+      __browse_url_dir_expr='${__sg_domain}/${__sg_repo}/-/blob/${__file_path}'
+      ;;
+
+    "github")
+      local __gh_domain=$(git config browse.github.domain) # https://sourcegraph.domain.com
+      local __gh_repo=$(git config browse.github.repo)     # repo/path
+
+      if [[ -z $__sg_domain ]]; then
+        __gh_domain="https://github.com"
+      fi
+      if [[ -z $__sg_repo ]]; then
+        __gh_repo=$(echo $__origin_url  | perl -pe 's/^(.+@)(github.com:)?//,s/\.git$//,s/:/\//')
+      fi
+
+      __browse_url_file_expr='${__gh_domain}/${__gh_repo}/blob/HEAD/${__file_path}#L${__line}'
+      __browse_url_dir_expr='${__gh_domain}/${__gh_repo}/tree/HEAD/${__file_path}'
+      ;;
+  esac
+
+  local __u_browse_url_file_expr=$(git config browse.url-file)
+  if [[ -n $__u_browse_url_file_expr ]]; then
+    __browse_url_file_expr=$__u_browse_url_file_expr
+  fi
+
+  local __u_browse_url_dir_expr=$(git config browse.url-dir)
+  if [[ -n $__u_browse_url_dir_expr ]]; then
+    __browse_url_dir_expr=$__u_browse_dir_file_expr
+  fi
+
+  if [[ -d "$1" ]]; then
+    eval echo ${__browse_url_dir_expr}
+  else
+    eval echo ${__browse_url_file_expr}
+  fi
+}
+
+git-rstash() {
+  PROG="$(basename $0)"
+
+  local REF_FOLDER=$(git config --get rstash.ref)
+  if [[ -z $REF_FOLDER ]]; then
+    REF_FOLDER=$(whoami)
+  fi
+
+  local REF_PREFIX=$(git config --get rstash.prefix)
+  if [[ -z $REF_PREFIX ]]; then
+    REF_PREFIX=refs/heads
+  fi
+
+  local REF_REMOTE=$(git config --get rstash.remote)
+  if [[ -z $REF_REMOTE ]]; then
+    REF_REMOTE=origin
+  fi
+
+  local REMOTE_PREFIX="${REF_PREFIX}/${REF_FOLDER}"
+
+  local __DOC__=$(
+    echo "INFO:"
+    echo "  A utility for stashing branches to a remote."
+    echo "  It stashes given commits under: [REMOTE]/${REMOTE_PREFIX}"
+    echo "Usage:"
+    echo "  $PROG REMOTE [SPEC...]"
+    echo "Parameters:"
+    echo "  - REMOTE: git remote to use as a remote stash"
+    echo "  - SPEC: git refspec, ex: HEAD:<remote_name>"
+    echo "Variations:"
+    echo "  -- [SPEC...]          : to use default remote"
+    echo "Settings:"
+    echo "  --set-ref <ref>       : to set which remote prefix to use"
+    echo "  --set-remote <remote> : to set which remote to use by default"
+    echo "  --get                 : to get current settings"
+  )
+
+  for i in "$@"; do
+    case $i; in
+      --set-ref)
+        shift 1
+        git config rstash.ref $1
+        break
+        ;;
+
+      --set-remote)
+        shift 1
+        git config rstash.remote $1
+        break
+        ;;
+
+      --get)
+        echo "rstash.ref     : $REF_FOLDER"
+        echo "rstash.prefix  : $REF_PREFIX"
+        echo "rstash.remote  : $REF_REMOTE"
+        echo
+        echo "@remote-prefix : $REMOTE_PREFIX"
+        break
+        ;;
+
+      --)
+        shift 1
+        __git_rstash_internal $REF_REMOTE "$@"
+        break
+        ;;
+
+      *)
+        __git_rstash_internal "$@"
+        break
+        ;;
+    esac
+  done
+}
+
+__git_rstash_internal() {
+  # ENV: REMOTE_PREFIX
+
+  local REMOTE="$1"
+  shift
+
+  local DRY_RUN=
+
+  [[ -z $REMOTE ]] && _die "Remote not specified."
+  if [[ $REMOTE == "-d" ]]; then
+    DRY_RUN=true
+  fi
+
+  if [[ -z $DRY_RUN ]] && ! ( git remote | grep -e "$REMOTE" -q ); then
+    _die "Remote $REMOTE not found."
+  fi
+
+  [[ -z "$@" ]] && _die "Must provide at least one spec."
+
+  local GIT_ARGS=()
+  for arg in "$@"; do
+    local A=(${(s_:_)arg})
+
+    local L=${A[1]};
+    local R=${(j_:_)${A[@]:1}}
+
+    if [[ -z $R ]]; then
+      if [[ $L == "HEAD" ]]; then
+        R=$(git rev-parse --abbrev-ref HEAD)
+      else
+        R=$L
+      fi
+    fi
+
+    GIT_ARGS+="${L}:${REMOTE_PREFIX}/${R}"
+  done
+
+  if [[ -z $DRY_RUN ]]; then
+    ( set -x; git push -f $REMOTE $GIT_ARGS )
+  else
+    ( set -x; : git push -f "[remote]" $GIT_ARGS )
+  fi
+}
+
 
 #######################################################################
 #                           FARC Extensions                           #

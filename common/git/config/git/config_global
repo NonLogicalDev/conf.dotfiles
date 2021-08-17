@@ -138,6 +138,8 @@
 
   # [Extended Commands]
   ################################################################################
+  
+  browse = !git-utils git-browse
 
   sum = show --format=medium --stat
 
