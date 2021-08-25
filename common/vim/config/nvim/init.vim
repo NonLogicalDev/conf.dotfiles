@@ -85,6 +85,14 @@ if ! exists("*s:OpenConfig")
   endfunc
 endif
 
+" Open the vimrc dir
+command! ConfigDir call s:OpenConfigDir()
+if ! exists("*s:OpenConfigDir")
+  func! s:OpenConfigDir()
+    exec "tabedit " . g:VimConfig(".")
+  endfunc
+endif
+
 " }}}
 " Encoding Settings: {{{
 

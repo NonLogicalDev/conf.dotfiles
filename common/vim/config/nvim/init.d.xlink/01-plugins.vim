@@ -91,6 +91,7 @@ Plug 'nonlogicaldev/vim.color.gruvbox'
 " }}}
 " Interface Plugins: {{{
 
+Plug 'ojroques/vim-oscyank'  " Use OSC 52 for copying to clibboard
 Plug 'vimwiki/vimwiki'       " Personal Wiki
 
 Plug 'scrooloose/nerdtree'   " Ex Browser Replacement
