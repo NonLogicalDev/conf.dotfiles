@@ -30,7 +30,7 @@ stg-apply-set() {
   local ALL="# ALL #"
   local ERR="# ERR #"
 
-  local TOAPPLY=$(stg ls -a | grep "$1")
+  local TOAPPLY=$(stg ls -a | grep "^$1")
   local SELECT=$(set -e -o pipefail;
     ( ( echo "$ALL" && echo "$TOAPPLY" ) | fzf --multi +s ) || echo "$ERR"
   )

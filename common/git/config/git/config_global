@@ -2,14 +2,26 @@
 [core]
   excludesfile = ~/.config/git/ignore_global
   hooksPath = "~/bin/git-hooks"
+[commit]
+  verbose = true
+[push]
+  default = simple
+[rerere]
+  enabled = true
 [pager]
-  lg = false
+  lg  = false
+  lgg = false
+
+  affected     = false
+  affected-ls  = false
+  confilcts    = false
+  confilcts-ls = false
 [pretty]
-  nice = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
+  nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
-  nice = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar)%C(yellow)%d%Creset
-  nice-old = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
-  nice-cols = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
+  nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar)%C(yellow)%d%Creset
+  nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
+  nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
   rff = stg refresh --force
   rfi = stg refresh --index
@@ -32,71 +44,67 @@
   refs   = git-utils stg-refs
 
   rstash = git-utils stg-rstash
-  mpush = git-utils stg-apply-set
+  mpush  = git-utils stg-apply-set
 [alias]
-  fk    = git-utils farc-quick
-  q     = !stg
-  queue = !stg
 
   # [Basics]
   ################################################################################
 
-  f = fetch -n
-  b = branch
+  b  = branch
   co = checkout
-  a = add -u
+
+  addu  = add -u
+  adda  = add -a
 
   ctx = !git-utils git-ctx -q "ctx/"
-  bls = !git branch | grep ctx/ | grep -v .stgit
-  bh = !git reflog -n 10000 | grep 'checkout: moving from' | perl -pe 's/.*moving from (.+) to (.+)/$2 %% <- %% $1/' | column -tx -s "%%"
 
   # [Logging]
   ################################################################################
 
-  lg = log -n 10 --first-parent --pretty=nice
-  lgg = log -n 10 --graph --pretty=nice
-  lgt = !git lg --pretty=nice-cols --color | column -xt -s "::"
-  lgu = !git lg -n 100 $(git upstream)..HEAD
+  lg   = log -n 10 --first-parent --pretty=nice
+  lgg  = log -n 10 --graph --pretty=nice
+  lgt  = !git lg --pretty=nice-cols --color | column -xt -s "::"
+  lgu  = !git lg -n 100 $(git upstream)..HEAD
   lguu = !git lg -n 100 HEAD..$(git upstream)
-  lgf = lg --follow
+  lgf  = lg --follow
 
   # [FastForward]
   ################################################################################
 
-  pullr = pull --rebase
-  pullff = pull --ff-only
+  pullr   = pull --rebase
+  pullff  = pull --ff-only
   mergeff = merge --ff-only
 
   # [Status]
   ################################################################################
-
-  st = status -s
+MSP-5064
+  st  = status -s
   stu = status -su
-  ls = ls-files --exclude-standard
 
-  stat = !git --no-pager show --numstat --shortstat --format=
+  ls   = ls-files --exclude-standard
+  stat = !git --no-pager show --numstat --shortstat --format =
 
   # [DiffDisplay]
   ################################################################################
 
-  d = diff
-  dc = diff --cached
+  d     = diff
+  dc    = diff --cached
   diffc = diff --cached
 
   # [Commits]
   ################################################################################
 
-  c = commit
+  c  = commit
   cm = commit -m
 
-  ca = commit --amend
-  cah = commit --amend -C HEAD
+  ca   = commit --amend
+  cah  = commit --amend -C HEAD
   caha = commit --amend -C HEAD -a
 
   # [Rebase]
   ################################################################################
 
-  rb = rebase
+  rb  = rebase
   rbe = rebase --edit
   rbc = rebase --continue
   rbi = rebase -i
@@ -107,33 +115,35 @@
   # [Submodules]
   ################################################################################
 
-  su = submodule update
+  su  = submodule update
   suc = submodule update --checkout
 
   # [FileTracking]
   ################################################################################
 
   untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
-  untrack = update-index --assume-unchanged
-  track = update-index --no-assume-unchanged
+  untrack   = update-index --assume-unchanged
+  track     = update-index --no-assume-unchanged
   
   # [Mercurial Queues]
   ################################################################################
+  q = !stg
+
   qinit = !stg init
 
-  qsd = !stg sd
-  qls = !stg series
-  qseries = !stg series
+  qsd      = !stg sd
+  qls      = !stg series
+  qseries  = !stg series
   qapplied = !stg series -A
 
-  qnew = !stg new
+  qnew     = !stg new
   qrefresh = !stg refresh
 
-  qedit = !stg edit
+  qedit   = !stg edit
   qrename = !stg rename
 
   qpush = !stg push
-  qpop = !stg pop
+  qpop  = !stg pop
   qgoto = !stg goto
 
   # [Extended Commands]
@@ -143,11 +153,14 @@
 
   sum = show --format=medium --stat
 
-  # root -- Returns the root folder of the Current Git Repo.
+  # root -- Returns the root folder of the repo.
   root = rev-parse --show-toplevel
 
-  # root -- Returns the root folder of the Current Git Repo.
-  dir = rev-parse --git-dir
+  # dir -- Returns the location of the git dir (worktree's index dir)
+  dir-git = rev-parse --git-dir
+  
+  # dir -- Returns the location of the git dir (database dir)
+  dir-db = rev-parse --git-common-dir
 
   # upstream -- Returns the upstream of the current branch.
   upstream = "!f() { git rev-parse --abbrev-ref ${1:-HEAD}@{upstream}; }; f"
@@ -165,46 +178,29 @@
   # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
   affected = show --format="" --name-status
-  affected-list = show --format="" --name-only
+  affected-ls = show --format="" --name-only
   conflicts = diff --name-status --diff-filter=U
-  conflicts-list = diff --name-only --diff-filter=U
-
-  #check = !mono-check
+  conflicts-ls = diff --name-only --diff-filter=U
+  
+  # [Extended Commands :: Phabricator]
+  ################################################################################
 
   # arc integration
-  stack = !farc upload HEAD~1..HEAD
-  stack-all = !farc upload
-  stack-land = !arc stack --keep-branch
-  stack-sync = !farc sync-from-phab
+  arc-upload = !arc diff "HEAD~1"
+  arc-draft  = arc-upload --only
 
-  lint = !arc lint --rev HEAD~1 --trace --apply-patches
-  unit = !arc unit --rev HEAD~1 --trace
-  check = !git lint && git unit
+  arc-lint = !arc lint --rev HEAD~1 --trace --apply-patches
+  arc-unit = !arc unit --rev HEAD~1 --trace
 
-  upload = !arc diff --base="git:HEAD~1"
-  upload-wip = !git upload --plan-change --nounit --nolint --excuse WIP
-  upload-draft = !git upload --only
-
-[commit]
-  verbose = true
+  # farc integration
+  farc-push   = !farc upload HEAD~1..HEAD
+  farc-edit   = !git notes --ref refs/notes/farc edit
 [diff]
   tool = vimdiff
   algorithm = histogram
-[push]
-  default = simple
 [merge]
   tool = vimdiff
   conflictstyle = diff3
-[rerere]
-  enabled = true
-[difftool "sourcetree"]
-  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\"
-  path =
-[mergetool "sourcetree"]
-  cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-  trustExitCode = true
-[mergetool "vscode"]
-  cmd = code --wait $MERGED
 [tig "color"]
   cursor = green black
   title-focus = green black
