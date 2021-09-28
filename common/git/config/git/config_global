@@ -8,6 +8,8 @@
   default = simple
 [rerere]
   enabled = true
+[log]
+  excludeDecoration = refs/patches/*
 [pager]
   lg  = false
   lgg = false
@@ -25,17 +27,20 @@
 [stgit.alias]
   rff = stg refresh --force
   rfi = stg refresh --index
+  rfu = git stg-rfu
 
   bb = stg branch
   ls = stg series --noprefix
   lg = stg series -d
 
   add = git add
+  farc = git-utils stg-farc
 
   ################################################################################
   # EXTENSIONS:
   ################################################################################
-  
+
+  tig    = git-utils stg-tig
   lsp    = git-utils stg-list-patches
   sd     = git-utils stg-series-pretty
   info   = git-utils stg-info
@@ -46,6 +51,7 @@
   rstash = git-utils stg-rstash
   mpush  = git-utils stg-apply-set
 [alias]
+  stg-rfu = !git add -u && stg rfi
 
   # [Basics]
   ################################################################################

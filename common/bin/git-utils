@@ -22,6 +22,10 @@ _die() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
+stg-tig() {
+  tig $(stg id $(stg series -A --noprefix | head -n1))~2..
+}
+
 stg-apply-set() {
   #: stg-apply-set [GREP_EXPR]
   #:   interactively apply patches on the stack that match $GREP_EXPR
@@ -50,9 +54,16 @@ stg-apply-set() {
 
   stg pop -a
   (set -e -o pipefail;
-    echo "$TOAPPLY" | xargs -p stg push
+    echo "$TOAPPLY" | xargs -p stg push --noapply
   )
-  return $?
+  if [[ $? -ne 0 ]]; then
+    return $?
+  fi
+
+  local SELECT=$(echo $TOAPPLY | fzf --prompt 'goto:')
+  if [[ -n $SELECT ]]; then
+    stg goto $SELECT
+  fi
 }
 
 stg-info() {
@@ -67,7 +78,7 @@ stg-info() {
   echo
 
   echo "## Stack:"
-  stg-pretty-series -e \
+  stg-series-pretty -e \
     | sed 's:^:    :'
 }
 
@@ -279,7 +290,7 @@ stg-rstash() {
 
   STG_PATCH_NAME=$(stg top)
 
-  git-rstash "$@" -- "HEAD:${STG_PATCH_NAME}"
+  git rstash "$@" -- "HEAD:${STG_PATCH_NAME}"
 }
 
 stg-publish() {
@@ -394,216 +405,10 @@ git-branch-history-list() {
     | perl -pe 's/.*moving from (.+) to (.+)/$1\t$2/'
 }
 
-git-browse() {
-  local __url=$(git-browse-url "$@")
-  if [[ -n $__url ]]; then
-    ( set -x; open $__url; )
-  else
-    _die "git-browse not configured"
-  fi
-}
-
-git-browse-url() {
-  # browse.url-file [local]
-  # browse.url-dir [local]
-  #
-  # browse.service [local]
-  # browse.service-default [global]
-  #
-  # browse.sourcegraph.domain [global]
-  # browse.sourcegraph.repo [local]
-  #
-  # browse.github.domain [global]
-  # browse.github.repo [local]
-
-  local __file_path=""
-  if [[ -n $1 ]]; then
-    __file_path=$(git ls-files --full-name "$1")
-  fi
-  local __line=$2
-
-  local __browse_url_file_expr=""
-  local __browse_url_dir_expr=""
-
-  local __browse_service=$(git config browse.service)
-  local __browse_service_default=$(git config browse.service-default)
-  local __origin_url=$(git remote get-url origin)
-
-  if [[ -z $__browse_service ]]; then
-    if [[ $__origin_url =~ ".*github.com.*" ]]; then
-      __browse_service="github"
-    else
-      __browse_service="$__browse_service_default"
-    fi
-  fi
-
-  case $__browse_service in
-    "sourcegraph")
-      local __sg_domain=$(git config browse.sourcegraph.domain) # https://sourcegraph.domain.com
-      local __sg_repo=$(git config browse.sourcegraph.repo)     # repo/path
-
-      if [[ -z $__sg_domain ]]; then
-        __sg_domain="https://sourcegraph.com"
-      fi
-      if [[ -z $__sg_repo ]]; then
-        __sg_repo=$(echo $__origin_url | perl -pe 's/^(.+@)//,s/:/\//')
-      fi
-
-      __browse_url_file_expr='${__sg_domain}/${__sg_repo}/-/blob/${__file_path}#L${__line}'
-      __browse_url_dir_expr='${__sg_domain}/${__sg_repo}/-/blob/${__file_path}'
-      ;;
-
-    "github")
-      local __gh_domain=$(git config browse.github.domain) # https://sourcegraph.domain.com
-      local __gh_repo=$(git config browse.github.repo)     # repo/path
-
-      if [[ -z $__sg_domain ]]; then
-        __gh_domain="https://github.com"
-      fi
-      if [[ -z $__sg_repo ]]; then
-        __gh_repo=$(echo $__origin_url  | perl -pe 's/^(.+@)(github.com:)?//,s/\.git$//,s/:/\//')
-      fi
-
-      __browse_url_file_expr='${__gh_domain}/${__gh_repo}/blob/HEAD/${__file_path}#L${__line}'
-      __browse_url_dir_expr='${__gh_domain}/${__gh_repo}/tree/HEAD/${__file_path}'
-      ;;
-  esac
-
-  local __u_browse_url_file_expr=$(git config browse.url-file)
-  if [[ -n $__u_browse_url_file_expr ]]; then
-    __browse_url_file_expr=$__u_browse_url_file_expr
-  fi
-
-  local __u_browse_url_dir_expr=$(git config browse.url-dir)
-  if [[ -n $__u_browse_url_dir_expr ]]; then
-    __browse_url_dir_expr=$__u_browse_dir_file_expr
-  fi
-
-  if [[ -d "$1" ]]; then
-    eval echo ${__browse_url_dir_expr}
-  else
-    eval echo ${__browse_url_file_expr}
-  fi
-}
 
 git-rstash() {
-  PROG="$(basename $0)"
-
-  local REF_FOLDER=$(git config --get rstash.ref)
-  if [[ -z $REF_FOLDER ]]; then
-    REF_FOLDER=$(whoami)
-  fi
-
-  local REF_PREFIX=$(git config --get rstash.prefix)
-  if [[ -z $REF_PREFIX ]]; then
-    REF_PREFIX=refs/heads
-  fi
-
-  local REF_REMOTE=$(git config --get rstash.remote)
-  if [[ -z $REF_REMOTE ]]; then
-    REF_REMOTE=origin
-  fi
-
-  local REMOTE_PREFIX="${REF_PREFIX}/${REF_FOLDER}"
-
-  local __DOC__=$(
-    echo "INFO:"
-    echo "  A utility for stashing branches to a remote."
-    echo "  It stashes given commits under: [REMOTE]/${REMOTE_PREFIX}"
-    echo "Usage:"
-    echo "  $PROG REMOTE [SPEC...]"
-    echo "Parameters:"
-    echo "  - REMOTE: git remote to use as a remote stash"
-    echo "  - SPEC: git refspec, ex: HEAD:<remote_name>"
-    echo "Variations:"
-    echo "  -- [SPEC...]          : to use default remote"
-    echo "Settings:"
-    echo "  --set-ref <ref>       : to set which remote prefix to use"
-    echo "  --set-remote <remote> : to set which remote to use by default"
-    echo "  --get                 : to get current settings"
-  )
-
-  for i in "$@"; do
-    case $i; in
-      --set-ref)
-        shift 1
-        git config rstash.ref $1
-        break
-        ;;
-
-      --set-remote)
-        shift 1
-        git config rstash.remote $1
-        break
-        ;;
-
-      --get)
-        echo "rstash.ref     : $REF_FOLDER"
-        echo "rstash.prefix  : $REF_PREFIX"
-        echo "rstash.remote  : $REF_REMOTE"
-        echo
-        echo "@remote-prefix : $REMOTE_PREFIX"
-        break
-        ;;
-
-      --)
-        shift 1
-        __git_rstash_internal $REF_REMOTE "$@"
-        break
-        ;;
-
-      *)
-        __git_rstash_internal "$@"
-        break
-        ;;
-    esac
-  done
+  git rstash "$@"
 }
-
-__git_rstash_internal() {
-  # ENV: REMOTE_PREFIX
-
-  local REMOTE="$1"
-  shift
-
-  local DRY_RUN=
-
-  [[ -z $REMOTE ]] && _die "Remote not specified."
-  if [[ $REMOTE == "-d" ]]; then
-    DRY_RUN=true
-  fi
-
-  if [[ -z $DRY_RUN ]] && ! ( git remote | grep -e "$REMOTE" -q ); then
-    _die "Remote $REMOTE not found."
-  fi
-
-  [[ -z "$@" ]] && _die "Must provide at least one spec."
-
-  local GIT_ARGS=()
-  for arg in "$@"; do
-    local A=(${(s_:_)arg})
-
-    local L=${A[1]};
-    local R=${(j_:_)${A[@]:1}}
-
-    if [[ -z $R ]]; then
-      if [[ $L == "HEAD" ]]; then
-        R=$(git rev-parse --abbrev-ref HEAD)
-      else
-        R=$L
-      fi
-    fi
-
-    GIT_ARGS+="${L}:${REMOTE_PREFIX}/${R}"
-  done
-
-  if [[ -z $DRY_RUN ]]; then
-    ( set -x; git push -f $REMOTE $GIT_ARGS )
-  else
-    ( set -x; : git push -f "[remote]" $GIT_ARGS )
-  fi
-}
-
 
 #######################################################################
 #                           FARC Extensions                           #
@@ -619,7 +424,7 @@ farc-quick() {
 }
 
 stg-farc() {
-  stg-refs | farc-bulk --stdin --fzf $@
+	stg series -A --noprefix | fzf -m | xargs -r -n1 stg id | xargs -p -r -n1 -I {} farc "$@"
 }
 
 farc-bulk() {

@@ -564,3 +564,6 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 
 " }}}
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+autocmd BufRead *.stgit-edit.txt setlocal filetype=gitcommit
+autocmd BufRead *.stgit-edit.patch setlocal filetype=gitcommit

@@ -34,7 +34,7 @@ DIR="$1"; shift
   rm -rf "${GIT_INDEX_FILE}"
 
   DIR=$(
-    cd $DIR && git rev-parse --show-prefix
+    git rev-parse --show-prefix $DIR
   )
 
   TREE=$(
