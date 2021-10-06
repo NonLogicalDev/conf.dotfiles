@@ -63,17 +63,17 @@ Plug 'rizzatti/funcoo.vim'
 " }}}
 " Language Definitions: {{{
 
-Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
+" One pack to rule them all and in the darkness bind them.
+Plug 'sheerun/vim-polyglot' 
 
-Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
-Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
-
-Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
-Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
-Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
-
-Plug 'mattn/emmet-vim',        {'for':'html'} " Faster way to write HTML
-Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
+" Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
+" Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
+" Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
+" Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
+" Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
+" Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
+" Plug 'mattn/emmet-vim',        {'for':'html'} " Faster way to write HTML
+" Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
 
 " Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
 " Plug 'chr4/nginx.vim'
@@ -83,6 +83,8 @@ Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
 " Plug 'fatih/vim-go',                      { 'for':'go'             }
 " Plug 'hdima/python-syntax',               { 'for':'python'         }
 
+" Plug 'aklt/plantuml-syntax'
+
 " }}}
 " Colorschemes: {{{
 
@@ -90,6 +92,8 @@ Plug 'nonlogicaldev/vim.color.gruvbox'
 
 " }}}
 " Interface Plugins: {{{
+
+" Plug 'tpope/vim-speeddating' " Needed for OrgMode
 
 Plug 'ojroques/vim-oscyank'  " Use OSC 52 for copying to clibboard
 Plug 'vimwiki/vimwiki'       " Personal Wiki
@@ -108,6 +112,7 @@ Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
 " Plug 'iandoe/vim-osx-colorpicker'
 " Plug 'skammer/vim-css-color'
 " Plug 'vim-scripts/Colorizer'
+
 
 " }}}
 " Behavior Engancements: {{{
@@ -137,6 +142,7 @@ Plug 'tpope/vim-fugitive' " Git Integration
 if (!(version < 704) && (has("python") || has("python3")) )
   " Requires version above 7.4 and a python installed.
   Plug 'SirVer/ultisnips' " Snippets
+  Plug 'honza/vim-snippets'
 endif
 
 if has('nvim')
