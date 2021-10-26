@@ -46,7 +46,6 @@ _remote_stash() {
 
   shift
 
-
   [[ -z $REMOTE ]] && _help "Remote not specified."
   if [[ $REMOTE == "-d" ]]; then
     DRY_RUN=true

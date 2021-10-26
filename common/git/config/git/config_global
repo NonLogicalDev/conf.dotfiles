@@ -21,13 +21,15 @@
 [pretty]
   nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
-  nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar)%C(yellow)%d%Creset
+  nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar / %cr)%C(yellow)%d%Creset
   nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
-  rff = stg refresh --force
+  rf = stg refresh
+  rfs = stg refresh --spill
   rfi = stg refresh --index
-  rfu = git stg-rfu
+  rff = stg refresh --force
+  #rfu = git stg-rfu
 
   bb = stg branch
   ls = stg series --noprefix
@@ -35,6 +37,8 @@
 
   add = git add
   farc = git-utils stg-farc
+
+  pbf = git-utils stg-patches-by-file
 
   ################################################################################
   # EXTENSIONS:

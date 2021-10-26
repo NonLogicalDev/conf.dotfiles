@@ -26,6 +26,12 @@ stg-tig() {
   tig $(stg id $(stg series -A --noprefix | head -n1))~2..
 }
 
+stg-patches-by-file() {
+  git diff --name-only $(stg ls -A | head -n 1 | xargs -r -n1 stg id)~1.. "$@" \
+    | sort -u \
+    | xargs -n1 -I {} sh -c 'echo "{}" && git run stg patches {} | xargs -n1 echo "-" && echo'
+}
+
 stg-apply-set() {
   #: stg-apply-set [GREP_EXPR]
   #:   interactively apply patches on the stack that match $GREP_EXPR
@@ -215,8 +221,8 @@ stg-series-pretty() {
 
       if [[ $_full -eq 1 || $_notes -eq 1 || $_extra -eq 1 ]]; then
         git_notes=$(
-          git notes show "$git_sha" 2>/dev/null \
-            | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
+          git notes show "$git_sha" 2>/dev/null 
+            # | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
         )
         if [[ -n $git_notes ]]; then
           echo "$git_notes" \
