@@ -101,7 +101,12 @@ set encoding=utf-8
 " set fileencoding=utf-8
 
 " Changing grep engine to ack, cause it is 1000 times faster and better
-set grepprg=ack
+if executable("rg")
+  set grepprg=rg\ --vimgrep\ --no-heading
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+elseif executable("ack")
+  set grepprg=ack
+endif
 
 " }}}
 " Global Mappings: {{{
