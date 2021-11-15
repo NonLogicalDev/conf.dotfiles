@@ -25,17 +25,17 @@
   nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
-  rf = stg refresh
-  rfs = stg refresh --spill
-  rfi = stg refresh --index
-  rff = stg refresh --force
-  #rfu = git stg-rfu
+  spill = stg refresh --spill
+  rf    = stg refresh
+
+  rfi = git-utils stg-checked-refresh-index
+  rfu = git-utils stg-checked-refresh-update
 
   bb = stg branch
   ls = stg series --noprefix
   lg = stg series -d
+  lgs = stg series -d -s
 
-  add = git add
   farc = git-utils stg-farc
 
   pbf = git-utils stg-patches-by-file
@@ -44,27 +44,21 @@
   # EXTENSIONS:
   ################################################################################
 
-  tig    = git-utils stg-tig
-  lsp    = git-utils stg-list-patches
-  sd     = git-utils stg-series-pretty
-  info   = git-utils stg-info
-  ctx    = git-utils stg-ctx
+  stack = git-utils stg-series-pretty
+  refs  = git-utils stg-heads
+  mpush = git-utils stg-push-set
 
-  refs   = git-utils stg-refs
+  tig   = git-utils stg-tig
 
   rstash = git-utils stg-rstash
-  mpush  = git-utils stg-apply-set
 [alias]
-  stg-rfu = !git add -u && stg rfi
-
   # [Basics]
   ################################################################################
 
   b  = branch
   co = checkout
 
-  addu  = add -u
-  adda  = add -a
+  addu = !git-utils git-checked-add-update
 
   ctx = !git-utils git-ctx -q "ctx/"
 
@@ -87,7 +81,7 @@
 
   # [Status]
   ################################################################################
-MSP-5064
+
   st  = status -s
   stu = status -su
 
@@ -108,8 +102,7 @@ MSP-5064
   cm = commit -m
 
   ca   = commit --amend
-  cah  = commit --amend -C HEAD
-  caha = commit --amend -C HEAD -a
+  cau  = commit --amend --no-edit
 
   # [Rebase]
   ################################################################################

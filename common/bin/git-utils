@@ -1,11 +1,11 @@
 #!/bin/zsh
 SCRIPT_PATH=$0
 
-help() {
+__help() {
   cat ${SCRIPT_PATH} | grep "^ *#"":" | sed 's/^ *#://'
 }
 
-_die() {
+__die() {
   if [[ -n $1 ]]; then
     echo "ERROR: $1" >&2
     echo
@@ -22,6 +22,67 @@ _die() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
+git-checked-add-update() {
+  #: git-checked-add-update
+  #:   `git add -u` but with diff preview and confirmation
+  #:
+  
+  git --no-pager diff -- "$@" 
+  echo
+  echo ">> Adding the following changes to INDEX (sha:$(git rev-parse --short HEAD))"
+  if ( read -q 'choice?$$ Confirm? ' ); then
+    echo
+    echo ">> [applying...]"
+    ( set -x; git add -u -- "$@"; )
+    echo ">> Verifying Git Status:"
+    git status
+  else
+    echo
+    echo ">> [cancelled]"
+  fi
+}
+
+stg-checked-refresh-index() {
+  #: stg-checked-refresh-index
+  #:   `stg refresh --index` but with diff preview and confirmation
+  #:
+  
+  git --no-pager diff --cached
+  echo
+  echo ">> Applying diff to patch: $(stg top) (sha:$(git rev-parse --short HEAD))"
+  if ( read -q 'choice?$$ Confirm? ' ); then
+    echo
+    echo ">> [applying...]"
+    ( set -x; stg refresh --index; )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo
+    echo >> "[cancelled]"
+  fi
+}
+
+stg-checked-refresh-update() {
+  #: stg-checked-refresh-update
+  #:   `stg refresh` but with diff preview and confirmation
+  #:
+  
+  # Display difference between head and updated files
+  git --no-pager diff -- "$@" 
+  echo
+  echo ">> Applying diff to patch: $(stg top) (sha:$(git rev-parse --short HEAD))"
+  if ( read -q 'choice?$$ Confirm? ' ); then
+    echo
+    echo ">> [applying...]"
+    ( set -x; stg refresh -- "$@;" )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo
+    echo ">> [cancelled]"
+  fi
+}
+
 stg-tig() {
   tig $(stg id $(stg series -A --noprefix | head -n1))~2..
 }
@@ -32,7 +93,7 @@ stg-patches-by-file() {
     | xargs -n1 -I {} sh -c 'echo "{}" && git run stg patches {} | xargs -n1 echo "-" && echo'
 }
 
-stg-apply-set() {
+stg-push-set() {
   #: stg-apply-set [GREP_EXPR]
   #:   interactively apply patches on the stack that match $GREP_EXPR
   #:
@@ -291,7 +352,7 @@ stg-rstash() {
   # Check that Stg is enabled
   stg top 2>/dev/null >/dev/null
   if [[ $? -ne 0 ]]; then
-    _die "stg-rstash: ${GIT_BRANCH}: branch not initialized"
+    __die "stg-rstash: ${GIT_BRANCH}: branch not initialized"
   fi
 
   STG_PATCH_NAME=$(stg top)
@@ -311,7 +372,7 @@ stg-publish() {
   # Check that Stg is enabled
   stg top 2>/dev/null >/dev/null
   if [[ $? -ne 0 ]]; then
-    _die "stg-publish: ${GIT_BRANCH}: branch not initialized"
+    __die "stg-publish: ${GIT_BRANCH}: branch not initialized"
   fi
 
   local GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
@@ -323,7 +384,7 @@ stg-publish() {
   local REMOTE_BRANCH_STG="${REMOTE_BRANCH}.stgit"
 
   if [[ -z $(git branch --list ${GIT_BRANCH_STG}) ]]; then
-    _die "stg-rstash: ${GIT_BRANCH_STG}: does not exist"
+    __die "stg-rstash: ${GIT_BRANCH_STG}: does not exist"
   fi
 
   git push "$REMOTE_NAME" \
@@ -358,6 +419,10 @@ git-quick-log() {
 }
 
 git-info() {
+  #: git-info
+  #:   print summary (5 latest commits, or un-pushed commits)
+  #:
+  
   GIT_UPSTREAM=$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null)
 
   if [[ -z "$GIT_UPSTREAM" ]]; then
@@ -480,8 +545,8 @@ farc-bulk() {
 
 #######################################################################
 
-if [[ "$1" == (-h|--help|-?) ]]; then
-  help
+if [[ "$1" == (-h|--help|-?|help) ]]; then
+  __help
   exit 125
 fi
 "$@"
