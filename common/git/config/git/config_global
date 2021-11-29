@@ -22,6 +22,7 @@
   nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar / %cr)%C(yellow)%d%Creset
+  nice-cons  = tformat:* %C(red)%h%Creset - %s | %C(bold blue)<%an>%Creset | %C(green)(%cr)%C(yellow)%d%Creset
   nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
 [stgit.alias]
@@ -66,7 +67,7 @@
   ################################################################################
 
   lg   = log -n 10 --first-parent --pretty=nice
-  lgg  = log -n 10 --graph --pretty=nice
+  lgg  = log -n 10 --graph --pretty=nice-cons
   lgt  = !git lg --pretty=nice-cols --color | column -xt -s "::"
   lgu  = !git lg -n 100 $(git upstream)..HEAD
   lguu = !git lg -n 100 HEAD..$(git upstream)

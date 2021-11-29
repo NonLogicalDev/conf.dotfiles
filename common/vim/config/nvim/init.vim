@@ -12,8 +12,6 @@
 set nocompatible
 set guicursor=
 
-" let $NVIM_TUI_ENABLE_TRUE_COLOR=1
-
 func! g:Dir(dir)
   if empty(glob(a:dir))
     call system("mkdir -p " . a:dir)
@@ -94,97 +92,27 @@ if ! exists("*s:OpenConfigDir")
 endif
 
 " }}}
+" Load Extra Config: {{{
+
+execute 'runtime!' 'init.d/*.vim'
+
+" }}}
 " Encoding Settings: {{{
 
 " Choosing the best encoding ever
 set encoding=utf-8
-" set fileencoding=utf-8
-
-" Changing grep engine to ack, cause it is 1000 times faster and better
-if executable("rg")
-  set grepprg=rg\ --vimgrep\ --no-heading
-  set grepformat=%f:%l:%c:%m,%f:%l:%m
-elseif executable("ack")
-  set grepprg=ack
-endif
-
-" }}}
-" Global Mappings: {{{
-
-"set clipboard=unnamedplus
-let mapleader = " " " Spaaaaaace.
-let maplocalleader = "\\"
-
-" Select most recently changed text.
-nnoremap <leader>v `[v`]
-nnoremap <leader>V `[V`]
-
-nnoremap <leader><leader>m :cd %:p:h<cr>
-
-" ExMode is not my thing.
-nnoremap Q <nop>
-
-" Make twitch saving easier.
-command! W w
-
-" Make switching panes easier.
-autocmd VimEnter * nmap <tab> <c-w><c-w>
-
-" Fix increment collision with TMUX prefix.
-noremap <C-c> <C-a>
-
-" Make selecting easier.
-noremap gA ggVG
-
-" Simplified Tab navigation.
-nmap <C-w>1 1gt
-nmap <C-w>2 2gt
-nmap <C-w>3 3gt
-nmap <C-w>4 4gt
-nmap <C-w>5 5gt
-nmap <C-w>6 6gt
-nmap <C-w>7 7gt
-nmap <C-w>8 8gt
-nmap <C-w>9 9gt
-
-nmap <C-w><Tab> :tabnext<CR>
-nmap <C-w><S-Tab> :tabprev<CR>
-
-" Simplified interaction with system clipboard.
-noremap <localleader>] "*p
-noremap <localleader>} "*P
-noremap <localleader>[ "*y
-noremap <localleader>{ "*Y
-
-" Become a god?
-nnoremap <up> <c-w>+
-nnoremap <down> <c-w>-
-nnoremap <right> <c-w><
-nnoremap <left> <c-w>>
-
-imap <C-j> <CR><C-o>O
-
-" By default this calls up man command on whaterver is under the cursor it is
-" kinda slow, and I don't use it.
-autocmd VimEnter * nmap K <nop>
-
-xnoremap p pgvy
-
-" }}}
-" Load Extra Config: {{{
-
-execute 'runtime!' 'init.d/*.vim'
+set fileencoding=utf-8
 
 " }}}
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Vim Basic Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Editor Behaviour: {{{
 
-set backspace=indent,eol,start  " intuitive backspacing.
+set backspace=indent,eol,start  " intuitive backspacing
 
-set autowrite       " Automatically save before :next, :make etc.
+set autowrite       " Automatically save before :next, :make etc
 
-set visualbell      " no beeping.
+set visualbell      " no beeping
 
 set autoindent      " autoindent if possible
 set smartindent     " and try to be smart about
@@ -253,13 +181,85 @@ set splitbelow      " Split horizontal windows below to the current windows
 set laststatus=2    " always show statusline
 
 " }}}
+" Global Mappings: {{{
+
+" set leader keys
+let mapleader = " " " Spaaaaaace.
+let maplocalleader = "\\"
+
+" ExMode is not my thing.
+nmap Q <nop>
+
+" Make Indenting easier. (reselect indented text)
+vmap > >gv
+vmap < <gv
+
+" Make selecting easier.
+nmap vgA ggVG 
+
+" Make twitch saving easier.
+command! W w
+
+" Make switching panes easier.
+autocmd VimEnter * nmap <tab> <c-w><c-w>
+
+" Select most recently changed text.
+nmap <leader>v `[v`]
+nmap <leader>V `[V`]
+
+" Change directory to current file's dir.
+nmap <leader><leader>m :cd %:p:h<cr>
+
+" Simplified Tab navigation.
+nmap <C-w>1 1gt
+nmap <C-w>2 2gt
+nmap <C-w>3 3gt
+nmap <C-w>4 4gt
+nmap <C-w>5 5gt
+nmap <C-w>6 6gt
+nmap <C-w>7 7gt
+nmap <C-w>8 8gt
+nmap <C-w>9 9gt
+
+nmap <C-w><Tab> :tabnext<CR>
+nmap <C-w><S-Tab> :tabprev<CR>
+
+" Simplified interaction with system clipboard.
+map <localleader>] "*p
+map <localleader>} "*P
+map <localleader>[ "*y
+map <localleader>{ "*Y
+
+" Become a god?
+nmap <up> <c-w>+
+nmap <down> <c-w>-
+nmap <right> <c-w><
+nmap <left> <c-w>>
+
+imap <C-j> <CR><C-o>O
+
+" By default this calls up man command on whaterver is under the cursor it is
+" often very slow, and I don't use it.
+autocmd VimEnter * nmap K <nop>
+
+xmap p pgvy
+
+" }}}
 "                              Custom Extensions:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Toggle File Browser: {{{
+" Open Scratch Buffer: {{{
+
+command! Scratch call s:OpenScratch()
+func! s:OpenScratch()
+  botright new
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
+endfunc
+
+" }}}
+" Files: Toggle File Browser: {{{
 
 let g:netrw_keepdir = 0
 let g:netrw_banner = 0
-
 
 nmap <silent> <leader>n :NavToggle<cr>
 command! NavToggle call s:NavToggle()
@@ -276,7 +276,7 @@ func! s:NavToggle()
 endfu
 
 " }}}
-" Cutom Fold Text Line: {{{
+" Fold: Text Line Improvements: {{{
 
 set foldtext=CustomFoldText()
 func! CustomFoldText()
@@ -301,20 +301,26 @@ func! CustomFoldText()
 endf
 
 " }}}
-" Emacs Style Search: {{{
+" Fold: Diff Fold: {{{
+function! DiffFold(lnum)
+  let line = getline(a:lnum)
+  if line =~ '^\(diff\|---\|+++\|@@\) '
+    return 1
+  elseif line[0] =~ '[-+ ]'
+    return 2
+  else
+    return 0
+  endif
+endfunction
 
-let &highlight = 0
+func! s:EnableDiffFold()
+  setlocal foldmethod=expr foldexpr=DiffFold(v:lnum)
+  set foldlevel=0
+endfunc
 
-nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
-nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
-
-nnoremap <silent> N :let &hlsearch = 1<CR>N
-nnoremap <silent> n :let &hlsearch = 1<CR>n
-
-nnoremap <silent> <leader><leader>` :set nohlsearch<CR>
-
+command! EnableDiffFold call s:EnableDiffFold()
 " }}}
-" Enable Nice Folds: {{{
+" Fold: Quick Setup: {{{
 
 command! FoldUP call FoldUP()
 func! FoldUP()
@@ -324,7 +330,31 @@ func! FoldUP()
 endf
 
 " }}}
-" Enable Essay Mode: {{{
+" Seach: Vim Grep Improvements: {{{
+
+" Changing grep engine to ack, cause it is 1000 times faster and better
+if executable("rg")
+  set grepprg=rg\ --vimgrep\ --no-heading
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+elseif executable("ack")
+  set grepprg=ack
+endif
+" }}}
+" Seach: Emacs Style Search: {{{
+
+let &highlight = 0
+
+nmap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
+nmap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
+
+nmap <silent> N :let &hlsearch = 1<CR>N
+nmap <silent> n :let &hlsearch = 1<CR>n
+
+nmap <silent> <leader><leader>` :set nohlsearch<CR>
+
+" }}}
+" Writing: Enable Essay Mode: {{{
+
 " This mode sets lines to wrap and makes j an k go by actual visible lines as
 " opposed to the lines int the files, which makes editing text rather
 " unintuitive.
@@ -389,15 +419,6 @@ nmap <silent> <leader><leader>q :call ToggleList("Quickfix List", 'c')<CR>
 nmap <silent> <leader><leader>Q :call ToggleList("Quickfix List", 'c')<CR>
 
 " }}}
-" Open Scratch Buffer: {{{
-
-command! Scratch call s:OpenScratch()
-func! s:OpenScratch()
-  botright new
-  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
-endfunc
-
-" }}}
 " TMUX Exec: {{{
 "
 command! -nargs=* Tme call s:TMUXExec(<f-args>)
@@ -436,25 +457,6 @@ for line in lines:
 
 EOF
 endfunc
-" }}}
-" Diff Fold: {{{
-function! DiffFold(lnum)
-  let line = getline(a:lnum)
-  if line =~ '^\(diff\|---\|+++\|@@\) '
-    return 1
-  elseif line[0] =~ '[-+ ]'
-    return 2
-  else
-    return 0
-  endif
-endfunction
-
-func! s:EnableDiffFold()
-  setlocal foldmethod=expr foldexpr=DiffFold(v:lnum)
-  set foldlevel=0
-endfunc
-
-command! EnableDiffFold call s:EnableDiffFold()
 " }}}
 "                              Language Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -495,15 +497,16 @@ endfunc
 " endfunc
 
 " }}}
+" Markdown: {{{
+let g:markdown_folding = 1
+" }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " GUI Settings: {{{
+" Setting Up Colorsheme and fonts
 
 " set nocursorline " improve performance
 " set nolazyredraw
-
-
-" Setting Up Colorsheme and fonts
 
 try
   let g:lightline={'colorscheme': 'seoul256'}
@@ -538,8 +541,8 @@ if has('nvim')
 
   syntax sync minlines=256
 
-  tnoremap <C-\><C-[> <C-\><C-n>
-  tnoremap <C-\><C-]> <C-\><C-n>pi
+  tmap <C-\><C-[> <C-\><C-n>
+  tmap <C-\><C-]> <C-\><C-n>pi
 
   let g:terminal_color_0  = '#2e3436'
   let g:terminal_color_1  = '#cc0000'
