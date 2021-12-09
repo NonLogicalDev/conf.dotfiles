@@ -102,7 +102,7 @@ Plug 'scrooloose/nerdtree'   " Ex Browser Replacement
 " Plug 'Shougo/vimfiler.vim'   " Adding Navigator to vim
 
 Plug 'itchyny/lightline.vim' " Status Line Replacement
-" Plug 'kien/ctrlp.vim'        " Quick Finder
+Plug 'kien/ctrlp.vim'        " Quick Finder
 
 Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
 " Plug 'kien/rainbow_parentheses.vim'  " Rainbow parenthetical expressions
@@ -161,7 +161,44 @@ call s:PlugInitEnd()
 
 " Plugin Confuguration:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" OCS Yank: {{{
+
+augroup PlugOSCYank
+  autocmd!
+  autocmd User KeymapReady vnoremap <leader>c :OSCYank<CR>
+  autocmd User KeymapReady nmap <leader>o <Plug>OSCYank
+augroup END
+
+" }}}
+" GoLang: {{{
+
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_types = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_build_constraints = 1
+
+let g:go_list_type = "quickfix"
+"let g:go_fmt_command = "goimports"
+
+augroup LangGo
+  autocmd!
+  " autocmd BufRead *.go setlocal foldmethod=syntax
+  " autocmd BufRead *.go setlocal foldnestmax=1
+  autocmd BufWritePost *.go call s:GoOnBufWrite()
+augroup END
+
+func! s:GoOnBufWrite()
+  try
+    Neomake
+  catch /.*/
+  endtry
+endfunc
+
+" }}}
 " VimWiki: {{{
+
 let g:vimwiki_list = [{
 	\ 'path': '~/vimwiki',
 	\ 'template_path': '~/vimwiki/templates/',
@@ -171,6 +208,7 @@ let g:vimwiki_list = [{
 	\ 'path_html': '~/vimwiki/site_html/',
 	\ 'custom_wiki2html': 'vimwiki_markdown',
 	\ 'template_ext': '.tpl'}]
+
 " }}}
 " GruvBox: {{{
 
@@ -180,8 +218,14 @@ let g:gruvbox_improved_strings = 0
 
 "}}}
 " Highlighter Settings: {{{
+
 let python_highlight_all = 1
-au FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
+
+augroup LangPython
+  autocmd!
+  autocmd FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
+augroup END
+
 " }}}
 " Airline Configuration: {{{
 
@@ -210,7 +254,10 @@ let g:NERDTreeDirArrowCollapsible = "-"
 
 let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exact match
 
-nmap <silent> <leader>m :NERDTreeCWD<cr>
+augroup PlugNerdTree
+  autocmd!
+  autocmd User KeymapReady nmap <silent> <leader>m :NERDTreeCWD<cr>
+augroup END
 
 " }}}
 " Rainbow Paranthesis: {{{
@@ -238,7 +285,7 @@ nmap <silent> <leader>m :NERDTreeCWD<cr>
 "     \ ['darkred',     'DarkOrchid3'],
 "     \ ['red',         'firebrick3'],
 "     \ ]
-
+"
 " }}}
 " YankRing Configuration: {{{
 
@@ -248,22 +295,24 @@ let g:yankring_history_file = 'yankring_history'
 " }}}
 " Ctrl P Config: {{{
 
-noremap <leader><leader>[ :CtrlPBuffer<CR>
-noremap <leader><leader>{ :CtrlPMRUFiles<CR>
-noremap <leader><leader>] :CtrlPBufTagAll<CR>
-noremap <leader><leader>} :CtrlPTag<CR>
+augroup PlugOSCYank
+  autocmd!
+  autocmd User KeymapReady noremap <leader>[ :CtrlPBuffer<CR>
+  autocmd User KeymapReady noremap <leader>] :CtrlPMRUFiles<CR>
+  " autocmd User KeymapReady noremap <leader>] :CtrlPBufTagAll<CR>
+  " autocmd User KeymapReady noremap <leader>} :CtrlPTag<CR>
+augroup END
 
 let g:ctrlp_buftag_types = {
-      \ 'go' : {
-      \   'bin': 'gotags',
-      \   'args': '-f -',
-      \ },
-      \ 'js' : {
-      \   'bin': 'jsctags',
-      \   'args': '-f',
-      \ },
-      \ }
-
+  \   'go' : {
+  \     'bin': 'gotags',
+  \     'args': '-f -',
+  \   },
+  \   'js' : {
+  \     'bin': 'jsctags',
+  \     'args': '-f',
+  \   },
+  \ }
 let g:ctrlp_extensions = ['buffertag']
 
 " }}}

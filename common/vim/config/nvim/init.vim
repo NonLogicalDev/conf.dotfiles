@@ -8,6 +8,10 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Env Setup: {{{
 
+" Choosing the best encoding ever
+set encoding=utf-8
+set fileencoding=utf-8
+
 " This line is important, some backwards compatible features break my setup.
 set nocompatible
 set guicursor=
@@ -97,14 +101,8 @@ endif
 execute 'runtime!' 'init.d/*.vim'
 
 " }}}
-" Encoding Settings: {{{
-
-" Choosing the best encoding ever
-set encoding=utf-8
-set fileencoding=utf-8
-
-" }}}
-"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Vim Basic Settings:
+"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+"                             Vim Basic Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Editor Behaviour: {{{
 
@@ -127,8 +125,9 @@ set smarttab        " smart tab handling for indenting
 
 set hidden          " allows making buffers hidden even with unsaved changes
 
-set history=1000    " remember more commands and search history
-set undolevels=1000 " use many levels of undo
+set history=10000    " remember more commands and search history
+set undolevels=10000 " use many levels of undo
+
 
 " }}}
 " Backup File Settings: {{{
@@ -180,37 +179,43 @@ set splitbelow      " Split horizontal windows below to the current windows
 
 set laststatus=2    " always show statusline
 
+if has("nvim") 
+  " preview search/replace operations
+  set inccommand=nosplit
+endif
+
 " }}}
 " Global Mappings: {{{
 
-" set leader keys
-let mapleader = " " " Spaaaaaace.
+" ?? Configure leader keys:
+let mapleader = " "
 let maplocalleader = "\\"
 
-" ExMode is not my thing.
-nmap Q <nop>
+" ?? Disable xmode.
+nmap Q <nop> 
 
-" Make Indenting easier. (reselect indented text)
-vmap > >gv
+" ?? Improve indenting experience (reselect indented text).
 vmap < <gv
 
-" Make selecting easier.
-nmap vgA ggVG 
+" ?? Improve selecting everything.
+nmap vgA ggVG
 
-" Make twitch saving easier.
+" ?? Make twitch saving easier.
 command! W w
 
-" Make switching panes easier.
-autocmd VimEnter * nmap <tab> <c-w><c-w>
-
-" Select most recently changed text.
+" ?? Select most recently changed text.
 nmap <leader>v `[v`]
 nmap <leader>V `[V`]
 
-" Change directory to current file's dir.
-nmap <leader><leader>m :cd %:p:h<cr>
+" ?? Improver tab navigation:
+nmap tn :tabnext<CR>
+nmap tp :tabprev<CR>
+nmap te :tabedit<CR>
+nmap to :tabonly<CR>
 
-" Simplified Tab navigation.
+nmap <C-w><Tab>   :tabnext<CR>
+nmap <C-w><S-Tab> :tabprev<CR>
+
 nmap <C-w>1 1gt
 nmap <C-w>2 2gt
 nmap <C-w>3 3gt
@@ -221,28 +226,24 @@ nmap <C-w>7 7gt
 nmap <C-w>8 8gt
 nmap <C-w>9 9gt
 
-nmap <C-w><Tab> :tabnext<CR>
-nmap <C-w><S-Tab> :tabprev<CR>
-
-" Simplified interaction with system clipboard.
-map <localleader>] "*p
-map <localleader>} "*P
-map <localleader>[ "*y
-map <localleader>{ "*Y
-
-" Become a god?
+" ?? Remap arrows to resize panes instead.
 nmap <up> <c-w>+
 nmap <down> <c-w>-
 nmap <right> <c-w><
 nmap <left> <c-w>>
 
+" ?? Newlines with `^j` in import mode... (why not?)
 imap <C-j> <CR><C-o>O
 
-" By default this calls up man command on whaterver is under the cursor it is
-" often very slow, and I don't use it.
+" ?? Disable man lookup on `K`, it is slow and too easy to accidentally
+" ?? trigger.
 autocmd VimEnter * nmap K <nop>
 
-xmap p pgvy
+" ?? Change directory to current file's dir.
+nmap <leader><leader>m :cd %:p:h<cr>
+
+" ?? Signal that user keymap is ready to augroups that need it.
+doautocmd User KeymapReady
 
 " }}}
 "                              Custom Extensions:
@@ -344,13 +345,13 @@ endif
 
 let &highlight = 0
 
-nmap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
-nmap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
+nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
+nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''
 
-nmap <silent> N :let &hlsearch = 1<CR>N
-nmap <silent> n :let &hlsearch = 1<CR>n
+nnoremap <silent> N :let &hlsearch = 1<CR>N
+nnoremap <silent> n :let &hlsearch = 1<CR>n
 
-nmap <silent> <leader><leader>` :set nohlsearch<CR>
+nnoremap <silent> <leader><leader>` :set nohlsearch<CR>
 
 " }}}
 " Writing: Enable Essay Mode: {{{
@@ -460,45 +461,16 @@ endfunc
 " }}}
 "                              Language Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" GoLang: {{{
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_types = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_build_constraints = 1
-
-let g:go_list_type = "quickfix"
-"let g:go_fmt_command = "goimports"
-
-augroup lang_go
-  autocmd!
-  " autocmd BufRead *.go setlocal foldmethod=syntax
-  " autocmd BufRead *.go setlocal foldnestmax=1
-  autocmd BufWritePost *.go call s:GoOnBufWrite()
-augroup END
-
-func! s:GoOnBufWrite()
-  try
-    Neomake
-  catch /.*/
-  endtry
-endfunc
-
-" }}}
-" ZSH: {{{
-
-" Substitute the ZSH file format to SH because highlighting is better
-" autocmd BufRead * call s:ftZSHtoSH()
-" func! s:ftZSHtoSH()
-"   if &filetype == "zsh"
-"     setlocal filetype=sh
-"   endif
-" endfunc
-
-" }}}
 " Markdown: {{{
+
 let g:markdown_folding = 1
+
+" }}}
+" StackedGit: {{{
+
+autocmd BufRead *.stgit-edit.txt setlocal filetype=gitcommit
+autocmd BufRead *.stgit-edit.patch setlocal filetype=gitcommit
+
 " }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -573,5 +545,3 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 " }}}
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-autocmd BufRead *.stgit-edit.txt setlocal filetype=gitcommit
-autocmd BufRead *.stgit-edit.patch setlocal filetype=gitcommit

@@ -1,22 +1,23 @@
-# Lightening up the mood
-# Print a random, hopefully interesting, adage.
+#
+# Executes commands at login.
+#
 
 if (( $+commands[fortune] )); then
+  # Lightening up the mood.
+  # Print a random, hopefully interesting, adage.
+  
   alias login_fortune="fortune"
   #alias login_fortune="fortune $HOME/.local/share/fortune"
 
-  PIPE1="cat"
-  PIPE2="cat"
-
-  # if (($+commands[cowsay])); then
-  #   PIPE1="cowsay -f $HOME/.config/cowsay/blank.cow"
-  # fi
+  local DECORATOR=(cat)
   if (($+commands[lolcat])); then
-    PIPE2='lolcat'
+    DECORATOR=(lolcat)
   fi
-
+  
+  # -t in zsh test checks if file descriptor is open.
+  # the following test checks if stdin and stdout are open.
   if [[ -t 0 || -t 1 ]]; then
     export FORTUNE="`login_fortune`"
-    echo $FORTUNE | eval "$PIPE1" | eval "$PIPE2"
+    echo $FORTUNE | "${DECORATOR[@]}"
   fi
 fi
