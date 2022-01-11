@@ -1,0 +1,4 @@
+[include]
+  path = ~/.config/git/gitconfig.d/01_defaults
+  path = ~/.config/git/gitconfig.d/02_aliases_basic
+  path = ~/.config/git/gitconfig.d/02_aliases_stg

@@ -1,23 +1,3 @@
-# vim: ft=gitconfig
-[core]
-  excludesfile = ~/.config/git/ignore_global
-  hooksPath = "~/bin/git-hooks"
-[commit]
-  verbose = true
-[push]
-  default = simple
-[rerere]
-  enabled = true
-[log]
-  excludeDecoration = refs/patches/*
-[pager]
-  lg  = false
-  lgg = false
-
-  affected     = false
-  affected-ls  = false
-  confilcts    = false
-  confilcts-ls = false
 [pretty]
   nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
@@ -25,43 +5,21 @@
   nice-cons  = tformat:* %C(red)%h%Creset - %s | %C(bold blue)<%an>%Creset | %C(green)(%cr)%C(yellow)%d%Creset
   nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
-[stgit.alias]
-  spill = stg refresh --spill
-  rf    = stg refresh
+  
+[pager]
+  lg           = false
+  lgg          = false
+  affected     = false
+  affected-ls  = false
+  confilcts    = false
+  confilcts-ls = false
 
-  rfi = git-utils stg-checked-refresh-index
-  rfu = git-utils stg-checked-refresh-update
-
-  bb = stg branch
-  ls = stg series --noprefix
-  lg = stg series -d
-  lgs = stg series -d -s
-
-  farc = git-utils stg-farc
-
-  pbf = git-utils stg-patches-by-file
-
-  ################################################################################
-  # EXTENSIONS:
-  ################################################################################
-
-  stack = git-utils stg-series-pretty
-  refs  = git-utils stg-heads
-  mpush = git-utils stg-push-set
-
-  tig   = git-utils stg-tig
-
-  rstash = git-utils stg-rstash
 [alias]
   # [Basics]
   ################################################################################
 
   b  = branch
   co = checkout
-
-  addu = !git-utils git-checked-add-update
-
-  ctx = !git-utils git-ctx -q "ctx/"
 
   # [Logging]
   ################################################################################
@@ -87,7 +45,7 @@
   stu = status -su
 
   ls   = ls-files --exclude-standard
-  stat = !git --no-pager show --numstat --shortstat --format =
+  stat = !git --no-pager show --numstat --shortstat --format=
 
   # [DiffDisplay]
   ################################################################################
@@ -95,6 +53,7 @@
   d     = diff
   dc    = diff --cached
   diffc = diff --cached
+  cdiff = diff --cached
 
   # [Commits]
   ################################################################################
@@ -102,8 +61,8 @@
   c  = commit
   cm = commit -m
 
-  ca   = commit --amend
-  cau  = commit --amend --no-edit
+  ca  = commit --amend --no-edit
+  cae = commit --amend
 
   # [Rebase]
   ################################################################################
@@ -125,35 +84,12 @@
   # [FileTracking]
   ################################################################################
 
-  untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
-  untrack   = update-index --assume-unchanged
-  track     = update-index --no-assume-unchanged
-  
-  # [Mercurial Queues]
+  ls-untracked = !git ls-files -v | grep "^[[:lower:]]" | perl -pe "s/^\\\\w+\\\\s+//"
+  untrack      = update-index --assume-unchanged
+  track        = update-index --no-assume-unchanged
+
+  # [Extended :: Self Contained]
   ################################################################################
-  q = !stg
-
-  qinit = !stg init
-
-  qsd      = !stg sd
-  qls      = !stg series
-  qseries  = !stg series
-  qapplied = !stg series -A
-
-  qnew     = !stg new
-  qrefresh = !stg refresh
-
-  qedit   = !stg edit
-  qrename = !stg rename
-
-  qpush = !stg push
-  qpop  = !stg pop
-  qgoto = !stg goto
-
-  # [Extended Commands]
-  ################################################################################
-  
-  browse = !git-utils git-browse
 
   sum = show --format=medium --stat
 
@@ -188,8 +124,15 @@
   affected-ls = show --format="" --name-only
   conflicts = diff --name-status --diff-filter=U
   conflicts-ls = diff --name-only --diff-filter=U
+
+  # [Extended :: Custom Git Utils]
+  ################################################################################
+
+  ctx = !git-utils git-ctx -q "ctx/"
+  addu = !git-utils git-checked-add-update
+  browse = !git-utils git-browse
   
-  # [Extended Commands :: Phabricator]
+  # [Extended :: Phabricator]
   ################################################################################
 
   # arc integration
@@ -202,13 +145,3 @@
   # farc integration
   farc-push   = !farc upload HEAD~1..HEAD
   farc-edit   = !git notes --ref refs/notes/farc edit
-[diff]
-  tool = vimdiff
-  algorithm = histogram
-[merge]
-  tool = vimdiff
-  conflictstyle = diff3
-[tig "color"]
-  cursor = green black
-  title-focus = green black
-  title-blur = white black

@@ -1,0 +1,49 @@
+[stgit.alias]
+  rf    = stg refresh
+  rfs   = stg refresh --spill
+  spill = stg refresh --spill
+
+  ls  = stg series --noprefix
+  lg  = stg series -d
+  lgs = stg series -d -s
+
+  # [Extended :: Custom Git Utils]
+  ################################################################################
+
+  rfi = git-utils stg-checked-refresh-index
+  rfu = git-utils stg-checked-refresh-update
+
+  pbf = git-utils stg-patches-by-file
+
+  farc = git-utils stg-farc
+
+  stack = git-utils stg-series-pretty
+  refs  = git-utils stg-heads
+  mpush = git-utils stg-push-set
+
+  tig   = git-utils stg-tig
+
+  rstash = git-utils stg-rstash
+
+[alias]
+  # [Mercurial Queues Imitation]
+  ################################################################################
+
+  q = !stg
+
+  qinit = !stg init
+
+  qsd      = !stg sd
+  qls      = !stg series
+  qseries  = !stg series
+  qapplied = !stg series -A
+
+  qnew     = !stg new
+  qrefresh = !stg refresh
+
+  qedit   = !stg edit
+  qrename = !stg rename
+
+  qpush = !stg push
+  qpop  = !stg pop
+  qgoto = !stg goto

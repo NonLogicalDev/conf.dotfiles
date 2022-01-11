@@ -30,7 +30,7 @@
     "workbench.list.keyboardNavigation": "filter",
 
     "workbench.iconTheme": "vscode-icons",
-    "workbench.colorTheme": "GitHub Light Default",
+    "workbench.colorTheme": "Atom One Dark",
 
     "workbench.colorCustomizations": {
         // "[Atom One Dark]": {
@@ -119,7 +119,7 @@
     "go.trace.server": "verbose",
 
     "platformio-ide.disablePIOHomeStartup": true,
-    "python.languageServer": "Microsoft",
+    "python.languageServer": "Default",
 
     "workbench.editorAssociations": {
         "*.ipynb": "jupyter.notebook.ipynb"
@@ -134,5 +134,11 @@
     "editor.lineNumbers": "on",
     "editor.wordSeparators": "/\\()\"':,.;<>~!@#$%^&*|+=[]{}`?-",
     "editor.wordWrap": "off",
-    "redhat.telemetry.enabled": false
+    "redhat.telemetry.enabled": false,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }

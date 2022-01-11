@@ -1,0 +1,22 @@
+# vim: ft=gitconfig
+[core]
+  excludesfile = ~/.config/git/gitignore.default
+  hooksPath = "~/bin/git-hooks"
+[commit]
+  verbose = true
+[push]
+  default = simple
+[rerere]
+  enabled = true
+[log]
+  excludeDecoration = refs/patches/*
+[diff]
+  tool = vimdiff
+  algorithm = histogram
+[merge]
+  tool = vimdiff
+  conflictstyle = diff3
+[tig "color"]
+  cursor = green black
+  title-focus = green black
+  title-blur = white black

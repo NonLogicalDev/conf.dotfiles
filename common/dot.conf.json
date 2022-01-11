@@ -2,10 +2,11 @@
   "defaults": {
     "root": "~/",
 
-    "add_dot": true,
-    "use_contents": true,
+    "add_dot": false,
 
     "link_mode": "recursive_link",
+    "link_whole_dir": false,
+
     "recursive_modifiers": {
       "link": ".xlink",
       "touch": ".xtouch",
@@ -21,19 +22,9 @@
     ]
   },
   "topics": {
-    "tmux-bin": {
-      "add_dot": false
-    },
     "bin": {
-      "add_dot": false,
-      "use_contents": false,
-      "link_mode": "recursive_link"
-    },
-    "irssi": {
-      "link_mode": "copy"
-    },
-    "taskwarrior": {
-      "use_contents": false
+      "link_mode": "recursive_link",
+      "link_whole_dir": true
     }
   },
   "disabled": []
