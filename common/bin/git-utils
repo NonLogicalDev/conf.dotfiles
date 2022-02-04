@@ -26,16 +26,18 @@ git-checked-add-update() {
   #: git-checked-add-update
   #:   `git add -u` but with diff preview and confirmation
   #:
-  
-  git --no-pager diff -- "$@" 
+
+  git diff -u --stat -- "$@" 
+  git --no-pager diff --stat -- "$@"
+
   echo
   echo ">> Adding the following changes to INDEX (sha:$(git rev-parse --short HEAD))"
   if ( read -q 'choice?$$ Confirm? ' ); then
     echo
     echo ">> [applying...]"
-    ( set -x; git add -u -- "$@"; )
+    ( set -x; git add -u -- "$@" ; )
     echo ">> Verifying Git Status:"
-    git status
+    git status -s
   else
     echo
     echo ">> [cancelled]"
@@ -47,18 +49,25 @@ stg-checked-refresh-index() {
   #:   `stg refresh --index` but with diff preview and confirmation
   #:
   
-  git --no-pager diff --cached
+  TARGET_PATCH=$(stg top)
+  if [[ -n $1 ]]; then
+    TARGET_PATCH=$1
+  fi
+  
+  git diff --cached -u --stat
+  git --no-pager diff --cached --stat -- "$@"
+
   echo
-  echo ">> Applying diff to patch: $(stg top) (sha:$(git rev-parse --short HEAD))"
+  echo ">> Applying diff to patch: $TARGET_PATCH (sha:$(git rev-parse --short $(stg id $TARGET_PATCH)))"
   if ( read -q 'choice?$$ Confirm? ' ); then
     echo
     echo ">> [applying...]"
-    ( set -x; stg refresh --index; )
+    ( set -x; stg refresh --index -p $TARGET_PATCH; )
     echo ">> Verifying Git Status:"
     git status -s
   else
     echo
-    echo >> "[cancelled]"
+    echo ">> [cancelled]"
   fi
 }
 
@@ -68,13 +77,15 @@ stg-checked-refresh-update() {
   #:
   
   # Display difference between head and updated files
-  git --no-pager diff -- "$@" 
+  git diff -u --stat HEAD -- "$@" 
+  git --no-pager diff --stat HEAD -- "$@" 
+
   echo
   echo ">> Applying diff to patch: $(stg top) (sha:$(git rev-parse --short HEAD))"
   if ( read -q 'choice?$$ Confirm? ' ); then
     echo
     echo ">> [applying...]"
-    ( set -x; stg refresh -- "$@;" )
+    ( set -x; stg refresh -- "$@" ; )
     echo ">> Verifying Git Status:"
     git status -s
   else
@@ -119,7 +130,21 @@ stg-push-set() {
   echo "$TOAPPLY"
   echo "--------"
 
-  stg pop -a
+  (set -e -o pipefail;
+    stg top >/dev/null 2>/dev/null
+  )
+  if [[ $? -eq 0 ]]; then
+    # Only pop patches if there are patches to pop.
+    (set -e -o pipefail;
+      stg pop -a
+    )
+    if [[ $? -ne 0 ]]; then
+      echo "Failed to pop patches" >&2
+      return $?
+    fi
+  fi
+
+
   (set -e -o pipefail;
     echo "$TOAPPLY" | xargs -p stg push --noapply
   )

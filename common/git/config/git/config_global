@@ -174,10 +174,13 @@
   run = "!f() { cd \"`git root`\"; \"$@\"; }; f"
 
   # iadd -- Interactively select files to add
-  iadd = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git add --
+  iadd = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git addu
 
   # ireset -- Interactively select files to revert
   ireset = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git reset --
+
+  # ireset -- Interactively restore files back to original HEAD state
+  irestore = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git restore --
 
   # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
