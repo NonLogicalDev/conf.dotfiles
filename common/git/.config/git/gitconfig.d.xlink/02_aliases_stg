@@ -10,16 +10,16 @@
   # [Extended :: Custom Git Utils]
   ################################################################################
 
-  rfi = git-utils stg-checked-refresh-index
-  rfu = git-utils stg-checked-refresh-update
+  rfi   = stg-utils checked-refresh-index
+  rfu   = stg-utils checked-refresh-update
 
-  pbf = git-utils stg-patches-by-file
+  pushm = stg-utils push-set
+  mpush = stg-utils push-set
 
-  farc = git-utils stg-farc
-
-  stack = git-utils stg-series-pretty
-  refs  = git-utils stg-heads
-  mpush = git-utils stg-push-set
+  # pbf  = git-utils stg-patches-by-file
+  # farc = git-utils stg-farc
+  # stack = git-utils stg-series-pretty
+  # refs  = git-utils stg-heads
 
   tig   = git-utils stg-tig
 

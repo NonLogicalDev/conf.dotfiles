@@ -1,0 +1,472 @@
+#!/bin/zsh
+SCRIPT_PATH=$0
+
+__help() {
+  cat ${SCRIPT_PATH} | grep "^ *#"":" | sed 's/^ *#://'
+}
+
+__die() {
+  if [[ -n $1 ]]; then
+    echo "ERROR: $1" >&2
+    echo
+  fi
+
+  if [[ -n $__DOC__ ]]; then
+    echo "$__DOC__" >&2
+  fi
+
+  if [[ $2 == "" ]]; then
+    exit 128
+  fi
+  exit $2
+}
+
+#######################################################################
+#                          Stacked Git Utils                          #
+#######################################################################
+
+checked-refresh-index() {
+  #: checked-refresh-index [TARGET_PATCH]
+  #:   `stg refresh --index` but with diff preview and confirmation
+  #:
+  #:
+
+  __assert_stg_enabled "checked-refresh-index"
+
+  TARGET_PATCH=$(stg top)
+  if [[ -n $1 ]]; then
+    TARGET_PATCH=$1
+  fi
+
+  echo ">> Applying diff to patch: $TARGET_PATCH"
+  echo "   (sha:$(git rev-parse --short $(stg id $TARGET_PATCH)))"
+  echo
+
+  git --no-pager diff --cached --stat
+
+  echo
+  if ( read -q 'choice?$$ View Diff? ' ); then
+    # Display difference between head and updated files
+    git diff --cached -u --stat
+  fi
+
+  echo
+  if ( read -q 'choice?$$ Confirm? ' ); then
+    echo
+    echo ">> [applying...]"
+    ( set -x; stg refresh --index -p $TARGET_PATCH; )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo
+    echo ">> [cancelled]"
+  fi
+}
+
+checked-refresh-update() {
+  #: checked-refresh-update
+  #:   `stg refresh` but with diff preview and confirmation
+  #:
+
+  __assert_stg_enabled "checked-refresh-update"
+
+  echo ">> Applying diff to patch: $(stg top)"
+  echo "   (sha:$(git rev-parse --short HEAD))"
+  echo
+
+  git --no-pager diff --stat HEAD -- "$@"
+
+  echo
+  if ( read -q 'choice?$$ View Diff? ' ); then
+    # Display difference between head and updated files
+    git diff -u --stat HEAD -- "$@"
+  fi
+
+  echo
+  if ( read -q 'choice?$$ Confirm? ' ); then
+    echo
+    echo ">> [applying...]"
+    ( set -x; stg refresh -- "$@" ; )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo
+    echo ">> [cancelled]"
+  fi
+}
+
+push-set() {
+  #: push-set [GREP_EXPR]
+  #:   interactively apply patches on the stack that match $GREP_EXPR
+  #:
+
+  __assert_stg_enabled "push-set"
+
+  local SEARCH_PATTERN=$1
+
+  local ALL="# ALL #"
+  local DONE="# DONE #"
+
+  local TOAPPLY=$(stg ls -a | grep "^$SEARCH_PATTERN")
+
+  local SELECT
+  SELECT=$(set -e -o pipefail;
+    ( echo "$ALL" && echo "$TOAPPLY" ) | fzf --multi +s --height="80%" --preview-window="bottom:60%" --preview "stg id {} | xargs git show --oneline --stat "
+  )
+  if [[ $? -ne 0 ]]; then
+    __die "push-set: aborted"
+  fi
+
+  if [[ $(echo $SELECT | head -n 1) != $ALL ]]; then
+    TOAPPLY=$SELECT
+  fi
+
+  echo "APPLYING:"
+  echo "--------"
+  echo "$TOAPPLY"
+  echo "--------"
+
+  local APPLIED_COUNT=$(stg series -A --count)
+  # Only pop patches if there are patches to pop.
+  if [[ $APPLIED_COUNT -ne 0 ]]; then
+    stg pop -a
+    if [[ $? -ne 0 ]]; then
+      echo "Failed to pop patches" >&2
+      return $?
+    fi
+  fi
+
+  local STG_PUSH
+  STG_PUSH=$(set -e -o pipefail;
+    echo "$TOAPPLY" | xargs -p stg push --noapply
+    echo $DONE
+  )
+  if [[ $? -ne 0 ]]; then
+    return $?
+  fi
+  if [[ $STG_PUSH != $DONE ]]; then
+    return 100
+  fi
+
+  if ( read -q 'choice?$$ Also goto a certain patch? ' ); then
+    local SELECT=$(echo $TOAPPLY | fzf --prompt 'goto:')
+    if [[ -n $SELECT ]]; then
+        stg goto $SELECT
+    fi
+  fi
+}
+
+publish-stack() {
+  #: publish-stack <REMOTE> [REMOTE_BRANCH]
+  #:   publish the current stack to the remote
+  #:
+
+  __assert_stg_enabled "publish-stack"
+
+  local REMOTE_NAME="$1"
+  local REMOTE_BRANCH="$2"
+  shift 2
+
+
+  local GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  local GIT_BRANCH_STG="refs/stacks/${GIT_BRANCH}"
+  if [[ -z $(git branch --list ${GIT_BRANCH_STG}) ]]; then
+    __die "stg-publish: ${GIT_BRANCH_STG}: does not exist"
+  fi
+
+  if [[ -z $REMOTE_BRANCH ]]; then
+    REMOTE_BRANCH="$GIT_BRANCH"
+  fi
+  local REMOTE_BRANCH_STG="${REMOTE_BRANCH}.stgit"
+
+  git push "$REMOTE_NAME" \
+      "${GIT_BRANCH}:${REMOTE_BRANCH}" \
+      "${GIT_BRANCH_STG}:${REMOTE_BRANCH_STG}"
+}
+
+publish-patch() {
+  #: publish-patch [PREFIX] [REMOTE]
+  #:   publish the current patch to the remote
+  #:   config:
+  #:     - git config stg.utils.publish-ref-prefix "$(whoami)" -- the prefix for published patches
+  #:
+
+  __assert_stg_enabled "publish-patch"
+
+  local __PREFIX_CONFIG__="stg.utils.publish-ref-prefix"
+
+  local REMOTE_PREFIX="$1"
+  local REMOTE_NAME="$2"
+
+  if [[ $REMOTE_NAME == "" ]]; then
+    REMOTE_NAME=$(__git_branch_remote $(__git_current_branch))
+  fi
+  if [[ $REMOTE_NAME == "" ]]; then
+    local DEFAULT_REMOTE=$(__git_remotes | head -n 1)
+    if [[ $DEFAULT_REMOTE == "" ]]; then
+      __die "publish-patch: no remotes configured"
+    fi
+    REMOTE_NAME=$DEFAULT_REMOTE
+  fi
+
+  if [[ $REMOTE_PREFIX == "" ]]; then
+    REMOTE_PREFIX=$(__git_config_get "$__PREFIX_CONFIG__" "")
+  fi
+  if [[ $REMOTE_PREFIX == "" ]]; then
+    __die "publish-patch: please set $__PREFIX_CONFIG__ or provide as second argument"
+  fi
+
+  local GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  local STG_TOP=$(stg top 2>/dev/null)
+
+  echo | xargs -p \
+    git push "$REMOTE_NAME" "HEAD:refs/heads/$REMOTE_PREFIX/${STG_TOP}"
+}
+
+patches-by-file() {
+  #: patches-by-file
+  #:   for each file modified by the stack show which patches this file is affected by
+  #:
+  git diff --name-only $(stg ls -A | head -n 1 | xargs -r -n1 stg id)~1.. "$@" \
+    | sort -u \
+    | xargs -n1 -I {} sh -c 'echo "{}" && git run stg patches {} | xargs -n1 echo "-" && echo'
+}
+
+stack-files() {
+  #: stack-files
+  #:   show all files the patches in the stack modify
+  #:
+
+  git diff $(stg id $(stg series --noprefix | head -n 1)).. --name-status | cat
+}
+
+series-pretty() {
+  #: stg-series-pretty [-f] [-e] [-n] [<stg series options>]
+  #:   prints expanded information about the patches in the current stack
+  #:
+  #:   -n | --notes : show notes associated with git commit
+  #:   -e | --extra : show git sha, notes
+  #:   -f | --full  : show git sha, notes, commit msg & files affected
+  #:
+
+  local ARGS=()
+
+  local _full=0
+  local _extra=0
+  local _notes=0
+  local _help=0
+  local _filter_set=0
+  while [[ $# -gt 0 ]]; do
+    if [[ $1 == (--full|-f) ]]; then
+      _full=1
+      shift
+    elif [[ $1 == (--extra|-e) ]]; then
+      _extra=1
+      shift
+    elif [[ $1 == (--notes|-n) ]]; then
+      _notes=1
+      shift
+    elif [[ $1 == (--help|-h) ]]; then
+      _help=1
+      shift
+    elif [[ $1 == (-a|-A|-U|-H) ]]; then
+      _filter_set=1
+
+      ARGS+=($1)
+      shift
+    else
+      ARGS+=($1)
+      shift
+    fi
+  done
+
+  if [[ $_filter_set -eq 0 ]]; then
+    ARGS=(-A)
+  fi
+
+  if [[ _help -eq 1 ]]; then
+    stg series -h
+    exit $?
+  fi
+
+  while read line; do
+    if [[ $line == "" ]]; then
+      continue
+    fi
+
+    # ZSH-NOTE: ( ${(@f)$( command )} ) splits command output by newline, returns array. (zsh)
+    stg_fields=( "${(@f)$(
+      echo $line | jq -r '"\(.op)\n\(.patch)\n\(.subject)\n\(.patchCOL)"'
+    )}" )
+
+    stg_patch_status=${stg_fields[1]}
+    stg_patch_name=${stg_fields[2]}
+    stg_patch_description=${stg_fields[3]}
+    stg_patch_name_col=${stg_fields[4]}
+
+    git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
+
+    COLOR=1
+    if [[ $stg_patch_status == "+" ]]; then
+      COLOR=2
+    elif [[ $stg_patch_status == ">" ]]; then
+      COLOR=3
+    fi
+
+    printf "%s" $(tput setaf $COLOR)
+    printf "%s %s" $stg_patch_status $stg_patch_name_col
+    printf "%s" $(tput sgr0)
+    printf " # %s" $stg_patch_description
+    printf "\n"
+
+    details=$(
+      if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
+        printf "%s" "$(tput setaf 5)"
+        printf "git-sha "
+        printf "%s" "$(tput setaf 4)"
+        printf "%s" $git_sha
+        printf "%s" "$(tput sgr0)"
+        printf "\n\n"
+      fi
+
+      if [[ $_full -eq 1 ]]; then
+        git_commit_msg=$(
+          git show -s --format=%b "$git_sha" \
+            | fold -w 80 -s \
+            | perl -0pe 's:[\n\s]+$:\n:'
+        )
+
+        commit_prefix="$(tput setaf 1)#$(tput sgr0)"
+        if [[ -n $git_commit_msg ]]; then
+          echo "$git_commit_msg" \
+            | awk -v prefix="$commit_prefix" '{print prefix " " $0}'
+        else
+          echo "$commit_prefix [ No Commit Summary ]"
+        fi
+        echo
+      fi
+
+      if [[ $_full -eq 1 || $_notes -eq 1 || $_extra -eq 1 ]]; then
+        git_notes=$(
+          git notes show "$git_sha" 2>/dev/null
+        )
+        if [[ -n $git_notes ]]; then
+          echo "$git_notes" \
+            | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
+            | column -tx -s " "
+          echo
+        fi
+      fi
+
+      if [[ $_full -eq 1 ]]; then
+        git show --name-status --format= "$git_sha" \
+          | perl -pe "s:^(\\s*\\w+)(.*):$(tput setaf 2)\\1$(tput setaf 4)\\2$(tput sgr0):"
+      fi
+    )
+
+    if [[ -n "$details" ]]; then
+      result=$(
+          printf "%s" "$details"
+          printf "\n \n"
+      )
+      echo "$result" | sed 's:^:    :'
+    fi
+  done << EOF
+$(__series_json "${ARGS[@]}")
+EOF
+}
+
+
+#######################################################################
+# Helpers
+#######################################################################
+
+tig() {
+  command tig $(stg id $(stg series -A --noprefix | head -n1))~2..
+}
+
+stack-top() {
+  #: stg-top
+  #:   get the sha of the last applied commit in the stack
+  #:
+
+  __list-patches -A | tail -n 1 | xargs stg id
+}
+
+stack-bottom() {
+  #: stg-bottom
+  #:   get the sha of the first applied commit in the stack
+  #:
+
+  __list-patches -A | head -n 1 | xargs stg id
+}
+
+#######################################################################
+# Internal
+#######################################################################
+
+__assert_stg_enabled() {
+  # Check that STG is enabled
+  ERR=$(stg series --count 2>&1)
+  if [[ $? -ne 0 ]]; then
+    __die "$1: $ERR" 120
+  fi
+}
+
+__git_remotes() {
+  git remote 2>/dev/null
+}
+
+__git_current_branch() {
+  git rev-parse --abbrev-ref HEAD 2>/dev/null
+}
+
+__git_branch_remote() {
+  local GIT_BRANCH=$1
+  git config --get branch.$GIT_BRANCH.remote 2>/dev/null
+}
+
+__git_config_get() {
+  local CONFIG_KEY=$1
+  local CONFIG_DEFAULT=$2
+  shift 2
+
+  local RESULT
+  RESULT=$(git config --get "$CONFIG_KEY" 2>/dev/null)
+  if [[ $? -ne 0 ]]; then
+    printf "%s" "$CONFIG_DEFAULT"
+  fi
+  printf "%s" "$RESULT"
+}
+
+__stg_enabled() {
+  # Check that STG is enabled
+  stg series --count 2>/dev/null >/dev/null
+}
+
+__list-patches() {
+  #: __list-patches [<stg series options>]
+  #:   prints undecorated list of patches
+  #:
+
+  stg series --noprefix --no-description "$@"
+}
+
+__series_json() {
+    stg series -d "$@" | jq \
+    -c -R '
+    .
+    | capture("(?<op>(\\+|-))\\s+(?<patchCOL>[^#]+)\\s#\\s+(?<subject>.*)")
+    | .patch = ( .patchCOL | gsub("\\s+";"") )
+    '
+}
+
+#######################################################################
+
+
+if [[ "$1" == (-h|--help|-?|help) ]]; then
+  __help
+  exit 125
+fi
+# ( set -x; "$@" )
+"$@"

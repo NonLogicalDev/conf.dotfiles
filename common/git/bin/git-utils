@@ -22,159 +22,6 @@ __die() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
-git-checked-add-update() {
-  #: git-checked-add-update
-  #:   `git add -u` but with diff preview and confirmation
-  #:
-
-  git diff -u --stat -- "$@" 
-  git --no-pager diff --stat -- "$@"
-
-  echo
-  echo ">> Adding the following changes to INDEX (sha:$(git rev-parse --short HEAD))"
-  if ( read -q 'choice?$$ Confirm? ' ); then
-    echo
-    echo ">> [applying...]"
-    ( set -x; git add -u -- "$@" ; )
-    echo ">> Verifying Git Status:"
-    git status -s
-  else
-    echo
-    echo ">> [cancelled]"
-  fi
-}
-
-stg-checked-refresh-index() {
-  #: stg-checked-refresh-index
-  #:   `stg refresh --index` but with diff preview and confirmation
-  #:
-  
-  TARGET_PATCH=$(stg top)
-  if [[ -n $1 ]]; then
-    TARGET_PATCH=$1
-  fi
-  
-  git diff --cached -u --stat
-  git --no-pager diff --cached --stat -- "$@"
-
-  echo
-  echo ">> Applying diff to patch: $TARGET_PATCH (sha:$(git rev-parse --short $(stg id $TARGET_PATCH)))"
-  if ( read -q 'choice?$$ Confirm? ' ); then
-    echo
-    echo ">> [applying...]"
-    ( set -x; stg refresh --index -p $TARGET_PATCH; )
-    echo ">> Verifying Git Status:"
-    git status -s
-  else
-    echo
-    echo ">> [cancelled]"
-  fi
-}
-
-stg-checked-refresh-update() {
-  #: stg-checked-refresh-update
-  #:   `stg refresh` but with diff preview and confirmation
-  #:
-  
-  # Display difference between head and updated files
-  git diff -u --stat HEAD -- "$@" 
-  git --no-pager diff --stat HEAD -- "$@" 
-
-  echo
-  echo ">> Applying diff to patch: $(stg top) (sha:$(git rev-parse --short HEAD))"
-  if ( read -q 'choice?$$ Confirm? ' ); then
-    echo
-    echo ">> [applying...]"
-    ( set -x; stg refresh -- "$@" ; )
-    echo ">> Verifying Git Status:"
-    git status -s
-  else
-    echo
-    echo ">> [cancelled]"
-  fi
-}
-
-stg-tig() {
-  tig $(stg id $(stg series -A --noprefix | head -n1))~2..
-}
-
-stg-patches-by-file() {
-  git diff --name-only $(stg ls -A | head -n 1 | xargs -r -n1 stg id)~1.. "$@" \
-    | sort -u \
-    | xargs -n1 -I {} sh -c 'echo "{}" && git run stg patches {} | xargs -n1 echo "-" && echo'
-}
-
-stg-push-set() {
-  #: stg-apply-set [GREP_EXPR]
-  #:   interactively apply patches on the stack that match $GREP_EXPR
-  #:
-
-  local ALL="# ALL #"
-  local ERR="# ERR #"
-
-  local TOAPPLY=$(stg ls -a | grep "^$1")
-  local SELECT=$(set -e -o pipefail;
-    ( ( echo "$ALL" && echo "$TOAPPLY" ) | fzf --multi +s ) || echo "$ERR"
-  )
-
-  if [[ $(echo $SELECT | head -n 1) == $ERR ]]; then
-    echo "Aborted" >&2
-    exit 120
-  fi
-  if [[ $(echo $SELECT | head -n 1) != $ALL ]]; then
-    TOAPPLY=$SELECT
-  fi
-
-  echo "APPLYING:"
-  echo "--------"
-  echo "$TOAPPLY"
-  echo "--------"
-
-  (set -e -o pipefail;
-    stg top >/dev/null 2>/dev/null
-  )
-  if [[ $? -eq 0 ]]; then
-    # Only pop patches if there are patches to pop.
-    (set -e -o pipefail;
-      stg pop -a
-    )
-    if [[ $? -ne 0 ]]; then
-      echo "Failed to pop patches" >&2
-      return $?
-    fi
-  fi
-
-
-  (set -e -o pipefail;
-    echo "$TOAPPLY" | xargs -p stg push --noapply
-  )
-  if [[ $? -ne 0 ]]; then
-    return $?
-  fi
-
-  local SELECT=$(echo $TOAPPLY | fzf --prompt 'goto:')
-  if [[ -n $SELECT ]]; then
-    stg goto $SELECT
-  fi
-}
-
-stg-info() {
-  #: stg-info
-  #:   print status and expanded information about the current stack.
-  #:
-
-  echo "## Status:"
-  git -c color.status=always status -s \
-    | sed 's:^:    :'
-
-  echo
-
-  echo "## Stack:"
-  stg-series-pretty -e \
-    | sed 's:^:    :'
-}
-
-
 stg-overview() {
   #: stg-overview
   #:   prints an overview of all currently active stg branches.
@@ -184,189 +31,12 @@ stg-overview() {
   stg-branches | xargs -I {} sh -c 'echo "::::: {}" && stg series -b {} && echo'
 }
 
-stg-list-patches() {
-  #: stg-list-patches [<stg series options>]
-  #:   prints undecorated list of patches
-  #:
-
-  stg series --noprefix --no-description "$@"
-}
-
 stg-stack-files() {
   #: stg-stack-files
   #:   show all files the patches in the stack modify
   #:
 
   git diff $(stg id $(stg series --noprefix | head -n 1)).. --name-status | cat
-}
-
-stg-series-pretty() {
-  #: stg-series-pretty [-f] [-e] [-n] [<stg series options>]
-  #:   prints expanded information about the patches in the current stack
-  #:
-  #:   -n | --notes : show notes associated with git commit
-  #:   -e | --extra : show git sha, notes
-  #:   -f | --full  : show git sha, notes, commit msg & files affected
-  #:
-
-  local ARGS=()
-
-  local _full=0
-  local _extra=0
-  local _notes=0
-  local _help=0
-  local _filter_set=0
-  while [[ $# -gt 0 ]]; do
-    if [[ $1 == (--full|-f) ]]; then
-      _full=1
-      shift
-    elif [[ $1 == (--extra|-e) ]]; then
-      _extra=1
-      shift
-    elif [[ $1 == (--notes|-n) ]]; then
-      _notes=1
-      shift
-    elif [[ $1 == (--help|-h) ]]; then
-      _help=1
-      shift
-    elif [[ $1 == (-a|-A|-U|-H) ]]; then
-      _filter_set=1
-
-      ARGS+=($1)
-      shift
-    else
-      ARGS+=($1)
-      shift
-    fi
-  done
-
-  if [[ $_filter_set -eq 0 ]]; then
-    ARGS=(-A)
-  fi
-
-  if [[ _help -eq 1 ]]; then
-    stg series -h
-    exit $?
-  fi
-
-  while read line; do
-    # ZSH-NOTE: ( ${(@f)$( command )} ) splits command output by newline, returns array. (zsh)
-    stg_fields=( "${(@f)$(
-      echo $line | awk '{
-        # stg_patch_status:
-        print $1;
-
-        # stg_patch_name_col:
-        print substr($0, index($0,$2),index($0,$3) - index($0,$2));
-
-        # stg_patch_description_col:
-        print substr($0,index($0,$4));
-
-        # stg_patch_name:
-        print $2
-      }'
-    )}" )
-
-    stg_patch_status=${stg_fields[1]}
-    stg_patch_name_col=${stg_fields[2]}
-    stg_patch_description_col=${stg_fields[3]}
-    stg_patch_name=${stg_fields[4]}
-
-    git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
-
-    COLOR=1
-    if [[ $stg_patch_status == "+" ]]; then
-      COLOR=2
-    elif [[ $stg_patch_status == ">" ]]; then
-      COLOR=3
-    fi
-
-    printf "%s$stg_patch_status $stg_patch_name_col%s # $stg_patch_description_col\n" $(tput setaf $COLOR) $(tput sgr0)
-
-    details=$(
-      if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
-        printf "%sgit-sha%s $git_sha\n\n" $(tput setaf 4) $(tput sgr0)
-      fi
-
-      if [[ $_full -eq 1 ]]; then
-        git_commit_msg=$(
-          git show -s --format=%b "$git_sha" \
-            | fold -w 80 -s \
-            | perl -0pe 's:[\n\s]+$:\n:'
-        )
-
-        commit_prefix="$(tput setaf 1)#$(tput sgr0)"
-        if [[ -n $git_commit_msg ]]; then
-          echo "$git_commit_msg" \
-            | awk -v prefix="$commit_prefix" '{print prefix " " $0}'
-        else
-          echo "$commit_prefix [ No Commit Summary ]"
-        fi
-        echo
-      fi
-
-      if [[ $_full -eq 1 || $_notes -eq 1 || $_extra -eq 1 ]]; then
-        git_notes=$(
-          git notes show "$git_sha" 2>/dev/null 
-            # | perl -pe 's:(arc-revision|depends-on) :$1 D:' \
-        )
-        if [[ -n $git_notes ]]; then
-          echo "$git_notes" \
-            | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
-            | column -tx -s " "
-          echo
-        fi
-      fi
-
-      if [[ $_full -eq 1 ]]; then
-        git show --name-status --format= "$git_sha" \
-          | perl -pe "s:^(\\s*\\w+)(.*):$(tput setaf 2)\\1$(tput setaf 4)\\2$(tput sgr0):"
-      fi
-    )
-
-    if [[ -n "$details" ]]; then
-      result=$(
-          printf "%s" "$details"
-          printf "\n \n"
-      )
-      echo "$result" | sed 's:^:    :'
-    fi
-  done << EOF
-$(stg series -d "${ARGS[@]}")
-EOF
-}
-
-stg-bottom() {
-  #: stg-bottom
-  #:   get the sha of the first applied commit in the stack
-  #:
-
-  stg-list-patches -A | head -n 1 | xargs stg id
-}
-
-stg-top() {
-  #: stg-top
-  #:   get the sha of the last applied commit in the stack
-  #:
-
-  stg-list-patches -A | tail -n 1 | xargs stg id
-}
-
-
-stg-ctx() {
-  #: stg-ctx
-  #:   interactively switch stacked git branch
-  #:
-
-  stg-branches | fzf "$@" --preview 'stg series -b {}' | xargs stg branch --switch
-}
-
-stg-branches() {
-  #: stg-ctx
-  #:   list all stacked git enabled branches
-  #:
-
-  git branch | cut -c 3- | grep .stgit | sed 's:.stgit::'
 }
 
 stg-rstash() {
@@ -383,38 +53,6 @@ stg-rstash() {
   STG_PATCH_NAME=$(stg top)
 
   git rstash "$@" -- "HEAD:${STG_PATCH_NAME}"
-}
-
-stg-publish() {
-  #: stg-publish <REMOTE> [REMOTE_BRANCH]
-  #:   publish the current stack to the remote
-  #:
-
-  local REMOTE_NAME="$1"
-  local REMOTE_BRANCH="$2"
-  shift 2
-
-  # Check that Stg is enabled
-  stg top 2>/dev/null >/dev/null
-  if [[ $? -ne 0 ]]; then
-    __die "stg-publish: ${GIT_BRANCH}: branch not initialized"
-  fi
-
-  local GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-  local GIT_BRANCH_STG="${GIT_BRANCH}.stgit"
-
-  if [[ -z $REMOTE_BRANCH ]]; then
-    REMOTE_BRANCH="$GIT_BRANCH"
-  fi
-  local REMOTE_BRANCH_STG="${REMOTE_BRANCH}.stgit"
-
-  if [[ -z $(git branch --list ${GIT_BRANCH_STG}) ]]; then
-    __die "stg-rstash: ${GIT_BRANCH_STG}: does not exist"
-  fi
-
-  git push "$REMOTE_NAME" \
-      "${GIT_BRANCH}:${REMOTE_BRANCH}" \
-      "${GIT_BRANCH_STG}:${REMOTE_BRANCH_STG}"
 }
 
 stg-heads() {
@@ -439,6 +77,28 @@ stg-heads() {
 #                            Git Utilites                             #
 #######################################################################
 
+git-checked-add-update() {
+  #: git-checked-add-update
+  #:   `git add -u` but with diff preview and confirmation
+  #:
+
+  git diff -u --stat -- "$@"
+  git --no-pager diff --stat -- "$@"
+
+  echo
+  echo ">> Adding the following changes to INDEX (sha:$(git rev-parse --short HEAD))"
+  if ( read -q 'choice?$$ Confirm? ' ); then
+    echo
+    echo ">> [applying...]"
+    ( set -x; git add -u -- "$@" ; )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo
+    echo ">> [cancelled]"
+  fi
+}
+
 git-quick-log() {
   git log -n 3 --format="%h %al (%ar)%n  %s" "$@"
 }
@@ -447,7 +107,7 @@ git-info() {
   #: git-info
   #:   print summary (5 latest commits, or un-pushed commits)
   #:
-  
+
   GIT_UPSTREAM=$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null)
 
   if [[ -z "$GIT_UPSTREAM" ]]; then
@@ -504,68 +164,6 @@ git-branch-history-list() {
 
 git-rstash() {
   git rstash "$@"
-}
-
-#######################################################################
-#                           FARC Extensions                           #
-#######################################################################
-
-farc-quick() {
-  local ARGS=()
-  while [[ $# -gt 0 ]]; do
-    ARGS+=($1)
-    shift
-  done
-  farc "${ARGS[@]}"
-}
-
-stg-farc() {
-	stg series -A --noprefix | fzf -m | xargs -r -n1 stg id | xargs -p -r -n1 -I {} farc "$@"
-}
-
-farc-bulk() {
-  local FARC_CMD=$1; shift
-  local REFS=()
-  local ARGS=()
-
-  local _fzf=0
-  local _rest=0
-  local _stdin=0
-  while [[ $# -gt 0 ]]; do
-    if [[ $1 == '--' ]]; then
-      _rest=1
-      shift
-    elif [[ $1 == '--fzf' ]]; then
-      _fzf=1
-      shift
-    elif [[ $1 == '--stdin' ]]; then
-      _stdin=1
-      shift
-    elif [[ _rest -eq 1 ]]; then
-      REFS+=($1)
-      shift
-    else
-      ARGS+=($1)
-      shift
-    fi
-  done
-
-  if [[ _stdin -eq 1 ]]; then
-    while IFS="" read -r REF || [ -n "$REF" ]; do
-      REFS+=($REF)
-    done
-  fi
-
-  if [[ ${#REFS[@]} -lt 1 ]]; then
-    REFS+=(HEAD)
-  fi
-
-  local RESULTS=$(printf "%s\n" "${REFS[@]}")
-  if [[ _fzf -eq 1 ]]; then
-    RESULTS=$(echo "$RESULTS" | fzf -m --preview="git show --oneline --name-status {}")
-  fi
-
-  echo -n "$RESULTS" | xargs -p -I %REF% echo farc "$FARC_CMD" "%REF%" "${ARGS[@]}"
 }
 
 #######################################################################
