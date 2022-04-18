@@ -131,6 +131,7 @@
   ctx = !git-utils git-ctx -q "ctx/"
   addu = !git-utils git-checked-add-update
   browse = !git-utils git-browse
+  review = !frk
   
   # [Extended :: Phabricator]
   ################################################################################
