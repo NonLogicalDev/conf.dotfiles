@@ -7,7 +7,7 @@
 # - https://nathangrigg.com/2014/04/zsh-push-line-or-edit
 # - https://unix.stackexchange.com/questions/47349/what-does-zshs-magic-space-command-do
 # - https://www.redhat.com/sysadmin/bash-bang-commands
-# 
+#
 
 # Loading Modules and extensions
 zmodload zsh/terminfo
@@ -21,7 +21,8 @@ bindkey -M viins " " magic-space
 # pressing <ESC> in normal mode is bogus: you need to press 'i' twice to enter insert mode again.
 # rebinding <ESC> in normal mode to something harmless solves the problem.
 bindkey -M vicmd '\e' zsh-widget-noop
-bindkey -M vicmd : edit-command-line
+bindkey -M vicmd 'v' edit-command-line
+# bindkey -M vicmd : edit-command-line
 
 bindkey '^Q' push-line-or-edit
 
