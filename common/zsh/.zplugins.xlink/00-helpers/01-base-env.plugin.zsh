@@ -59,6 +59,8 @@ setopt autocd autopushd pushdignoredups
 export HISTSIZE=10000000 # The maximum number of events to save in the internal history.
 export SAVEHIST=10000000 # The maximum number of events to save in the history file.
 
+setopt INC_APPEND_HISTORY # append history incementally
+
 export HISTFILE="${__zsh_cache_dir}/history"  # The path to the history file.
 if [ ! -d "$(dirname $HISTFILE)" ]; then
   mkdir -p "$(dirname $HISTFILE)"

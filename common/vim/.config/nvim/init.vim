@@ -128,6 +128,11 @@ set hidden          " allows making buffers hidden even with unsaved changes
 set history=10000    " remember more commands and search history
 set undolevels=10000 " use many levels of undo
 
+" auto restore last position
+autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g`\"" |
+    \ endif
 
 " }}}
 " Backup File Settings: {{{
@@ -471,6 +476,9 @@ let g:markdown_folding = 1
 autocmd BufRead *.stgit-edit.txt setlocal filetype=gitcommit
 autocmd BufRead *.stgit-edit.patch setlocal filetype=gitcommit
 
+" }}}
+" Misc: {{{
+let g:javaScript_fold=2
 " }}}
 "                                Misc Settings:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

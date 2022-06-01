@@ -22,7 +22,10 @@ _help() {
 SHA="$1"; shift
 
 [[ -z "$1" ]] && _help "Must provide OUT-DIR"
-OUT="$1"; shift
+OUT=$(
+  mkdir -p $1 >/dev/null && cd "$1" && pwd
+); shift
+
 
 DIR="$1"; shift
 [[ -z $DIR ]] && DIR="."
@@ -31,16 +34,21 @@ DIR="$1"; shift
   mkdir -p "${OUT}"
 
   export GIT_INDEX_FILE="${OUT}/.git.idx"
-  rm -rf "${GIT_INDEX_FILE}"
+  rm -f "${GIT_INDEX_FILE}"
+  touch "$GIT_INDEX_FILE"
+  echo "$GIT_INDEX_FILE"
 
   DIR=$(
-    git rev-parse --show-prefix $DIR
+    cd "$DIR" && \
+    git rev-parse --show-prefix
   )
 
-  TREE=$(
+  TREE=$( set -x;
     git rev-parse "${SHA}:${DIR}"
   )
 
   git read-tree "${TREE}"
   git --work-tree="${OUT}" checkout-index -f -a
+
+  rm -f "$GIT_INDEX_FILE"
 )

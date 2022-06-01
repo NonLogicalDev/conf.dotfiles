@@ -53,20 +53,17 @@ checked-refresh-index() {
   git --no-pager diff --cached --stat
 
   echo
-  if ( read -q 'choice?$$ View Diff? ' ); then
+  if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
     # Display difference between head and updated files
     git diff --cached -u --stat
   fi
 
-  echo
-  if ( read -q 'choice?$$ Confirm? ' ); then
-    echo
+  if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
     echo ">> [applying...]"
     ( set -x; stg refresh --index -p $TARGET_PATCH; )
     echo ">> Verifying Git Status:"
     git status -s
   else
-    echo
     echo ">> [cancelled]"
   fi
 }
@@ -88,20 +85,18 @@ checked-refresh-update() {
   git --no-pager diff --stat HEAD -- "$@"
 
   echo
-  if ( read -q 'choice?$$ View Diff? ' ); then
+
+  if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
     # Display difference between head and updated files
     git diff -u --stat HEAD -- "$@"
   fi
 
-  echo
-  if ( read -q 'choice?$$ Confirm? ' ); then
-    echo
+  if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
     echo ">> [applying...]"
     ( set -x; stg refresh -- "$@" ; )
     echo ">> Verifying Git Status:"
     git status -s
   else
-    echo
     echo ">> [cancelled]"
   fi
 }
@@ -118,22 +113,29 @@ push-set() {
   local ALL="# ALL #"
   local DONE="# DONE #"
 
-  local TOAPPLY=$(stg ls -a | grep "^$SEARCH_PATTERN")
+  local FILTERED_SERIES=$(stg series -da | grep "^$SEARCH_PATTERN")
 
   local SELECT
   SELECT=$(set -e -o pipefail;
-    ( echo "$ALL" && echo "$TOAPPLY" ) | \
-      fzf --multi +s \
+    ( echo "$ALL" && echo "$FILTERED_SERIES" ) \
+      | fzf --multi +s \
           --height="80%" --preview-window="bottom:60%" \
-          --preview "stg id {} | xargs git show --oneline --stat"
+          --preview="git show --oneline --stat \$(stg id \$(echo {} | awk '{print \$2}'))"
   )
   if [[ $? -ne 0 ]]; then
     __die "push-set: aborted"
   fi
 
+  local TOAPPLY_RAW=$FILTERED_SERIES
   if [[ $(echo $SELECT | head -n 1) != $ALL ]]; then
-    TOAPPLY=$SELECT
+    TOAPPLY_RAW=$SELECT
   fi
+
+  local TOAPPLY=$(
+    for PATCH in $TOAPPLY_RAW; do 
+      echo "$PATCH" | awk '{print $2}'
+    done
+  )
 
   echo ">> APPLYING:"
   echo ">> --------"
@@ -191,7 +193,7 @@ push-set() {
 }
 
 stack-publish() {
-  #: publish-stack <REMOTE> [REMOTE_BRANCH]
+  #: stack-publish <REMOTE> [REMOTE_BRANCH]
   #:   publish the current stack to the remote
   #:
 
@@ -232,36 +234,45 @@ stack-pull() {
 
   __assert_stg_enabled "stack-pull"
 
-  if [[ $# -lt 3 ]]; then
+  if [[ $# -lt 2 ]]; then
     __die "stack-pull: not enough args [REMOTE] [REMOTE_BRANCH] [LOCAL_BRANCH]"
   fi
+
 
   local REMOTE_NAME="$1"
   local REMOTE_BRANCH="$2"
   local LOCAL_BRANCH="$3"
 
-  local BRANCH_NAME="$(git rev-parse --abbrev-ref "$LOCAL_BRANCH")"
-
   local R_BRANCH_REF="refs/heads/$REMOTE_BRANCH"
   local R_BRANCH_STG_REF="refs/stacks/$REMOTE_BRANCH"
 
-  local BRANCH_REF="refs/heads/$LOCAL_BRANCH"
-  local BRANCH_STG_REF="refs/stacks/$LOCAL_BRANCH"
+  if [[ -n $LOCAL_BRANCH && $LOCAL_BRANCH != "--fetch" ]]; then
+    local BRANCH_REF="refs/heads/$LOCAL_BRANCH"
+    local BRANCH_STG_REF="refs/stacks/$LOCAL_BRANCH"
 
-  if ( git rev-parse "${BRANCH_REF}" >/dev/null 2>/dev/null ); then
-    __die "stack-pull: ${BRANCH_REF}: already exists please delete"
+    if ( git rev-parse "${BRANCH_REF}" >/dev/null 2>/dev/null ); then
+      __die "stack-pull: ${BRANCH_REF}: already exists please delete"
+    fi
+    if ( git rev-parse "${BRANCH_STG_REF}" >/dev/null 2>/dev/null ); then
+      __die "stack-pull: ${BRANCH_STG_REF}: already exists please delete"
+    fi
+
+    echo "stack-pull: pulling [${BRANCH_REF}, ${BRANCH_STG_REF}]"
+
+    ( set -x;
+      git fetch "$REMOTE_NAME" \
+          "${R_BRANCH_REF}:${BRANCH_REF}" \
+          "${R_BRANCH_STG_REF}:${BRANCH_STG_REF}"
+    )
+  else
+    echo "stack-pull: fetching [${BRANCH_REF}, ${BRANCH_STG_REF}]"
+
+    ( set -x;
+      git fetch "$REMOTE_NAME" \
+          "${R_BRANCH_REF}" \
+          "${R_BRANCH_STG_REF}"
+    )
   fi
-  if ( git rev-parse "${BRANCH_STG_REF}" >/dev/null 2>/dev/null ); then
-    __die "stack-pull: ${BRANCH_STG_REF}: already exists please delete"
-  fi
-
-  echo "stack-pull: publishing [${BRANCH_REF}, ${BRANCH_STG_REF}]"
-
-  ( set -x;
-    git fetch "$REMOTE_NAME" \
-        "${R_BRANCH_REF}:${BRANCH_REF}" \
-        "${R_BRANCH_STG_REF}:${BRANCH_STG_REF}"
-  )
 }
 
 patch-publish() {
