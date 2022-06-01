@@ -53,3 +53,5 @@ complete -o nospace -C /usr/local/bin/vault vault
 if [[ -n $ZSH_EXTRA_SOURCE ]]; then
   source "$ZSH_EXTRA_SOURCE"
 fi
+
+export PATH="$HOME/.poetry/bin:$PATH"

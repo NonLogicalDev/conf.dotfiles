@@ -31,6 +31,12 @@ if [[ "$OSTYPE" == darwin* ]]; then
   done
 fi
 
+# Setting up Python (poetry)
+if [[ -d "$HOME/.poetry" ]]; then
+    path_prepend "$HOME/.poetry/bin"
+    source "$HOME/.poetry/env"
+fi
+
 #----------------------------------------------------------------------
 # Basic Conf
 #

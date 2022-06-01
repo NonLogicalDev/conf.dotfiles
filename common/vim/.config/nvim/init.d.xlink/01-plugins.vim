@@ -70,7 +70,7 @@ Plug 'sheerun/vim-polyglot'
 " Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
 " Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
 " Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
-" Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
+Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
 " Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
 " Plug 'mattn/emmet-vim',        {'for':'html'} " Faster way to write HTML
 " Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
