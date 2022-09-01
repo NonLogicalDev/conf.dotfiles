@@ -130,9 +130,9 @@ set undolevels=10000 " use many levels of undo
 
 " auto restore last position
 autocmd BufReadPost *
-    \ if line("'\"") > 1 && line("'\"") <= line("$") |
-    \   exe "normal! g`\"" |
-    \ endif
+\ if line("'\"") > 1 && line("'\"") <= line("$") |
+\   exe "normal! g`\"" |
+\ endif
 
 " }}}
 " Backup File Settings: {{{
@@ -232,10 +232,10 @@ nmap <C-w>8 8gt
 nmap <C-w>9 9gt
 
 " ?? Remap arrows to resize panes instead.
-nmap <up> <c-w>+
-nmap <down> <c-w>-
-nmap <right> <c-w><
-nmap <left> <c-w>>
+" nmap <up> <c-w>+
+" nmap <down> <c-w>-
+" nmap <right> <c-w><
+" nmap <left> <c-w>>
 
 " ?? Newlines with `^j` in import mode... (why not?)
 imap <C-j> <CR><C-o>O

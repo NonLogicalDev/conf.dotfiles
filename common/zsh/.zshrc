@@ -55,3 +55,9 @@ if [[ -n $ZSH_EXTRA_SOURCE ]]; then
 fi
 
 export PATH="$HOME/.poetry/bin:$PATH"
+
+# PROMPT_ASYNC_ZLE: ------------------------------------------------------------
+fpath+=( "/Users/oleg.utkin/.local/share/zsh-funcs" )
+autoload -Uz promptinit
+promptinit && prompt_asynczle_setup
+# ------------------------------------------------------------------------------
