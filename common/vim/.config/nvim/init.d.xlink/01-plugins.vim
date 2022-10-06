@@ -6,7 +6,7 @@
 """ Plugin Manager Setup: {{{
 
 let g:PlugHomePath = g:VimConfig('autoload/plug.vim')
-let g:PlugDataPath = g:Dir(g:VimData('plug.vim'))
+let g:PlugDataPath = g:MustDir(g:VimData('plug.vim'))
 let g:PlugRepoURL = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 let g:PlugInitialized = 0
 
@@ -60,30 +60,19 @@ Plug 'tpope/vim-repeat'
 Plug 'Shougo/unite.vim'
 Plug 'rizzatti/funcoo.vim'
 
+if has('nvim')
+  Plug 'nvim-lua/plenary.nvim'
+endif
+
 " }}}
 " Language Definitions: {{{
 
-" One pack to rule them all and in the darkness bind them.
-Plug 'sheerun/vim-polyglot' 
+Plug 'sheerun/vim-polyglot' " One pack to rule them all and in the darkness bind them.
 
-" Plug 'Matt-Deacalion/vim-systemd-syntax', { 'for':'systemd'        }
-" Plug 'stephpy/vim-yaml',                  { 'for':'yaml'           }
-" Plug 'chase/vim-ansible-yaml',            { 'for':'yaml'           }
-" Plug 'pangloss/vim-javascript',           { 'for':'javascript'     }
-Plug 'lepture/vim-jinja',                 { 'for':'jinja'          }
-" Plug 'jceb/vim-orgmode',                  { 'for':'org'            }
+Plug 'lepture/vim-jinja', { 'for': 'jinja' }
+
 " Plug 'mattn/emmet-vim',        {'for':'html'} " Faster way to write HTML
 " Plug 'vim-scripts/ragtag.vim', {'for':'xml' } " Helps with html/xml editing
-
-" Plug 'rust-lang/rust.vim',                { 'for':'rust'           }
-" Plug 'chr4/nginx.vim'
-" Plug 'raichoo/haskell-vim',               { 'for':'haskell'        }
-" Plug 'tikhomirov/vim-glsl',               { 'for':'glsl'           }
-" Plug 'keith/swift.vim',                   { 'for':'swift'          }
-" Plug 'fatih/vim-go',                      { 'for':'go'             }
-" Plug 'hdima/python-syntax',               { 'for':'python'         }
-
-" Plug 'aklt/plantuml-syntax'
 
 " }}}
 " Colorschemes: {{{
@@ -93,26 +82,31 @@ Plug 'nonlogicaldev/vim.color.gruvbox'
 " }}}
 " Interface Plugins: {{{
 
-" Plug 'tpope/vim-speeddating' " Needed for OrgMode
-
-Plug 'ojroques/vim-oscyank'  " Use OSC 52 for copying to clibboard
-Plug 'vimwiki/vimwiki'       " Personal Wiki
-
+" Essentials:
 Plug 'scrooloose/nerdtree'   " Ex Browser Replacement
-" Plug 'Shougo/vimfiler.vim'   " Adding Navigator to vim
-
 Plug 'itchyny/lightline.vim' " Status Line Replacement
-Plug 'kien/ctrlp.vim'        " Quick Finder
 
-Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
+" Nice To Haves:
+Plug 'ojroques/vim-oscyank'  " Use OSC 52 for copying to clibboard
+if has('nvim')
+  " NeoVim LUA Specific QuickSearch Plugin
+  Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
+else
+  " Standard VIM QuickSearch Plugin
+  Plug 'kien/ctrlp.vim'
+endif
+
+" Occasional:
+" Plug 'jaxbot/semantic-highlight.vim' " Color every identifier with its own color
+" Plug 'vimwiki/vimwiki'               " Personal Wiki
+" Plug 'tpope/vim-speeddating'         " Needed for OrgMode
+" Plug 'Shougo/vimfiler.vim'           " Adding Navigator to vim
 " Plug 'kien/rainbow_parentheses.vim'  " Rainbow parenthetical expressions
 
-
-" Making editing colors in vim a little easier
+" Color Management:
 " Plug 'iandoe/vim-osx-colorpicker'
 " Plug 'skammer/vim-css-color'
 " Plug 'vim-scripts/Colorizer'
-
 
 " }}}
 " Behavior Engancements: {{{
@@ -123,12 +117,13 @@ Plug 'godlygeek/tabular'               " Aligns any delimiter in selected string
 Plug 'Raimondi/delimitMate'            " Auto closes brackets quotes and just about everything else
 
 Plug 'vim-scripts/EnhancedJumps'       " Improve jumps (CTRL-I / CTRL-O)
-Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
 Plug 'Lokaltog/vim-easymotion'         " Visualises increments of jump commands
 
-Plug 'tpope/vim-abolish'               " Error Correction on-the-fly
-Plug 'tomtom/tcomment_vim'             " Commenting out lines with 'gc'
+Plug 'tpope/vim-commentary'            " Commenting out lines with 'gc'
 Plug 'tpope/vim-surround'              " Surround current element with a symbol
+
+Plug 'wellle/targets.vim'              " Pair ({[ targets, and many more text objects
+Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent level
 
 " }}}
 " Connectivity Plugins: {{{
@@ -146,8 +141,24 @@ if (!(version < 704) && (has("python") || has("python3")) )
 endif
 
 if has('nvim')
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+  " Language Server Support (requires up-to-date NeoVim to work)
+  " (!See LUA Config Section for Configuration Details, this does not work out of the box!)
+  Plug 'neovim/nvim-lspconfig', { 'branch': 'main' }
 
+  " Language Server Support Components
+  Plug 'hrsh7th/cmp-nvim-lsp', { 'branch': 'main' }
+  Plug 'hrsh7th/cmp-buffer', { 'branch': 'main' }
+  Plug 'hrsh7th/cmp-path', { 'branch': 'main' }
+  Plug 'hrsh7th/cmp-cmdline', { 'branch': 'main' }
+
+  " NeoVim Completion Plugin (this is what actually shows Language Server completions in UI)
+  Plug 'hrsh7th/nvim-cmp', { 'branch': 'main' }
+
+  " LSP Ultisnips Integration
+  Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+
+  " Old Deoplete Completer (does not require JS):
+  " Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
   " Plug 'neomake/neomake' " On the fly code checker
   " Plug 'zchee/deoplete-go',    { 'do': 'make' }
   " Plug 'zchee/deoplete-clang'
@@ -159,11 +170,80 @@ endif
 call s:PlugInitEnd()
 """ }}}
 
-" Plugin Confuguration:
+" NeoVim LUA Plugin Configuration: {{{
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+if has("nvim")
+lua <<EOF
+  -- Set up nvim-cmp.
+  local cmp = require('cmp')
+
+  cmp.setup({
+    snippet = {
+      -- REQUIRED - you must specify a snippet engine
+      expand = function(args)
+        vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      end,
+    },
+    window = {
+      -- completion = cmp.config.window.bordered(),
+      -- documentation = cmp.config.window.bordered(),
+    },
+    mapping = cmp.mapping.preset.insert({
+      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.abort(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    }),
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'ultisnips' }, -- For ultisnips users.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Set configuration for specific filetype.
+  cmp.setup.filetype('gitcommit', {
+    sources = cmp.config.sources({
+      -- { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline('/', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+      { name = 'path' }
+    }, {
+      { name = 'cmdline' }
+    })
+  })
+
+  -- Set up lspconfig.
+  local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+EOF
+endif
+
+" }}}
+
+" Plugin Confuguration: {{{
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " OCS Yank: {{{
 
-augroup PlugOSCYank
+augroup PlugOCSYank
   autocmd!
   autocmd User KeymapReady vnoremap <leader>c :OSCYank<CR>
   autocmd User KeymapReady nmap <leader>o <Plug>OSCYank
@@ -182,7 +262,7 @@ let g:go_highlight_build_constraints = 1
 let g:go_list_type = "quickfix"
 "let g:go_fmt_command = "goimports"
 
-augroup LangGo
+augroup PlugLangGo
   autocmd!
   " autocmd BufRead *.go setlocal foldmethod=syntax
   " autocmd BufRead *.go setlocal foldnestmax=1
@@ -221,7 +301,7 @@ let g:gruvbox_improved_strings = 0
 
 let python_highlight_all = 1
 
-augroup LangPython
+augroup PlugLangPython
   autocmd!
   autocmd FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
 augroup END
@@ -295,7 +375,7 @@ let g:yankring_history_file = 'yankring_history'
 " }}}
 " Ctrl P Config: {{{
 
-augroup PlugOSCYank
+augroup PlugCtrlP
   autocmd!
   autocmd User KeymapReady noremap <leader>[ :CtrlPBuffer<CR>
   autocmd User KeymapReady noremap <leader>] :CtrlPMRUFiles<CR>
@@ -318,7 +398,10 @@ let g:ctrlp_extensions = ['buffertag']
 " }}}
 " Emmet Config: {{{
 
-imap <C-Tab> <C-y>,
+augroup PlugEmmet
+  autocmd!
+  autocmd User KeymapReady imap <C-Tab> <C-y>,
+augroup END
 
 " }}}
 " Semantic: {{{
@@ -400,43 +483,51 @@ endif
 " }}}
 " UltiSnips: {{{
 
-let g:UltiSnipsExpandTrigger="<C-Space>"
-let g:UltiSnipsJumpForwardTrigger="<C-j>"
-let g:UltiSnipsJumpBackwardTrigger="<C-k>"
-let g:UltiSnipsListSnippets="<c-l>"
+"let g:UltiSnipsExpandTrigger="<C-Space>"
+"let g:UltiSnipsJumpForwardTrigger="<C-j>"
+"let g:UltiSnipsJumpBackwardTrigger="<C-k>"
+"let g:UltiSnipsListSnippets="<c-l>"
 
-" If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsEditSplit="vertical"
+"" If you want :UltiSnipsEdit to split your window.
+"let g:UltiSnipsEditSplit="vertical"
 
-let g:UltiSnipsSnippetDirectories = [g:VimConfig('UltiSnips'), 'UltiSnips']
+"let g:UltiSnipsSnippetDirectories = [g:VimConfig('UltiSnips'), 'UltiSnips']
 
-" ultisnips is missing a setf trigger for snippets on bufenter
-autocmd BufEnter *.snippets setf snippets
 
-" in ultisnips snippet files, we want actual tabs instead of spaces for
-" indents. us will use those tabs and convert them to spaces if expandtab is set when
-" the user wants to insert the snippet.
-autocmd filetype snippets setlocal noexpandtab
-inoremap <silent> <Tab> <C-R>=g:SmartTab()<cr>
-inoremap <silent> <S-Tab> <C-R>=g:SmartSTab()<cr>
-"au VimEnter * exec "inoremap <silent> <Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+"augroup PlugUltiSnips
+"  autocmd!
 
-" Make tab smart
+"  " ultisnips is missing a setf trigger for snippets on bufenter
+"  autocmd BufEnter *.snippets setf snippets
 
-func! g:SmartTab()
-  if pumvisible()
-    return "\<C-n>"
-  else
-    return "\<Tab>"
-  endif
-endfunc
+"  " in ultisnips snippet files, we want actual tabs instead of spaces for
+"  " indents. us will use those tabs and convert them to spaces if expandtab is set when
+"  " the user wants to insert the snippet.
+"  autocmd filetype snippets setlocal noexpandtab
 
-func! g:SmartSTab()
-  if pumvisible()
-    return "\<C-p>"
-  else
-    return "\<Tab>"
-  endif
-endfunc
+"  autocmd User KeymapReady noremap <silent> <Tab> <C-R>=g:SmartTab()<cr>
+"  autocmd User KeymapReady noremap <silent> <S-Tab> <C-R>=g:SmartSTab()<cr>
 
+"  "au VimEnter * exec "inoremap <silent> <Tab> <C-R>=g:UltiSnips_Complete()<cr>"
+"augroup END
+
+"" Make tab smart
+
+"func! g:SmartTab()
+"  if pumvisible()
+"    return "\<C-n>"
+"  else
+"    return "\<Tab>"
+"  endif
+"endfunc
+
+"func! g:SmartSTab()
+"  if pumvisible()
+"    return "\<C-p>"
+"  else
+"    return "\<Tab>"
+"  endif
+"endfunc
+
+" }}}
 " }}}

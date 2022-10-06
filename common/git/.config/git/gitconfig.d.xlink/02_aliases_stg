@@ -1,31 +1,31 @@
 [stgit.alias]
-  rf    = stg refresh
-  rfs   = stg refresh --spill
-  spill = stg refresh --spill
+  rf    = !stg refresh
+  rfs   = !stg refresh --spill
+  spill = !stg refresh --spill
 
-  ls  = stg series --noprefix
-  lg  = stg series -d
-  lgs = stg series -d -s
+  ls  = !stg series --noprefix
+  lg  = !stg series -d
+  lgs = !stg series -d -s
 
-  patch = stg edit --diff --save-template -
+  patch = !stg edit --diff --save-template -
 
   # [Extended :: Custom Git Utils]
   ################################################################################
 
-  rfi   = stg-utils checked-refresh-index
-  rfu   = stg-utils checked-refresh-update
+  rfi   = !stg-utils checked-refresh-index
+  rfu   = !stg-utils checked-refresh-update
 
-  pushm = stg-utils push-set
-  mpush = stg-utils push-set
+  pushm = !stg-utils push-set
+  mpush = !stg-utils push-set
 
   # pbf  = git-utils stg-patches-by-file
   # farc = git-utils stg-farc
   # stack = git-utils stg-series-pretty
   # refs  = git-utils stg-heads
 
-  tig   = git-utils stg-tig
+  tig   = !git-utils stg-tig
 
-  rstash = git-utils stg-rstash
+  rstash = !git-utils stg-rstash
 
 [alias]
   # [Mercurial Queues Imitation]

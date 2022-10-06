@@ -16,14 +16,36 @@ set fileencoding=utf-8
 set nocompatible
 set guicursor=
 
-func! g:Dir(dir)
+if has('nvim') || has('termguicolors')
+  set termguicolors
+endif
+
+func! g:CoalesceFile(...)
+  for path in a:000
+    if filereadable(path)
+      return path
+    endif
+  endfor
+  return ''
+endfunc
+
+func! g:CoaleseDir(...)
+  for path in a:000
+    if empty(glob(path))
+      return path
+    endif
+  endfor
+  return ''
+endfunc
+
+func! g:MustDir(dir)
   if empty(glob(a:dir))
     call system("mkdir -p " . a:dir)
   endif
   return a:dir
 endfunc
 
-func! g:File(path)
+func! g:MustFile(path)
   if !filereadable(a:path)
     call system("touch " . a:path)
   endif
@@ -37,43 +59,19 @@ func! g:VimConfig(path)
     return expand("~/.vim/" . a:path)
   endif
 endfunc
-call g:Dir(g:VimConfig(""))
+call g:MustDir(g:VimConfig(""))
+if ! has('nvim') 
+  let &runtimepath=&runtimepath . ',' . g:VimConfig("") 
+endif
 
 func! g:VimData(path)
   if has("nvim")
     return expand("~/.local/share/nvim/". a:path)
   else
-    return expand("~/.local/share/nvim/". a:path)
+    return expand("~/.local/share/vim/". a:path)
   endif
 endfunc
-call g:Dir(g:VimData(""))
-
-" Set up Python on macOS:
-if filereadable("/usr/local/opt/asdf/shims/python2")
-  let g:python_host_prog = '/usr/local/opt/asdf/shims/python2'
-elseif filereadable(expand("~/.pyenv/shims/python2"))
-  let g:python_host_prog = expand('~/.pyenv/shims/python2')
-elseif filereadable("/usr/local/bin/python2")
-  let g:python_host_prog = '/usr/local/bin/python2'
-endif
-if filereadable("/usr/local/opt/asdf/shims/python3")
-  let g:python3_host_prog = '/usr/local/opt/asdf/shims/python3'
-elseif filereadable(expand("~/.pyenv/shims/python3"))
-  let g:python3_host_prog = expand('~/.pyenv/shims/python3')
-elseif filereadable("/usr/bin/python3")
-  let g:python3_host_prog = '/usr/bin/python3'
-endif
-
-command! ReloadConfig :call s:ReloadConfig()
-if ! exists("*s:ReloadConfig")
-  func! s:ReloadConfig()
-    if has("nvim")
-      exec "source " . g:VimConfig("init.vim")
-    else
-      exec "source " . g:VimConfig("../.vimrc")
-    endif
-  endfunc
-endif
+call g:MustDir(g:VimData(""))
 
 " Open the vimrc file
 command! Config call s:OpenConfig()
@@ -82,7 +80,7 @@ if ! exists("*s:OpenConfig")
     if has("nvim")
       exec "tabedit " . g:VimConfig("init.vim")
     else
-      exec "tabedit " . g:VimConfig("../.vimrc")
+      exec "tabedit " . expand("~/.vimrc")
     endif
   endfunc
 endif
@@ -95,10 +93,30 @@ if ! exists("*s:OpenConfigDir")
   endfunc
 endif
 
+" Reload Vim Config
+command! ConfigReload :call s:ConfigReload()
+if ! exists("*s:ConfigReload")
+  func! s:ConfigReload()
+    if has("nvim")
+      exec "source " . g:VimConfig("init.vim")
+    else
+      exec "source " . g:VimConfig("../.vimrc")
+    endif
+  endfunc
+endif
+
+" Builtin language plugins setup:
+
+let g:python3_host_prog = g:CoalesceFile(
+      \ "/usr/local/opt/asdf/shims/python3",
+      \ expand("~/.pyenv/shims/python3"),
+      \ expand("/usr/bin/python3"),
+      \ )
+
 " }}}
 " Load Extra Config: {{{
 
-execute 'runtime!' 'init.d/*.vim'
+execute 'runtime!' "init.d/*.vim"
 
 " }}}
 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -138,7 +156,7 @@ autocmd BufReadPost *
 " Backup File Settings: {{{
 
 " Save Backups to a well known location.
-let &backupdir=g:Dir(g:VimConfig("backup"))
+let &backupdir=g:MustDir(g:VimConfig("backup"))
 set backupcopy=yes
 
 set noswapfile " Don't use swapfile
@@ -348,7 +366,7 @@ endif
 " }}}
 " Seach: Emacs Style Search: {{{
 
-let &highlight = 0
+" let &highlight = 0
 
 nnoremap <expr> <CR> &hlsearch? ':let &hlsearch = 0<CR>' : '<CR>'
 nnoremap <expr> <leader>' &hlsearch? ':let &hlsearch = 0<CR>' : ''

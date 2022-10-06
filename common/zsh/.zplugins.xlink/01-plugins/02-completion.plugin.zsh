@@ -22,15 +22,15 @@ autoload -Uz compinit
 
 _zsh_comp_files=(${__zsh_cache_dir}/compdump(Nm-20))
 if (( $#_zsh_comp_files )); then
-  compinit -i -C -d ${_zsh_cache_dir}/compdump
+  compinit -i -C -d ${__zsh_cache_dir}/compdump
 else
-  compinit -i -d ${_zsh_cache_dir}/compdump
+  compinit -i -d ${__zsh_cache_dir}/compdump
 fi
 unset _zsh_comp_files
 
 # Use caching to make completion for commands such as dpkg and apt usable.
 zstyle ':completion::complete:*' use-cache on
-zstyle ':completion::complete:*' cache-path "${_zsh_cache_dir}/compcache"
+zstyle ':completion::complete:*' cache-path "${__zsh_cache_dir}/compcache"
 
 #-------------------------------------------------------------------------------
 

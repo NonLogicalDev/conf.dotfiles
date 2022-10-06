@@ -1,5 +1,7 @@
 // Place your settings in this file to overwrite the default settings
 {
+    "window.experimental.commandCenter": true,
+
     "files.trimTrailingWhitespace": true,
     "files.autoSave": "onFocusChange",
     "files.exclude": {
@@ -12,16 +14,17 @@
         "**/_build": true
     },
 
-    "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
-    "editor.lineHeight": 16,
-    "editor.fontSize": 16,
-    "editor.suggestFontSize": 16,
+    // "editor.fontFamily": "'Fixedsys Excelsior', Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontFamily": "Monaco, Menlo, monospace",
+    "editor.lineHeight": 18,
+    "editor.fontSize": 14,
+    // "editor.suggestFontSize": 14,
     "editor.fontLigatures": false,
     "editor.formatOnType": true,
     "editor.scrollBeyondLastLine": false,
     "editor.cursorSmoothCaretAnimation": true,
 
-    "terminal.integrated.fontSize": 16,
+    "terminal.integrated.fontSize": 14,
 
     "workbench.tree.indent": 20,
     "workbench.tree.renderIndentGuides": "always",
@@ -144,5 +147,8 @@
     "calva.paredit.defaultKeyMap": "strict",
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
+    "security.workspace.trust.untrustedFiles": "open",
+    "notebook.lineNumbers": "on",
+    "notebook.output.textLineLimit": 50
 }
