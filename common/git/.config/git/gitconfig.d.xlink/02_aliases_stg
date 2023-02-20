@@ -5,6 +5,7 @@
 
   ls  = !stg series --noprefix
   lg  = !stg series -d
+  lgr  = !stg series -d --color=always | tac
   lgs = !stg series -d -s
 
   patch = !stg edit --diff --save-template -
@@ -14,6 +15,9 @@
 
   rfi   = !stg-utils checked-refresh-index
   rfu   = !stg-utils checked-refresh-update
+  check = !stg-utils check-index
+  spilli = !stg-utils spill-interactive
+
 
   pushm = !stg-utils push-set
   mpush = !stg-utils push-set

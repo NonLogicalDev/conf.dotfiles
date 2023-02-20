@@ -47,21 +47,3 @@ if [[ ! -f ${ZDOTDIR-$HOME}/.zshrc.local ]]; then
 fi
 source ${ZDOTDIR:-$HOME}/.zshrc.local
 
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /usr/local/bin/vault vault
-
-if [[ -n $ZSH_EXTRA_SOURCE ]]; then
-  source "$ZSH_EXTRA_SOURCE"
-fi
-
-export PATH="$HOME/.poetry/bin:$PATH"
-
-# PROMPT_ASYNC_ZLE: ------------------------------------------------------------
-fpath+=( "/Users/oleg.utkin/.local/share/zsh-funcs" )
-autoload -Uz promptinit
-promptinit && prompt_asynczle_setup
-# ------------------------------------------------------------------------------
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

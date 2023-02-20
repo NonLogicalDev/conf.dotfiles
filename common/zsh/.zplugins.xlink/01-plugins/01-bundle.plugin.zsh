@@ -8,11 +8,12 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
   "nnao45/zsh-kubectl-completion"
   "hlissner/zsh-autopair"
 
-  "rupa/z"
-  "changyuheng/fz"
 
   "NonLogicalDev/fork.util.zsh.pure-prompt"
 )
+
+# "rupa/z"
+# "changyuheng/fz"
 
 if (( $+commands[antibody] )); then
   local _ANTIBODY_PLUGIN_LIST="$ZSH_CACHE_DIR/antibody.plugins.txt"
@@ -39,16 +40,6 @@ if (( $+commands[antibody] )); then
   fi
 
   #=======================================
-  # rupa/z
-  #=======================================
-  export _Z_DATA_DIR="$HOME/.cache/zsh/z"
-  export _Z_DATA="$_Z_DATA_DIR/z"
-  if [[ ! -d $_Z_DATA_DIR ]]; then
-    rm -rf $_Z_DATA_DIR
-    mkdir -p $_Z_DATA_DIR
-  fi
-
-  #=======================================
   # zsh-users/zsh-history-substring-search
   #=======================================
   HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=magenta,fg=white,bold'
@@ -59,4 +50,43 @@ if (( $+commands[antibody] )); then
   # zsh-users/zsh-syntax-highlighting
   #=======================================
   ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
+fi
+
+#-------------------------------------------------------------------------------
+# External Plugin Configurations:
+#
+
+#=======================================
+# NonLogicalDev/shell.async-goprompt
+#=======================================
+if (( $+commands[goprompt] )); then
+  eval "$(goprompt install zsh)"
+fi
+
+#=======================================
+# ajeetdsouza/zoxide
+#=======================================
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+fi
+
+#=======================================
+# sharkdp/bat
+#=======================================
+if (( $+commands[bat] )); then
+  alias cat="bat -p"
+fi
+
+#=======================================
+# ogham/exa
+#=======================================
+if (( $+commands[exa] )); then
+  alias ls=exa
+fi
+
+#=======================================
+# direnv/direnv
+#=======================================
+if (( $+commands[direnv] )); then
+  eval "$(direnv hook zsh)"
 fi

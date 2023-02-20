@@ -1,6 +1,8 @@
 #!/bin/zsh
 SCRIPT_PATH=$0
 
+unset GIT_DIR
+
 __help() {
   cat ${SCRIPT_PATH} | grep "^ *#"":" | sed 's/^ *#://'
 }
@@ -23,12 +25,52 @@ __die() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
+spill-interactive() { 
+  stg files|gum filter --no-limit --height=20|cut -f 2|(cd $(git root); xargs stg spill --)
+}
+
 new-patch-from-index() {
   #: new-patch-from-index [PATCH_NAME] -m "message"
   #:   creates a new patch from current index
   #:
 
   stg new "$@" && checked-refresh-index
+}
+
+__check-header() {
+  local TARGET_PATCH=$1
+
+  local GIT_HEAD=$(git rev-parse --short $(stg id $TARGET_PATCH))
+  local STG_STACK_REF=$(stg log -n 1 | head -n 1 | awk '{print $1}')
+
+  echo ">> Applying diff to patch: $TARGET_PATCH"
+  echo "   (sha:$GIT_HEAD) (stg-stack:$STG_STACK_REF)"
+  git show -s "$GIT_HEAD" --format=%s | sed 's/^/   /'
+
+  echo
+  stg files "$TARGET_PATCH" 
+}
+
+check-index() { 
+  __assert_stg_enabled "check-index"
+
+  TARGET_PATCH=$(stg top)
+  if [[ -n $1 ]]; then
+    TARGET_PATCH=$1
+  fi
+
+  __check-header "$TARGET_PATCH"
+  echo
+
+  echo ">> Diff:"
+  echo
+  git --no-pager diff --cached --stat
+  echo
+
+  if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+    # Display difference between head and updated files
+    git diff --cached -u --stat
+  fi
 }
 
 checked-refresh-index() {
@@ -43,16 +85,14 @@ checked-refresh-index() {
     TARGET_PATCH=$1
   fi
 
-  STG_STACK_REF=$(stg log -n 1 | head -n 1 | awk '{print $1}')
-  GIT_HEAD=$(git rev-parse --short $(stg id $TARGET_PATCH))
-
-  echo ">> Applying diff to patch: $TARGET_PATCH"
-  echo "   (sha:$GIT_HEAD) (stg-stack:$STG_STACK_REF)"
+  __check-header "$TARGET_PATCH"
   echo
 
+  echo ">> Diff:"
+  echo
   git --no-pager diff --cached --stat
-
   echo
+
   if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
     # Display difference between head and updated files
     git diff --cached -u --stat
@@ -75,15 +115,14 @@ checked-refresh-update() {
 
   __assert_stg_enabled "checked-refresh-update"
 
-  STG_STACK_REF=$(stg log -n 1 | head -n 1 | awk '{print $1}')
-  GIT_HEAD=$(git rev-parse --short HEAD)
+  local TARGET_PATCH=$(stg top)
 
-  echo ">> Applying diff to patch: $(stg top)"
-  echo "   (sha:$GIT_HEAD) (stg-stack:$STG_STACK_REF)"
+  __check-header "$TARGET_PATCH"
   echo
 
+  echo ">> Diff:"
+  echo
   git --no-pager diff --stat HEAD -- "$@"
-
   echo
 
   if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then

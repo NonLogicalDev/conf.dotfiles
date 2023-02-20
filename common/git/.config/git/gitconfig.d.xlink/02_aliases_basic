@@ -1,7 +1,9 @@
 [pretty]
   nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
+
   nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar / %cr)%C(yellow)%d%Creset
+  nice-sep   = tformat:%n* %C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
   nice-cons  = tformat:* %C(red)%h%Creset - %s | %C(bold blue)<%an>%Creset | %C(green)(%cr)%C(yellow)%d%Creset
   nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
   nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
@@ -9,8 +11,8 @@
 [pager]
   lg           = false
   lgg          = false
-  affected     = false
-  affected-ls  = false
+  files     = false
+  files-ls  = false
   confilcts    = false
   confilcts-ls = false
 
@@ -25,11 +27,12 @@
   ################################################################################
 
   lg   = log -n 10 --first-parent --pretty=nice
+  lgr   = lg --reverse
+  lgf   = log -n 10 --first-parent --pretty=nice-sep --name-status
   lgg  = log -n 10 --graph --pretty=nice-cons
   lgt  = !git lg --pretty=nice-cols --color | column -xt -s "::"
   lgu  = !git lg -n 100 $(git upstream)..HEAD
   lguu = !git lg -n 100 HEAD..$(git upstream)
-  lgf  = lg --follow
 
   # [FastForward]
   ################################################################################
@@ -118,10 +121,10 @@
   # ireset -- Interactively restore files back to original HEAD state
   irestore = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git restore --
 
-  # affected -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
+  # files -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
-  affected = show --format="" --name-status
-  affected-ls = show --format="" --name-only
+  files = show --format="" --name-status
+  files-ls = show --format="" --name-only
   conflicts = diff --name-status --diff-filter=U
   conflicts-ls = diff --name-only --diff-filter=U
 

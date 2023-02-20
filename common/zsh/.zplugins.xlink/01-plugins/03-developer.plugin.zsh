@@ -1,8 +1,9 @@
-typeset -aU INIT_LIST
-export INIT_LIST=()
+typeset -A INIT_LIST=()
 
 function init.list {
-  echo $INIT_LIST
+  for key value in ${(kv)INIT_LIST}; do
+      echo "$key -> $value"
+  done
 }
 
 ## iTerm Integration
@@ -11,7 +12,7 @@ function init.term.iterm {
     echo "INIT | iTerm..."
 
     source "${HOME}/.iterm2_shell_integration.zsh"
-    INIT_LIST+=("iterm")
+    INIT_LIST[iterm] = "iterm"
   fi
 }
 
@@ -27,7 +28,8 @@ function init.vm.asdf {
 
     . "$ASDF_DIR/asdf.sh"
     . "$ASDF_DIR/etc/bash_completion.d/asdf.bash"
-    INIT_LIST+=("asdf.vm")
+
+    INIT_LIST[asdf] = "asdf.vm"
   fi
 
   # declare -a plugins=(
@@ -44,12 +46,19 @@ function init.vm.asdf {
 ## Adding Node Version Manger
 function init.vm.node {
   export NVM_DIR="$HOME/.nvm"
+  export NVM_NODE_VERSION=${NVM_NODE_VERSION:-$1}
 
   if [[ -s "$NVM_DIR/nvm.sh" ]]; then
     echo "INIT | Node..."
 
     source "$NVM_DIR/nvm.sh"
-    INIT_LIST+=("node.vm ($(node -v))")
+    [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+    if [[ -n $NVM_NODE_VERSION ]]; then
+      nvm use "$NVM_NODE_VERSION"
+    fi
+
+    INIT_LIST[node]="node.vm ($(node -v))"
   fi
 }
 
@@ -59,10 +68,11 @@ function init.vm.java {
 
   if (( $+commands[jenv] )); then
     echo "INIT | JVM..."
+
     path_prepend "$JVM_DIR"
 
     source <(jenv init -)
-    INIT_LIST+=("java.vm ($(java --version | head -n1))")
+    INIT_LIST[java]="java.vm ($(java --version | head -n1))"
   fi
 }
 
@@ -72,10 +82,13 @@ function init.vm.rust {
 
   if [[ -s "$CARGO_DIR/env" ]]; then
     echo "INIT | RUST..."
+
     path=("$CARGO_DIR/bin" $path)
 
     source "$CARGO_DIR/env"
-    INIT_LIST+=("rust.vm ($(cargo --version))")
+
+    INIT_LIST[rust]="rust.vm ($(cargo --version))"
+    echo ${INIT_LIST[rust]}
   fi
 }
 
@@ -84,48 +97,52 @@ function init.vm.go {
   export GIMME_DIR="$HOME/.gimme"
 
   if (( $+commands[gimme] )); then
-    echo "INIT | GO..."
+    echo "INIT | GO ..."
+
     path_prepend "${GIMME_DIR}/go/bin"
 
     export GOPATH="${GIMME_DIR}/go"
-    export GIMME_GO_VERSION="$(cat ${GIMME_DIR}/DEFAULT)"
+    export GIMME_GO_VERSION="${GIMME_GO_VERSION:-$1}"
 
     if [[ -z $GIMME_GO_VERSION ]]; then
-      GIMME_GO_VERSION="$(gimme -k | tail -n1)"
-      echo "Go Version Selected: $GIMME_GO_VERSION"
-      echo "$GIMME_GO_VERSION" > "${GIMME_DIR}/DEFAULT"
+      return 
     fi
 
-    eval "$(GIMME_SILENT_ENV=1 gimme)" > /dev/null
-    INIT_LIST+=("go.vm ($(go version))")
+    eval "$(GIMME_SILENT_ENV=1 gimme)"
+    INIT_LIST[go]="go.vm ($(go version))"
+    echo ${INIT_LIST[go]}
   fi
 }
 
 function init.vm.python {
   if [[ -d "$HOME/.pyenv" ]]; then
+    echo "INIT | PYTHON ..."
+
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init --path)"
+    export PIPENV_PYTHON="$PYENV_ROOT/shims/python"
+    export PYENV_PYTHON_VERSION=${PYENV_PYTHON_VERSION:-$1}
 
-    INIT_LIST+=("python.vm ($(python --version))")
+    eval "$(pyenv init --path)"
+    if [[ -n $PYENV_PYTHON_VERSION ]]; then
+      pyenv local "$PYENV_PYTHON_VERSION"
+    fi
+
+    INIT_LIST[python]="python.vm ($(python --version 2>&1))"
+    echo ${INIT_LIST[python]}
   fi
 }
+
+function init.vmset.basic {
+  {
+    init.term.iterm
+    init.vm.python
+  } > /dev/null 2>/dev/null
+}
+
+# Extras:
 
 if [[ -d "$HOME/.krew" ]]; then
   # Setting up Kubeclt Krew
   path_prepend "$HOME/.krew/bin"
 fi
-
-function init.vmset.basic {
-  init.term.iterm
-  init.vm.python
-}
-
-function init.vmset.full {
-  init.vmset.basic
-  init.vm.node
-  init.vm.java
-  init.vm.rust
-  init.vm.go
-}
-
