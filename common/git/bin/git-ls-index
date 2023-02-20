@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+
+from io import TextIOWrapper
+from typing import List
+
+import os
+import sys
+import math
+import json
+import datetime
+
+from pathlib import Path
+from argparse import ArgumentParser
+from subprocess import run
+from dataclasses import dataclass
+
+import struct
+
+def __args():
+    parser = ArgumentParser(prog="git-ls-index")
+    parser.add_argument(
+        "-a", "--all-paths", action="store_true",
+         help="Display all paths from the index. (default is to display chldren of current dir)",
+    )
+    return parser.parse_args()
+
+
+def __main(args):
+    git_dir = git_get_dir()
+    git_index_path = str(Path(git_dir).absolute().joinpath("index"))
+    git_idx = git_read_index(git_index_path)
+
+    entry_prefix = str(Path(os.getcwd()).relative_to(git_get_toplevel()))
+    def _entry_filter(entry):
+        if not args.all_paths:
+            return entry.file_name.decode("ascii").startswith(entry_prefix)
+        else:
+            return True
+
+    json_encode(sys.stdout, git_idx.with_entry_filter(_entry_filter), indent=4)
+
+
+class GitIndexEntry():
+    ctime_s: int
+    ctime_ns: int
+    ctime_s: int
+    ctime_ns: int
+    def_n: int
+    inode_n: int
+
+    mode: int
+    mode_object_type: int
+    mode_permission: int
+
+    uid: int
+    gid: int
+
+    obj_name: List[int]
+
+    flags: int
+    flags_assume_valid: bool
+    flags_extended: bool
+    flags_stage: int
+    flags_name_length: int
+
+    file_name: str
+    file_size: int
+
+    def unpack(self, f: TextIOWrapper):
+        self.r_start = f.tell()
+
+        (self.ctime_s,self.ctime_ns) = unpack(f, "II")
+        (self.mtime_s,self.mtime_ns) = unpack(f, "II")
+        (self.dev_n,self.inode_n) = unpack(f, "II")
+
+        (self.mode,) = unpack(f, "I")
+        self.mode_object_type = bit_unpack(self.mode, 9+3, 0b1111)
+        self.mode_permission = bit_unpack(self.mode, 0, 0b111111111)
+
+        (self.uid,self.gid, self.file_size) = unpack(f, "III")
+
+        self.obj_name = unpack(f, "20B")
+
+        (self.flags,) = unpack(f, "H")
+        self.flags_assume_valid = bool(bit_unpack(self.flags, 12+1+1, 0b1))
+        self.flags_extended = bool(bit_unpack(self.flags, 12+1, 0b1))
+        self.flags_stage = bit_unpack(self.flags, 12, 0b11)
+        self.flags_name_length = bit_unpack(self.flags, 0, 0b111111111111)
+
+        fname_len = min(256, self.flags_name_length)
+        (file_name,) = unpack(f, "%ds" % (fname_len+1))
+        # Cut off null terminator.
+        self.file_name = file_name[:-1]
+
+        self.r_end = f.tell()
+
+        self.r_size = self.r_end - self.r_start
+        self.r_pad = math.ceil(self.r_size/8)*8 - self.r_size
+
+        if self.r_pad > 0:
+            unpack(f, "%dc" % (self.r_pad))
+
+        return self
+
+    def __json__(self):
+        return {
+            "path": self.file_name.decode("utf-8"),
+            "size": self.file_size,
+            "oid": "".join([
+                hex(n)[2:].rjust(2,"0") for n in self.obj_name
+            ]),
+            "ctime": float("%s.%s"%(self.ctime_s, self.ctime_ns)),
+            "mtime": float("%s.%s"%(self.mtime_s, self.mtime_ns)),
+            "mode": {
+                "object_type": bin(self.mode_object_type)[2:],
+                "permissions": {
+                    "u": bin(bit_unpack(self.mode_permission, 3*2, 0b111)),
+                    "g": bin(bit_unpack(self.mode_permission, 3*1, 0b111)),
+                    "a": bin(bit_unpack(self.mode_permission, 3*0, 0b111)),
+                },
+            },
+            "flags": {
+                "assume_valid": self.flags_assume_valid,
+                "extended": self.flags_extended,
+                "stage": self.flags_stage,
+                "name_len": self.flags_name_length,
+            },
+            "debug": {
+                "r_start": self.r_start,
+                "r_end": self.r_end,
+                "r_size": self.r_size,
+                "r_pad": self.r_pad,
+            }
+        }
+
+
+class GitIndex():
+    magic: bytes
+    version: int
+    entries: List[GitIndexEntry]
+
+    def with_entry_filter(self, fn):
+        idx = GitIndex()
+        idx.magic = self.magic
+        idx.version = self.version
+        idx.entries = [e for e in self.entries if fn(e)]
+        return idx
+
+    def unpack(self, f: TextIOWrapper):
+        (self.magic, ) = unpack(f, "4s")
+        (self.version, ) = unpack(f, "I")
+        (num_index_entries, ) = unpack(f, "I")
+
+        self.entries = []
+        for n in range(num_index_entries):
+            self.entries.append(GitIndexEntry().unpack(f))
+
+        return self
+
+    def __json__(self):
+        return {
+            "magic": self.magic.decode("ascii"),
+            "version": self.version,
+            "entries": self.entries,
+        }
+
+
+def git_get_toplevel():
+    cmd = run(["git", "rev-parse", "--show-toplevel"], check=True, capture_output=True)
+    return cmd.stdout.decode("ascii").strip("\n")
+
+
+def git_get_dir():
+    cmd = run(["git", "rev-parse", "--git-dir"], check=True, capture_output=True)
+    return cmd.stdout.decode("ascii").strip("\n")
+
+
+def git_read_index(index_file):
+    with open(index_file, "rb") as idx_f:
+        return GitIndex().unpack(idx_f)
+
+
+def json_encode(f, obj, **kwargs):
+    def _defult(o):
+        if hasattr(o, "__json__"):
+            return o.__json__()
+        return o
+    return json.dump(obj, f, **kwargs, default=_defult)
+
+
+def bit_unpack(n: int, shift: int, mask: int):
+    n = n >> shift
+    n = n & mask
+    return n
+
+
+def unpack(f: TextIOWrapper, fmt: str):
+    fmt = "!" + fmt
+    fmt_len = struct.calcsize(fmt)
+    data = f.read(fmt_len)
+    return struct.unpack(fmt, data)
+
+
+if __name__ == "__main__":
+    __main(__args())

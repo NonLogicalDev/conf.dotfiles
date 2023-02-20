@@ -1,0 +1,99 @@
+#!/bin/bash
+
+GIT_NEW_HEAD="$(git rev-parse HEAD)"
+
+# Fetch name of the branch.
+STG_STACK_REF=$(git rev-parse --abbrev-ref HEAD)
+# Fetch name of top most Stacked Git patch.
+STG_TOP_PATCH=$(stg top)
+
+# Stacked git records metadata in two commits:
+#
+# 1. Octopus commit that is a "merge" commit that has parent links to:
+#   * ^1 Simple Parent commit (this one has stack.json modifications)
+#   * ^2 Previous octopus commit
+#   * ^3 The associated commit on the branch (if this stack modifies the tree or commit metadata)
+STG_STACK_OCTOPUS=$(git rev-parse "stacks/$STG_STACK_REF")
+# 2. Simple parent commit has the changes to the stack.json and patch files.
+STG_STACK_SIMPLE=$(git rev-parse "$STG_STACK_OCTOPUS^1")
+
+# Fetch the associated tree object with the simple commit,
+# this we will need to be able to modify files in this tree.
+# The tree has:
+#  * stack.json
+#  * patches/<patch_names> - patch metadata files
+STG_STACK_TREE=$(git rev-parse "$STG_STACK_SIMPLE^{tree}")
+
+# Load the stack.json
+STG_STACK_STATE=$(git cat-file -p "$STG_STACK_SIMPLE:stack.json")
+# Load the patch metadata for topmost patch.
+STG_PATCH_META=$(git cat-file -p "$STG_STACK_SIMPLE:patches/$STG_TOP_PATCH")
+
+# Modify the stack.json so that:
+#  * topmost patch's oid is pointing at the current HEAD
+#  * `.head` points at the current HEAD
+NEW_STG_STACK=$(
+	echo "$STG_STACK_STATE" | jq \
+		--arg stg_new_prev "$STG_STACK_OCTOPUS" \
+		--arg stg_patch_name "$STG_TOP_PATCH" \
+		--arg stg_new_id "$GIT_NEW_HEAD" \
+'
+	.
+	| . as $root
+	| $root
+	| .patches."\($stg_patch_name)".oid = $stg_new_id
+	| .head = $stg_new_id
+	| .prev = $stg_new_prev
+'
+)
+NEW_STG_STACK_BLOB=$(echo "$NEW_STG_STACK" | git hash-object -w --stdin)
+
+# Modify the patch metadata file so that:
+#  * Before points at the previous HEAD^1^{tree}
+#  * Top points at the previous HEAD^{tree}
+NEW_STG_PATCH_FILE=$(
+	echo "$STG_PATCH_META" | jq -Rr \
+		--arg prev "$(git rev-parse "$GIT_NEW_HEAD^1^{tree}")" \
+		--arg top "$(git rev-parse "$GIT_NEW_HEAD^{tree}")" \
+'
+	.
+	| sub("(?<v>Top:\\s+).*"; "\(.v)\($top)")
+	| sub("(?<v>Bottom:\\s+).*"; "\(.v)\($prev)")
+'
+)
+NEW_STG_PATCH_FILE_BLOB=$(echo "$NEW_STG_PATCH_FILE" | git hash-object -w --stdin)
+
+# Create a temporary file that will hold temporary git index.
+# This will make it much simpler to update files in the git tree.
+# Alternative purer would require fiddling with recursively rebuilding the tree with `git ls-tree` and `git mktree`.
+TMP_GIT_INDEX=$(mktemp)
+export GIT_INDEX_FILE="$TMP_GIT_INDEX"
+
+# Git read tree populates the temporary git index file with the contents of STG_STACK_TREE.
+git read-tree "$STG_STACK_TREE"
+
+# Imperatively modify the index, by adding newly created and hashed stack.json and patch meta file.
+git update-index --add --cacheinfo \
+  100644 "$NEW_STG_STACK_BLOB" "stack.json"
+git update-index --add --cacheinfo \
+  100644 "$NEW_STG_PATCH_FILE_BLOB" "patches/$STG_TOP_PATCH"
+
+# Display the resultant changes.
+git diff-index --cached -U "$STG_STACK_OCTOPUS"
+STG_STACK_NEW_TREE=$(git write-tree)
+
+STG_STACK_NEW_SIMPLE=$(
+  echo "fixup patch oid" | git commit-tree "$STG_STACK_NEW_TREE" \
+    -p "$STG_STACK_SIMPLE"
+)
+STG_STACK_NEW_OCTOPUS=$(
+  echo "fixup patch oid" | git commit-tree "$STG_STACK_NEW_TREE" \
+    -p "$STG_STACK_NEW_SIMPLE" -p "$STG_STACK_OCTOPUS" -p "$GIT_NEW_HEAD"
+)
+
+# Change the value refs/stacks/<branch> to point at the new octopus commit.
+git update-ref "refs/stacks/$STG_STACK_REF" "$STG_STACK_NEW_OCTOPUS"
+echo "UPDATED: refs/stacks/$STG_STACK_REF: $STG_STACK_OCTOPUS -> $STG_STACK_NEW_OCTOPUS"
+
+# Clean up after ourselves.
+rm "$TMP_GIT_INDEX"

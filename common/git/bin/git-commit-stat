@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+from subprocess import Popen, PIPE, run
+from dataclasses import dataclass
+from argparse import ArgumentParser, REMAINDER
+from datetime import datetime
+
+def parse(s):
+    return s.decode("utf-8").strip("\n")
+
+def parse_ts(ts):
+    return datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
+def git_dir_filter(dirs):
+    if dirs is None or len(dirs) == 0:
+        dirs = []
+    else:
+        dirs = ["--"] + dirs
+    return dirs
+
+def git(*args, **kwargs):
+    out = run(["git"]+list(args), **kwargs)
+    if out.returncode != 0:
+        raise Exception(out.stderr)
+    return out
+
+def git_list_commits(dirs=None, since="", n=None):
+    out = git("log", "--after", since, "--pretty=tformat:%H", *git_dir_filter(dirs), stdout=PIPE).stdout
+    return parse(out).split("\n")
+
+
+@dataclass
+class GitStat:
+    n_add: int = 0
+    n_del: int = 0
+    n_c: int = 0
+    path: str = None
+
+    def combine(self, s: GitStat):
+        self.n_add += s.n_add
+        self.n_del += s.n_del
+        self.n_c += s.n_c
+
+@dataclass
+class GitInfo:
+    sha: str
+    ts: int
+    subj: str
+    author: str
+    email: str
+    stats: list[GitStat]
+
+    total_stat: GitStat = None
+
+
+def git_commit_info(commit, dirs):
+    def __parse_description(description):
+        d_sha, d_author, d_email, d_ts, d_subj = description.split(" :: ")
+        return  GitInfo(
+            sha=d_sha, ts=int(d_ts), subj=d_subj,
+            author=d_author, email=d_email,
+            stats=[], total_stat=GitStat()
+        )
+
+    def __parse_stat(stat):
+        s_add, s_del, s_path = stat.split("\t")
+
+        try:
+            add_int = int(s_add)
+        except:
+            return None
+
+        try:
+            del_int = int(s_del)
+        except:
+            return None
+
+        return GitStat(n_add=add_int, n_del=del_int, n_c=add_int+del_int, path=s_path)
+
+    out = git("show", "--format=%H :: %an :: %ae :: %at :: %s", "--numstat", commit, *git_dir_filter(dirs), stdout=PIPE).stdout
+    description, *stats = parse(out).split("\n")
+
+    gi = __parse_description(description)
+    for stat in filter(lambda s: len(s) > 0, stats):
+        s = __parse_stat(stat)
+        if s is None:
+            continue
+        gi.total_stat.combine(s)
+        gi.stats.append(s)
+
+    return gi
+
+@dataclass
+class PrintableStat:
+    user: str
+
+    n_commits: int
+    p_commits: float
+
+    t_stat: GitStat
+    p_stat: GitStat
+    r_stat: GitStat
+
+
+
+def main(args):
+    user_stats = {}
+    total_stat = GitStat()
+    selected_dirs = list(filter(lambda s: s != "--", args.dirs))
+
+    commits = git_list_commits(since=args.since, n=args.n, dirs=selected_dirs)
+
+    tn_commits = len(commits)
+    last_commit = None
+
+    for commit_info in commits:
+        info = git_commit_info(commit_info, dirs=selected_dirs)
+        total_stat.combine(info.total_stat)
+
+        user_commits = user_stats.get(info.author, [])
+        user_commits.append(info)
+        user_stats[info.author] = user_commits
+        last_commit = info
+
+    p_stats = []
+    for user, commits in user_stats.items():
+        n_user_commits = len(commits)
+
+        # Total changes in all commits:
+        t_stat = GitStat()
+        for commit in commits:
+            t_stat.combine(commit.total_stat)
+
+        # (avg) changes per commit:
+        p_stat = GitStat(
+            n_add=round(t_stat.n_add / n_user_commits, 2),
+            n_del=round(t_stat.n_del / n_user_commits, 2),
+            n_c=round(t_stat.n_c / n_user_commits, 2)
+        )
+
+        # Relative Effort (how many changes user made compared to total)
+        r_stat = GitStat(
+            n_add=round((t_stat.n_add / total_stat.n_add) * 100),
+            n_del=round((t_stat.n_del / total_stat.n_del) * 100),
+            n_c=round((t_stat.n_c / total_stat.n_c) * 100),
+        )
+
+        p_stats.append(PrintableStat(
+            user=user,
+
+            n_commits=n_user_commits,
+            p_commits=round((n_user_commits/tn_commits)*100),
+
+            t_stat=t_stat,
+            p_stat=p_stat,
+            r_stat=r_stat,
+        ))
+
+    print(f"SELECTING FROM: {selected_dirs}")
+    print()
+    print(f"LAST COMMIT: {last_commit.sha} | {last_commit.author} | {parse_ts(last_commit.ts)}")
+    print(f"           : {last_commit.subj}")
+    print()
+    print(f"TOTAL: (add: {total_stat.n_add}) (del: {total_stat.n_del})")
+    print(f"TOTAL: commits: {tn_commits}")
+    print()
+
+    p_stats = sorted(p_stats, reverse=True, key=lambda s: s.t_stat.n_add)
+    for s in p_stats:
+        print(f"stat: [{s.user}]")
+        print(f"         commits: {s.n_commits} (total %: {s.p_commits})")
+        print(f"     total_stats: (add: {s.t_stat.n_add}) (del: {s.t_stat.n_del}) (combo: {s.t_stat.n_c})")
+        print(f"        / commit: (add: {s.p_stat.n_add}) (del: {s.p_stat.n_del}) (combo: {s.p_stat.n_c})")
+        print(f"          total %: (add: {s.r_stat.n_add}%) (del: {s.r_stat.n_del}%) (combo: {s.r_stat.n_c}%)")
+        print()
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser(prog="git-commit-stat")
+    parser.add_argument("--since", default="10 years ago", help="what period to check")
+    parser.add_argument("-n", default=1000, help="how many diffs to check")
+    parser.add_argument('dirs', nargs=REMAINDER)
+    main(parser.parse_args())
