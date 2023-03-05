@@ -62,6 +62,6 @@ fi
 
 # Import Local evn VARIABLES
 if [[ ! -f ${HOME}/SHELL_VARS ]]; then
-  touch ${HOME}/SHELL_VARS
+  touch "${HOME}/SHELL_VARS"
 fi
-source ${HOME}/SHELL_VARS
+source "${HOME}/SHELL_VARS"
