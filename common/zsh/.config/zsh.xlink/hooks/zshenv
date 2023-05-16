@@ -1,7 +1,4 @@
-#
-# Defines environment variables.  Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
+#!/bin/zsh
 
 tt () {
   gdate +%s%3N

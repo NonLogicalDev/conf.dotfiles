@@ -14,7 +14,7 @@ if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
   setopt combiningchars
 fi
 
-[ -r "/etc/zshrc_$TERM_PROGRAM" ] && . "/etc/zshrc_$TERM_PROGRAM"
+[[ -r "/etc/zshrc_$TERM_PROGRAM" ]] && . "/etc/zshrc_$TERM_PROGRAM"
 
 # Add completions.
 if [[ -d ${HOME}/.local/bin/completions ]]; then
@@ -26,16 +26,9 @@ fi
 #######################################################################
 
 # Add zsh plugins
-if [[ -d ${ZDOTDIR:-$HOME}/.zplugins ]]; then
-  for plugin in ${ZDOTDIR:-$HOME}/.zplugins/**/*.plugin.zsh; do
-    source $plugin
-  done
-fi
-
-#######################################################################
-#                               Safety                                #
-#######################################################################
-
+for plugin in $HOME/.config/zsh/plugins/*.zsh; do
+  source $plugin
+done
 
 #######################################################################
 #                               Imports                               #

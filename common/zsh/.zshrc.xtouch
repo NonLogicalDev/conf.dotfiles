@@ -1,0 +1,1 @@
+[[ -s "$HOME/.config/zsh/hooks/zshrc" ]] && source "$HOME/.config/zsh/hooks/zshrc"

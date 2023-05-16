@@ -3,9 +3,9 @@
 #
 
 # Checks if a file can be autoloaded by trying to load it in a subshell.
-function is-autoloadable {
-  ( unfunction $1 ; autoload -U +X $1 ) &> /dev/null
-}
+# function is-autoloadable {
+#   ( unfunction $1 ; autoload -U +X $1 ) &> /dev/null
+# }
 
 # Checks if a name is a command, function, or alias.
 function is-callable {

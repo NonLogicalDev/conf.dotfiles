@@ -1,0 +1,1 @@
+[[ -s "$HOME/.config/zsh/hooks/zlogin" ]] && source "$HOME/.config/zsh/hooks/zlogin"

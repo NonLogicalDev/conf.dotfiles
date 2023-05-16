@@ -9,9 +9,9 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
   "hlissner/zsh-autopair"
 
 
-  "NonLogicalDev/fork.util.zsh.pure-prompt"
 )
 
+# "NonLogicalDev/fork.util.zsh.pure-prompt"
 # "rupa/z"
 # "changyuheng/fz"
 
@@ -34,10 +34,10 @@ if (( $+commands[antibody] )); then
   # Plugin Configurations:
   #
 
-  autoload -Uz promptinit
-  if [[ -z $ZSH_DISABLE_PROMPT ]]; then
-    promptinit && prompt_pure_setup
-  fi
+  # autoload -Uz promptinit
+  # if [[ -z $ZSH_DISABLE_PROMPT ]]; then
+  #   promptinit && prompt_pure_setup
+  # fi
 
   #=======================================
   # zsh-users/zsh-history-substring-search

@@ -1,0 +1,1 @@
+[[ -s "$HOME/.config/zsh/hooks/zlogout" ]] && source "$HOME/.config/zsh/hooks/zlogout"
