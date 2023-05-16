@@ -25,6 +25,10 @@ __die() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
+log-patch-changes() {
+  echo $1{~1,} | xargs -n1 sh -c 'git show $1:stack.json' -- | jq -s '.[0]?.patches as $a|.[1]?.patches as $b|reduce ($b|to_entries|.[]) as $be ($a; (.[$be.key] |= (.oid_new = $be.value.oid))) | with_entries(select(.value.oid != .value.oid_new))'
+}
+
 spill-interactive() { 
   stg files|gum filter --no-limit --height=20|cut -f 2|(cd $(git root); xargs stg spill --)
 }
@@ -67,7 +71,12 @@ check-index() {
   git --no-pager diff --cached --stat
   echo
 
-  if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+  # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+  #   # Display difference between head and updated files
+  #   git diff --cached -u --stat
+  # fi
+
+  if gum confirm --default=No "View Diff?"; then
     # Display difference between head and updated files
     git diff --cached -u --stat
   fi
@@ -93,12 +102,26 @@ checked-refresh-index() {
   git --no-pager diff --cached --stat
   echo
 
-  if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+  # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+  #   # Display difference between head and updated files
+  #   git diff --cached -u --stat
+  # fi
+
+  if gum confirm --default=No "View Diff?"; then
     # Display difference between head and updated files
     git diff --cached -u --stat
   fi
 
-  if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
+  # if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
+  #   echo ">> [applying...]"
+  #   ( set -x; stg refresh --index -p $TARGET_PATCH; )
+  #   echo ">> Verifying Git Status:"
+  #   git status -s
+  # else
+  #   echo ">> [cancelled]"
+  # fi
+
+  if gum confirm --default=No "Confirm Refresh?"; then
     echo ">> [applying...]"
     ( set -x; stg refresh --index -p $TARGET_PATCH; )
     echo ">> Verifying Git Status:"
@@ -123,14 +146,26 @@ checked-refresh-update() {
   echo ">> Diff:"
   echo
   git --no-pager diff --stat HEAD -- "$@"
-  echo
-
-  if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+  
+  # echo
+  # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
+  #   # Display difference between head and updated files
+  #   git diff -u --stat HEAD -- "$@"
+  # fi
+  if gum confirm --default=No "View Diff?"; then
     # Display difference between head and updated files
     git diff -u --stat HEAD -- "$@"
   fi
 
-  if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
+  # if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
+  #   echo ">> [applying...]"
+  #   ( set -x; stg refresh -- "$@" ; )
+  #   echo ">> Verifying Git Status:"
+  #   git status -s
+  # else
+  #   echo ">> [cancelled]"
+  # fi
+  if gum confirm --default=No "Confirm Refresh?"; then
     echo ">> [applying...]"
     ( set -x; stg refresh -- "$@" ; )
     echo ">> Verifying Git Status:"
@@ -138,6 +173,21 @@ checked-refresh-update() {
   else
     echo ">> [cancelled]"
   fi
+}
+
+push-interactive() { 
+  local TO_PUSH=$( stg series -U -P | gum choose --no-limit )
+  if [[ -z $TO_PUSH ]]; then
+    return 
+  fi
+
+  echo "Selected:"
+  echo "$TO_PUSH"
+  if ! gum confirm --default=No ; then
+    return
+  fi
+
+  printf "%s" "$TO_PUSH" | xargs stg push -m
 }
 
 push-set() {
@@ -353,17 +403,42 @@ patch-publish() {
     git push "$REMOTE_NAME" "HEAD:refs/heads/$REMOTE_PREFIX/${STG_TOP}"
 }
 
+path-info() {
+  local series=("${(@f)$(stg series -A -P)}")
+  echo "${series[@]}"
+}
+
+files() {
+  patches-by-file "$@"
+}
+
 patches-by-file() {
   #: patches-by-file
   #:   for each file modified by the stack show which patches this file is affected by
   #:
+  local search="${1:-}"
 
-  for diff_file in $(git diff "$(stack-top)~1.." --name-only | sort -u); do
-    print "$diff_file"
-    for patch in $(git run stg patches "$diff_file"); do 
-      print "\- $patch"
-    done
+  for diff_file in $(git diff "$(stack-bottom)~1.." --name-only | sort -u); do
+    if ( print "$diff_file" | grep -q "$search" ); then
+      print "$diff_file"
+      local patches=("${(@f)$(git run stg patches "$diff_file")}")
+      for patch in "${patches[@]}"; do 
+        stg series -d "$patch"
+      done
+      echo
+    fi
   done
+}
+
+new-patch() { 
+  local PATCH_PREFIX=$1
+  shift 1;
+
+  local PATCH_SUFFIX=$(
+    stg series --no-description -P | grep "${PATH_PREFIX}-" | jq -Rrs 'rtrimstr("\n")|split("\n")|map(split("-")[-1]|try tonumber catch 0)|map(select(.<80))|sort[-1]+1|tostring|if (.|length < 2) then "0"+. else . end'
+  )
+
+  stg new "${PATCH_PREFIX}-${PATCH_SUFFIX}" "$@"
 }
 
 stack-files() {

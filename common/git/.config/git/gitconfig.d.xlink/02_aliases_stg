@@ -5,10 +5,13 @@
 
   ls  = !stg series --noprefix
   lg  = !stg series -d
+  lga  = !stg series -d -A
   lgr  = !stg series -d --color=always | tac
-  lgs = !stg series -d -s
+  lgs = !(stg series -AP && (stg series -UP | head -n 4)) | xargs stg lg
 
   patch = !stg edit --diff --save-template -
+  patch-path = !stg-utils files
+  pp = !stg-utils files
 
   # [Extended :: Custom Git Utils]
   ################################################################################

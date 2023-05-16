@@ -74,7 +74,7 @@ fi
 # sharkdp/bat
 #=======================================
 if (( $+commands[bat] )); then
-  alias cat="bat -p"
+  alias cat="bat -p --pager=never"
 fi
 
 #=======================================
