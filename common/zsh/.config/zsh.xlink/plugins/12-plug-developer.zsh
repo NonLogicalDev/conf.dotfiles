@@ -45,7 +45,19 @@ function init.vm.asdf {
 
 ## Adding Node Version Manger
 function init.vm.node {
-  export NVM_DIR="$HOME/.nvm"
+  # find nvm home
+  local -r NVM_HOME_CANDIDATES=(
+    "$HOME/.nvm"
+    /opt/homebrew/opt/nvm
+  )
+
+  export NVM_DIR=""
+  for nvm_home_candidate in "${NVM_HOME_CANDIDATES[@]}"; do
+    if [[ -d $nvm_home_candidate ]]; then
+      NVM_DIR=$nvm_home_candidate
+    fi
+  done
+
   export NVM_NODE_VERSION=${NVM_NODE_VERSION:-$1}
 
   if [[ -s "$NVM_DIR/nvm.sh" ]]; then
@@ -58,7 +70,7 @@ function init.vm.node {
       nvm use "$NVM_NODE_VERSION"
     fi
 
-    INIT_LIST[node]="node.vm ($(node -v))"
+    INIT_LIST[node]="node.vm ($NVM_DIR: $(node -v))"
   fi
 }
 

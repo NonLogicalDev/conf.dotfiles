@@ -1,20 +1,5 @@
-[pretty]
-  nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
-  nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
-
-  nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar / %cr)%C(yellow)%d%Creset
-  nice-sep   = tformat:%n* %C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
-  nice-cons  = tformat:* %C(red)%h%Creset - %s | %C(bold blue)<%an>%Creset | %C(green)(%cr)%C(yellow)%d%Creset
-  nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
-  nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
-  
 [pager]
-  lg           = false
-  lgg          = false
-  files     = false
-  files-ls  = false
-  confilcts    = false
-  confilcts-ls = false
+  files = cat
 
 [alias]
   # [Basics]
@@ -22,13 +7,14 @@
 
   b  = branch
   co = checkout
+  sw = switch
 
   # [Logging]
   ################################################################################
 
   lg   = log -n 10 --first-parent --pretty=nice
-  lgr   = lg --reverse
-  lgf   = log -n 10 --first-parent --pretty=nice-sep --name-status
+  lgr  = lg --reverse
+  lgf  = log -n 10 --first-parent --pretty=nice-sep --name-status
   lgg  = log -n 10 --graph --pretty=nice-cons
   lgt  = !git lg --pretty=nice-cols --color | column -xt -s "::"
   lgu  = !git lg -n 100 $(git upstream)..HEAD
@@ -123,10 +109,10 @@
 
   # files -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]
-  files = show --format="" --name-status
-  files-ls = show --format="" --name-only
-  conflicts = diff --name-status --diff-filter=U
-  conflicts-ls = diff --name-only --diff-filter=U
+  files = !git --no-pager show --format="" --name-status
+  files-ls = !git --no-pager show --format="" --name-only
+  conflicts = !git --no-pager diff --name-status --diff-filter=U
+  conflicts-ls = !git --no-pager diff --name-only --diff-filter=U
 
   # [Extended :: Custom Git Utils]
   ################################################################################

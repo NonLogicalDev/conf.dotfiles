@@ -504,12 +504,12 @@ let g:javaScript_fold=2
 " Setting Up Colorsheme and fonts
 
 " set nocursorline " improve performance
-" set nolazyredraw
+set nolazyredraw
 
 try
   let g:lightline={'colorscheme': 'seoul256'}
   colorscheme bubblegum
-  " set background=light
+  set background=light
 catch /.*/
 endtry
 
@@ -521,6 +521,7 @@ if has("gui_running")
   "set macthinstrokes
 endif
 
+let g:gruvbox_seethru=1
 if (has("gui_running") || has("gui_vimr"))
   let g:gruvbox_seethru=0
 else

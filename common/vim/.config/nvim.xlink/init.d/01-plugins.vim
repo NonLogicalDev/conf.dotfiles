@@ -143,7 +143,10 @@ endif
 if has('nvim')
   " Language Server Support (requires up-to-date NeoVim to work)
   " (!See LUA Config Section for Configuration Details, this does not work out of the box!)
-  Plug 'neovim/nvim-lspconfig', { 'branch': 'main' }
+  Plug 'neovim/nvim-lspconfig', { 'branch': 'master' }
+
+  " NeoVim Completion Plugin (this is what actually shows Language Server completions in UI)
+  Plug 'hrsh7th/nvim-cmp', { 'branch': 'main' }
 
   " Language Server Support Components
   Plug 'hrsh7th/cmp-nvim-lsp', { 'branch': 'main' }
@@ -151,8 +154,7 @@ if has('nvim')
   Plug 'hrsh7th/cmp-path', { 'branch': 'main' }
   Plug 'hrsh7th/cmp-cmdline', { 'branch': 'main' }
 
-  " NeoVim Completion Plugin (this is what actually shows Language Server completions in UI)
-  Plug 'hrsh7th/nvim-cmp', { 'branch': 'main' }
+  " Plug 'glepnir/lspsaga.nvim'
 
   " LSP Ultisnips Integration
   Plug 'quangnguyen30192/cmp-nvim-ultisnips'
@@ -174,81 +176,21 @@ call s:PlugInitEnd()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 if has("nvim")
-lua <<EOF
-  -- Set up nvim-cmp.
-  local cmp = require('cmp')
-
-  cmp.setup({
-    snippet = {
-      -- REQUIRED - you must specify a snippet engine
-      expand = function(args)
-        vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-      end,
-    },
-    window = {
-      -- completion = cmp.config.window.bordered(),
-      -- documentation = cmp.config.window.bordered(),
-    },
-    mapping = cmp.mapping.preset.insert({
-      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-      ['<C-f>'] = cmp.mapping.scroll_docs(4),
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<C-e>'] = cmp.mapping.abort(),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-    }),
-    sources = cmp.config.sources({
-      { name = 'nvim_lsp' },
-      { name = 'ultisnips' }, -- For ultisnips users.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Set configuration for specific filetype.
-  cmp.setup.filetype('gitcommit', {
-    sources = cmp.config.sources({
-      -- { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline('/', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = 'buffer' }
-    }
-  })
-
-  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = 'path' }
-    }, {
-      { name = 'cmdline' }
-    })
-  })
-
-  -- Set up lspconfig.
-  local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-
-  -- Set up Telescope Bindings
-  local tele = require('telescope.builtin')
-  vim.keymap.set('n', '<leader>ff', tele.find_files, {})
-  vim.keymap.set('n', '<leader>fg', tele.live_grep, {})
-  vim.keymap.set('n', '<leader>fb', tele.buffers, {})
-  vim.keymap.set('n', '<leader>fh', tele.help_tags, {})
-EOF
+  execute 'source' g:VimConfig("init.d/01-plugins.lua")
 endif
 
 " }}}
 
 " Plugin Confuguration: {{{
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Theme: GruvBox: {{{
 
-" OCS Yank: {{{
+let g:gruvbox_contrast_light = 'hard'
+let g:gruvbox_contrast_dark = 'hard'
+let g:gruvbox_improved_strings = 0
+
+"}}}
+" Util: OCS Yank: {{{
 
 augroup PlugOCSYank
   autocmd!
@@ -257,64 +199,13 @@ augroup PlugOCSYank
 augroup END
 
 " }}}
-" GoLang: {{{
+" Util: YankRing Configuration: {{{
 
-let g:go_highlight_functions = 1
-let g:go_highlight_methods = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_types = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_build_constraints = 1
-
-let g:go_list_type = "quickfix"
-"let g:go_fmt_command = "goimports"
-
-augroup PlugLangGo
-  autocmd!
-  " autocmd BufRead *.go setlocal foldmethod=syntax
-  " autocmd BufRead *.go setlocal foldnestmax=1
-  autocmd BufWritePost *.go call s:GoOnBufWrite()
-augroup END
-
-func! s:GoOnBufWrite()
-  try
-    Neomake
-  catch /.*/
-  endtry
-endfunc
+let g:yankring_history_dir = '~/.vim'
+let g:yankring_history_file = 'yankring_history'
 
 " }}}
-" VimWiki: {{{
-
-let g:vimwiki_list = [{
-	\ 'path': '~/vimwiki',
-	\ 'template_path': '~/vimwiki/templates/',
-	\ 'template_default': 'default',
-	\ 'syntax': 'markdown',
-	\ 'ext': '.md',
-	\ 'path_html': '~/vimwiki/site_html/',
-	\ 'custom_wiki2html': 'vimwiki_markdown',
-	\ 'template_ext': '.tpl'}]
-
-" }}}
-" GruvBox: {{{
-
-let g:gruvbox_contrast_light = 'hard'
-let g:gruvbox_contrast_dark = 'hard'
-let g:gruvbox_improved_strings = 0
-
-"}}}
-" Highlighter Settings: {{{
-
-let python_highlight_all = 1
-
-augroup PlugLangPython
-  autocmd!
-  autocmd FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
-augroup END
-
-" }}}
-" Airline Configuration: {{{
+" UI: Airline Configuration: {{{
 
 let g:airline#extensions#tabline#buffer_nr_show = 1
 let g:airline#extensions#tabline#enabled = 1
@@ -323,7 +214,7 @@ let g:airline_left_sep=''
 let g:airline_right_sep=''
 
 " }}}
-" NerdTree Config: {{{
+" UI: NerdTree Config: {{{
 
 let g:WebDevIconsUnicodeDecorateFolderNodes = 1
 let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
@@ -347,7 +238,7 @@ augroup PlugNerdTree
 augroup END
 
 " }}}
-" Rainbow Paranthesis: {{{
+" UI: Rainbow Paranthesis: {{{
 
 " au VimEnter * RainbowParenthesesToggle
 " au Syntax * RainbowParenthesesLoadRound
@@ -374,13 +265,7 @@ augroup END
 "     \ ]
 "
 " }}}
-" YankRing Configuration: {{{
-
-let g:yankring_history_dir = '~/.vim'
-let g:yankring_history_file = 'yankring_history'
-
-" }}}
-" Ctrl P Config: {{{
+" UI: Ctrl P Config: {{{
 
 augroup PlugCtrlP
   autocmd!
@@ -403,7 +288,57 @@ let g:ctrlp_buftag_types = {
 let g:ctrlp_extensions = ['buffertag']
 
 " }}}
-" Emmet Config: {{{
+" Lang: GoLang: {{{
+
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_types = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_build_constraints = 1
+
+let g:go_list_type = "quickfix"
+"let g:go_fmt_command = "goimports"
+
+augroup PlugLangGo
+  autocmd!
+  " autocmd BufRead *.go setlocal foldmethod=syntax
+  " autocmd BufRead *.go setlocal foldnestmax=1
+  autocmd BufWritePost *.go call s:GoOnBufWrite()
+augroup END
+
+func! s:GoOnBufWrite()
+  try
+    Neomake
+  catch /.*/
+  endtry
+endfunc
+
+" }}}
+" Lang: VimWiki: {{{
+
+let g:vimwiki_list = [{
+	\ 'path': '~/vimwiki',
+	\ 'template_path': '~/vimwiki/templates/',
+	\ 'template_default': 'default',
+	\ 'syntax': 'markdown',
+	\ 'ext': '.md',
+	\ 'path_html': '~/vimwiki/site_html/',
+	\ 'custom_wiki2html': 'vimwiki_markdown',
+	\ 'template_ext': '.tpl'}]
+
+" }}}
+" Lang: Highlighter Settings: {{{
+
+let python_highlight_all = 1
+
+augroup PlugLangPython
+  autocmd!
+  autocmd FileType python syn match pythonBoolean "\(\W\|^\)\@<=self\(\.\)\@="
+augroup END
+
+" }}}
+" Lang: Emmet Config: {{{
 
 augroup PlugEmmet
   autocmd!
@@ -411,7 +346,7 @@ augroup PlugEmmet
 augroup END
 
 " }}}
-" Semantic: {{{
+" Lang: Semantic: {{{
 
 " autocmd BufEnter,BufRead,BufWritePost *.go,*.py,*.jsx,*.js call s:Semantic()
 
@@ -474,7 +409,7 @@ let g:semanticContainedlistOverride = {
 "       \ ]
 " \ }
 " }}}
-" Deoplete: {{{
+" Lang: Deoplete: {{{
 
 let g:deoplete#enable_at_startup = 1
 
@@ -488,7 +423,7 @@ if filereadable(s:mac_clang_locaction)
 endif
 
 " }}}
-" UltiSnips: {{{
+" Lang: UltiSnips: {{{
 
 "let g:UltiSnipsExpandTrigger="<C-Space>"
 "let g:UltiSnipsJumpForwardTrigger="<C-j>"

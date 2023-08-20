@@ -2,20 +2,49 @@
 [core]
   excludesfile = ~/.config/git/gitignore.default
   hooksPath = "~/bin/git-hooks"
+  pager = cat
+
+[pager]
+  show = less
+  diff = less
+
+[pretty]
+  nice       = tformat:%C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
+  nice-extra = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
+
+  nice       = tformat:* %C(red)%h%Creset - %C(bold blue)<%an>%Creset %s%n    %C(green)(%ar / %cr)%C(yellow)%d%Creset
+  nice-sep   = tformat:%n* %C(red)%h%Creset - %s%n\t%C(bold blue)<%an>%Creset%C(yellow)%d%Creset %C(green)(%cr)%Creset
+  nice-cons  = tformat:* %C(red)%h%Creset - %s | %C(bold blue)<%an>%Creset | %C(green)(%cr)%C(yellow)%d%Creset
+  nice-old   = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an : %ae>%Creset
+  nice-cols  = tformat:%C(red)%h%Creset::%C(bold blue)<%an>%Creset::%s::%C(green)(%ar)%Creset::%C(yellow)%d%Creset
+
 [commit]
   verbose = true
+
 [push]
   default = simple
+
 [rerere]
   enabled = true
+
 [log]
   excludeDecoration = refs/patches/*
+
 [diff]
   tool = vimdiff
   algorithm = histogram
+
 [merge]
   tool = vimdiff
   conflictstyle = diff3
+
+[mergetool "intellij"]
+    cmd = idea merge $(cd $(dirname "$LOCAL") && pwd)/$(basename "$LOCAL") $(cd $(dirname "$REMOTE") && pwd)/$(basename "$REMOTE") $(cd $(dirname "$BASE") && pwd)/$(basename "$BASE") $(cd $(dirname "$MERGED") && pwd)/$(basename "$MERGED")
+    trustExitCode = true
+
+[difftool "intellij"]
+    cmd = idea diff $(cd $(dirname "$LOCAL") && pwd)/$(basename "$LOCAL") $(cd $(dirname "$REMOTE") && pwd)/$(basename "$REMOTE")
+
 [tig "color"]
   cursor = green black
   title-focus = green black

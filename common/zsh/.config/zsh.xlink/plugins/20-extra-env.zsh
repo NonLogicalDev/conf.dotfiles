@@ -43,7 +43,7 @@ fi
 
 if [[ "$OSTYPE" == darwin* ]]; then
   # Load up the identities from the KeyChain on MacOS
-  ssh-add -K 2>/dev/null
+  # ssh-add -K 2>/dev/null
 fi
 
 #----------------------------------------------------------------------
@@ -82,13 +82,13 @@ export PREFERRED_EDITOR=nano
 
 if (( $+commands[nvim] )); then
   alias vim="nvim"
-  export PREFERRED_EDITOR="nvim"
+  export PREFERRED_EDITOR=$(which nvim)
 elif (( $+commands[vim] )); then
-  export PREFERRED_EDITOR="vim"
+  export PREFERRED_EDITOR=$(which vim)
 elif (( $+commands[vi] )); then
-  export PREFERRED_EDITOR="vi"
+  export PREFERRED_EDITOR=$(which vi)
 fi
 
-export EDITOR=$PREFERRED_EDITOR
-export VISUAL=$PREFERRED_EDITOR
+export EDITOR=${EDITOR:-$PREFERRED_EDITOR}
+export VISUAL=${VISUAL:-$PREFERRED_EDITOR}
 

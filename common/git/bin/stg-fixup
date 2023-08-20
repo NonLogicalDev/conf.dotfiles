@@ -1,11 +1,9 @@
 #!/bin/bash
 
-GIT_NEW_HEAD="$(git rev-parse HEAD)"
-
-# Fetch name of the branch.
-STG_STACK_REF=$(git rev-parse --abbrev-ref HEAD)
-# Fetch name of top most Stacked Git patch.
-STG_TOP_PATCH=$(stg top)
+# DEPENDENCIES:
+#  - git
+#  - stg
+#  - jq
 
 # Stacked git records metadata in two commits:
 #
@@ -13,87 +11,343 @@ STG_TOP_PATCH=$(stg top)
 #   * ^1 Simple Parent commit (this one has stack.json modifications)
 #   * ^2 Previous octopus commit
 #   * ^3 The associated commit on the branch (if this stack modifies the tree or commit metadata)
-STG_STACK_OCTOPUS=$(git rev-parse "stacks/$STG_STACK_REF")
-# 2. Simple parent commit has the changes to the stack.json and patch files.
-STG_STACK_SIMPLE=$(git rev-parse "$STG_STACK_OCTOPUS^1")
+#
+# $ STG_STACK_OCT=$(git rev-parse "stacks/$STG_STACK_REF")
+#
+# 2. Simple commit that contains the changes to the stack.json and patch files.
+#
+# $ STG_STACK_DAT=$(git rev-parse "$STG_STACK_OCTOPUS^1")
 
-# Fetch the associated tree object with the simple commit,
-# this we will need to be able to modify files in this tree.
-# The tree has:
-#  * stack.json
-#  * patches/<patch_names> - patch metadata files
-STG_STACK_TREE=$(git rev-parse "$STG_STACK_SIMPLE^{tree}")
+# ------------------------------------------------------------------------------
+# COMMANDS
+# ------------------------------------------------------------------------------
 
-# Load the stack.json
-STG_STACK_STATE=$(git cat-file -p "$STG_STACK_SIMPLE:stack.json")
-# Load the patch metadata for topmost patch.
-STG_PATCH_META=$(git cat-file -p "$STG_STACK_SIMPLE:patches/$STG_TOP_PATCH")
+# __stg_fixup_rewind: (`stg-fixup rewind`)
+#
+#   syncs the stacked git metadata to current head:
+#     * by marking all patches as unapplied 
+#     * and changing the head to current HEAD
 
-# Modify the stack.json so that:
-#  * topmost patch's oid is pointing at the current HEAD
-#  * `.head` points at the current HEAD
-NEW_STG_STACK=$(
-	echo "$STG_STACK_STATE" | jq \
-		--arg stg_new_prev "$STG_STACK_OCTOPUS" \
-		--arg stg_patch_name "$STG_TOP_PATCH" \
-		--arg stg_new_id "$GIT_NEW_HEAD" \
+#   This is the easiest fastest, and least destructive way to repair a broken stack 
+#   if you are not immediately sure what went wrong, and would rather get yourself to
+#   a clean state as soon as possible.
+#   
+#   The result of this operation is that all of patches are marked unapplied 
+#   while commits that are backing the patches are left in the branch unmodified.
+#
+#   So in essense you are left in a similar state comparable to running `stg pop -a && stg pull`
+#   if the updates from upstream already include your merged patches.
+#
+#   NOTE:
+#     * no modifications are applied to the branch
+#     * the only modifications that are done are done to stack metadata
+#
+#   EXAMPLE:
+#
+#   (assmuing stack):
+#    S SHA   MSG     PATCH
+#      ffff0 base    N/A (plain git commit)
+#    + ffff1 commit1 (patch1) 
+#    > ffff2 commit2 (patch2) (stg head)
+#    - ffff3 commit3 (patch3)
+#   
+#   (after `stg-fixup rewind`)
+#    S SHA   MSG     PATCH
+#      ffff0 base    N/A (plain git commit)
+#      ffff1 commit1 N/A (plain git commit)
+#      ffff2 commit2 N/A (plain git commit) (stg head)
+#
+#    - ffff1 commit1 (patch1)
+#    - ffff2 commit2 (patch2)
+#    - ffff3 commit3 (patch3)
+#
+__CMD_stg_fixup_rewind() {
+  ( # set -x;
+    # Create a temporary file that will hold temporary git index.
+    # This will make it much simpler to update files in the git tree.
+    # Alternative purer would require fiddling with recursively rebuilding the tree with `git ls-tree` and `git mktree`.
+    local TMP_GIT_INDEX=$(mktemp)
+    export GIT_INDEX_FILE="$TMP_GIT_INDEX"
+
+    local STG_STACK_INFO=$(__stg_stack_info $(__git_current_branch))
+    local STG_STACK_REF=$(__json_get "$STG_STACK_INFO" .stg_stack_ref)
+
+    git read-tree "$(__json_get "$STG_STACK_INFO" .stg_stack_dat_ref)^{tree}"
+
+    local STG_STACK_JSON=$(jq -n \
+      --argjson stackinfo "$STG_STACK_INFO" \
+    '
+      $stackinfo.stg_stack.data
+      | .head = $stackinfo.git_top_sha
+      | .prev = $stackinfo.stg_stack_oct_ref
+      | .unapplied = .applied + .unapplied
+      | .applied = []
+    ')
+    
+    # Imperatively modify the index, by adding newly created and hashed stack.json and patch meta file.
+    git update-index --add --cacheinfo \
+      100644 "$(__git_hash "$STG_STACK_JSON")" "stack.json"
+
+    local STG_NEW_STACK_SHA=$(
+      __stg_stack_commit "(stg-fixup) rewind stack" $(git write-tree) "$STG_STACK_REF"
+    )
+
+    git update-ref "$STG_STACK_REF" "$STG_NEW_STACK_SHA"
+
+    # Clean up after ourselves.
+    rm "$TMP_GIT_INDEX"
+  )
+}
+
+__CMD_stg_fixup_align() {
+  local NUM=$1
+
+  # TODO:
+  # assert: no patches applied
+  #
+  # 1. take number `N` of commits to remap to unappied patches.
+  # 2. zip sha's of past N commits with next N patches.
+  # 3. change first N patches oids to match with commits
+  # 4. reset N commits back.
+  # 5. stg push -n N
+
+  echo "$NUM"
+}
+
+__CMD_stg_fixup_top_v1() {
+  CUR_SHA=$(__git_deref HEAD)
+  STG_TOP_SHA=$(stg id $(stg top))
+
+  git reset "${STG_TOP_SHA}"
+  stg refresh --force
+
+cat <<EOS | stg edit -f -
+    $(stg edit --save-template=- | head -n 3)
+    $(git log -n 1 --format=%B $CUR_SHA)
+EOS
+}
+
+# __CMD_stg_fixup_top: (`stg-fixup top`)
+#
+#   fixes the top most applied patch to be in sync with current HEAD
+#     (only works if previous patch is on the stack)
+#
+#   This is the quickest option to fixup stack metadata if you accidentally 
+#   modified top most commit with `git amend` or something else.
+#
+#   NOTE:
+#     * no modifications are applied to the branch
+#     * the only modifications that are done are done to stack metadata
+#
+#   EXAMPLE:
+
+#   `ACTUAL` column stands for actual SHA if different from one known to stacked git.
+#
+#   (assmuing stack):
+#    S SHA   ACTUAL MSG     PATCH
+#      ffff0        base    N/A (plain git commit)
+#    + ffff1        commit1 (patch1) 
+#    > ffff2 ffff5  commit2 (patch2) (stg head) 'after amend'
+#    - ffff3        commit3 (patch3)
+#   
+#   (after `stg-fixup top`)
+#    S SHA   ACTUAL MSG     PATCH
+#      ffff0        base    N/A (plain git commit)
+#    + ffff1        commit1 (patch1) 
+#    > ffff5        commit2 (patch2) (stg head)
+#    - ffff3        commit3 (patch3)
+#
+__CMD_stg_fixup_top() {
+  ( # set -x;
+    # Create a temporary file that will hold temporary git index.
+    # This will make it much simpler to update files in the git tree.
+    # Alternative purer would require fiddling with recursively rebuilding the tree with `git ls-tree` and `git mktree`.
+    local TMP_GIT_INDEX=$(mktemp)
+    export GIT_INDEX_FILE="$TMP_GIT_INDEX"
+
+    local GIT_TOP_SHA=$(__git_deref HEAD)
+
+    local STG_STACK_INFO=$(__stg_stack_info $(__git_current_branch))
+    local STG_STACK_REF=$(__json_get "$STG_STACK_INFO" .stg_stack_ref)
+
+    local STG_TOP_PATCH=$(__json_get "$STG_STACK_INFO" .stg_top_patch)
+    local STG_TOP_PATCH_META=$(git cat-file -p "$STG_STACK_REF:patches/$STG_TOP_PATCH")
+
+    local STG_TOP_PREV=$(__json_get "$STG_STACK_INFO" '.stg_stack.data | .patches[.applied[-2]].oid // ""')
+    local GIT_TOP_PREV=$(__git_deref HEAD~1)
+
+
+    if [[ $STG_TOP_PREV != "" && $STG_TOP_PREV != $GIT_TOP_PREV ]] ; then
+      echo "error: last patch's parent is not on the stack (try rewind instead)" >&2
+      exit 1
+    fi
+
+    git read-tree "$(__json_get "$STG_STACK_INFO" .stg_stack_dat_ref)^{tree}"
+
+    local STG_STACK_JSON=$(jq -n \
+      --argjson si "$STG_STACK_INFO" \
+    '
+      $si.stg_stack.data
+      | .head = $si.git_top_sha
+      | .prev = $si.stg_stack_oct_ref
+      | .patches[$si.stg_top_patch].oid = $si.git_top_sha
+    ')
+
+    local NEW_STG_PATCH_FILE=$(jq -rn \
+        --argjson si "$STG_STACK_INFO" \
+        --arg patch_meta "$STG_TOP_PATCH_META" \
+        --arg patch_body "$(git show -s --format=%s%n%n%b "$GIT_TOP_SHA")" \
+        --arg prev "$(__git_deref "$GIT_TOP_SHA^1^{tree}")" \
+        --arg top "$(__git_deref "$GIT_TOP_SHA^{tree}")" \
+    '
+      $patch_meta
+      | sub("(?<v>Top:\\s+).*"; "\(.v)\($top)")
+      | sub("(?<v>Bottom:\\s+).*"; "\(.v)\($prev)")
+      | split("\n")
+        | .[0:4] + ["", $patch_body] 
+      | join("\n")
+    '
+    )
+    
+    # Imperatively modify the index, by adding newly created and hashed stack.json and patch meta file.
+    git update-index --add --cacheinfo \
+      100644 "$(__git_hash "$STG_STACK_JSON")" "stack.json"
+
+    git update-index --add --cacheinfo \
+      100644 "$(__git_hash "$NEW_STG_PATCH_FILE")" "patches/$STG_TOP_PATCH"
+
+    local STG_NEW_STACK_SHA=$(
+      __stg_stack_commit \
+        "(stg-fixup) fixup top patch" \
+        $(git write-tree) \
+        "$STG_STACK_REF" -p "$GIT_TOP_SHA"
+    )
+
+    git update-ref "$STG_STACK_REF" "$STG_NEW_STACK_SHA"
+
+    # Clean up after ourselves.
+    rm "$TMP_GIT_INDEX"
+  )
+}
+
+# ------------------------------------------------------------------------------
+# UTILS
+# ------------------------------------------------------------------------------
+
+__git_current_branch() {
+  git rev-parse --abbrev-ref HEAD
+}
+
+__git_deref() {
+  git rev-parse $1
+}
+
+__git_hash() {
+  echo "$1" | git hash-object -w --stdin
+}
+
+__json_get() {
+  echo "$1" | jq -r "$2"
+}
+
+__stg_stack_commit() {
+	local MSG=$1
+  local TREE=$2
+
+	local PARENT_OCT=$(__git_deref "$3")
+	local PARENT_DAT=$(__git_deref "$3^1")
+
+	shift 3
+
+	COMMIT_DAT=$(
+    echo "$MSG" | git commit-tree "$TREE" \
+      -p "$PARENT_DAT"
+  )
+
+	COMMIT_OCT=$(
+    echo "$MSG" | git commit-tree "$TREE" \
+      -p "$COMMIT_DAT" -p "$PARENT_OCT" "$@"
+  )
+
+  echo $COMMIT_OCT
+}
+
+__stg_stack_ref() {
+  local GIT_BRANCH="$1"
+
+  printf "refs/stacks/%s" "$GIT_BRANCH"
+}
+
+__stg_stack_file() {
+  local GIT_BRANCH=$1
+
+  local STG_STACK_REF=$(__stg_stack_ref "$GIT_BRANCH")
+  local STG_STACK_JSON=$STG_STACK_REF:stack.json
+
+  jq -nc \
+    --arg ref "$STG_STACK_JSON" \
+    --argjson data "$(git cat-file -p "$STG_STACK_JSON")" \
 '
-	.
-	| . as $root
-	| $root
-	| .patches."\($stg_patch_name)".oid = $stg_new_id
-	| .head = $stg_new_id
-	| .prev = $stg_new_prev
+  {
+    ref: $ref,
+    data: $data,
+  }
 '
-)
-NEW_STG_STACK_BLOB=$(echo "$NEW_STG_STACK" | git hash-object -w --stdin)
+}
 
-# Modify the patch metadata file so that:
-#  * Before points at the previous HEAD^1^{tree}
-#  * Top points at the previous HEAD^{tree}
-NEW_STG_PATCH_FILE=$(
-	echo "$STG_PATCH_META" | jq -Rr \
-		--arg prev "$(git rev-parse "$GIT_NEW_HEAD^1^{tree}")" \
-		--arg top "$(git rev-parse "$GIT_NEW_HEAD^{tree}")" \
+__stg_stack_info() {
+  local GIT_BRANCH=$1
+
+  local STG_STACK_REF=$(__stg_stack_ref "$GIT_BRANCH")
+  local STG_STACK_OCT_REF=$(__git_deref "$STG_STACK_REF")
+  local STG_STACK_DAT_REF=$(__git_deref "$STG_STACK_REF^1")
+  local STG_STACK_JSON=$STG_STACK_REF:stack.json
+
+  local STG_TOP_PATCH=$(stg top 2>/dev/null)
+  local GIT_TOP_SHA=$(git rev-parse HEAD)
+
+  jq -nc \
+    --arg git_branch "$GIT_BRANCH" \
+    --arg git_top_sha "$GIT_TOP_SHA" \
+    --arg stg_stack_ref "$STG_STACK_REF" \
+    --arg stg_stack_oct_ref "$STG_STACK_OCT_REF" \
+    --arg stg_stack_dat_ref "$STG_STACK_DAT_REF" \
+    --argjson stg_stack "$(__stg_stack_file "$GIT_BRANCH")" \
+    --arg stg_top_patch "$STG_TOP_PATCH" \
 '
-	.
-	| sub("(?<v>Top:\\s+).*"; "\(.v)\($top)")
-	| sub("(?<v>Bottom:\\s+).*"; "\(.v)\($prev)")
+{
+  git_branch: $git_branch,
+
+  git_top_sha: $git_top_sha,
+  stg_top_patch: $stg_top_patch,
+
+  stg_stack_ref: $stg_stack_ref,
+  stg_stack_oct_ref: $stg_stack_oct_ref,
+  stg_stack_dat_ref: $stg_stack_dat_ref,
+  stg_stack: $stg_stack,
+}
 '
-)
-NEW_STG_PATCH_FILE_BLOB=$(echo "$NEW_STG_PATCH_FILE" | git hash-object -w --stdin)
+}
 
-# Create a temporary file that will hold temporary git index.
-# This will make it much simpler to update files in the git tree.
-# Alternative purer would require fiddling with recursively rebuilding the tree with `git ls-tree` and `git mktree`.
-TMP_GIT_INDEX=$(mktemp)
-export GIT_INDEX_FILE="$TMP_GIT_INDEX"
+# ------------------------------------------------------------------------------
+# MAIN
+# ------------------------------------------------------------------------------
 
-# Git read tree populates the temporary git index file with the contents of STG_STACK_TREE.
-git read-tree "$STG_STACK_TREE"
-
-# Imperatively modify the index, by adding newly created and hashed stack.json and patch meta file.
-git update-index --add --cacheinfo \
-  100644 "$NEW_STG_STACK_BLOB" "stack.json"
-git update-index --add --cacheinfo \
-  100644 "$NEW_STG_PATCH_FILE_BLOB" "patches/$STG_TOP_PATCH"
-
-# Display the resultant changes.
-git diff-index --cached -U "$STG_STACK_OCTOPUS"
-STG_STACK_NEW_TREE=$(git write-tree)
-
-STG_STACK_NEW_SIMPLE=$(
-  echo "fixup patch oid" | git commit-tree "$STG_STACK_NEW_TREE" \
-    -p "$STG_STACK_SIMPLE"
-)
-STG_STACK_NEW_OCTOPUS=$(
-  echo "fixup patch oid" | git commit-tree "$STG_STACK_NEW_TREE" \
-    -p "$STG_STACK_NEW_SIMPLE" -p "$STG_STACK_OCTOPUS" -p "$GIT_NEW_HEAD"
-)
-
-# Change the value refs/stacks/<branch> to point at the new octopus commit.
-git update-ref "refs/stacks/$STG_STACK_REF" "$STG_STACK_NEW_OCTOPUS"
-echo "UPDATED: refs/stacks/$STG_STACK_REF: $STG_STACK_OCTOPUS -> $STG_STACK_NEW_OCTOPUS"
-
-# Clean up after ourselves.
-rm "$TMP_GIT_INDEX"
+case $1 in
+  info )
+    __stg_stack_info $(__git_current_branch) | jq .
+    ;;
+  top )
+    __CMD_stg_fixup_top
+    ;;
+  rewind )
+    __CMD_stg_fixup_rewind
+    ;;
+  align )
+    __CMD_stg_fixup_align "$@"
+    ;;
+  * )
+    echo "available commands [ info, top, rewind ]"
+    ;;
+esac
+# ------------------------------------------------------------------------------

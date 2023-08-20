@@ -90,3 +90,5 @@ fi
 if (( $+commands[direnv] )); then
   eval "$(direnv hook zsh)"
 fi
+
+FZF_CTRL_R_OPTS="-i"

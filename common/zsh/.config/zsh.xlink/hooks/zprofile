@@ -12,9 +12,9 @@ fi
 # Editors
 #
 
-export EDITOR='vim'
-export VISUAL='vim'
-export PAGER='less'
+# export EDITOR=${EDITOR:-$(which vim)}
+# export VISUAL=${VISUAL:-$(which vim)}
+export PAGER=${PAGER:-$(which less)}
 
 #-------------------------------------------------------------------------------
 # Language

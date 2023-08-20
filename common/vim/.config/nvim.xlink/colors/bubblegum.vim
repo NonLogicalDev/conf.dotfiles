@@ -18,7 +18,7 @@ let g:colors_name="bubblegum"
 " preferred groups
 " (see `:h w18`)
 "
-hi Normal          ctermfg=249    ctermbg=236    cterm=none    guifg=#B2B2B2    guibg=#303030    gui=none
+hi Normal          ctermfg=249    ctermbg=232    cterm=none    guifg=#B2B2B2     gui=none
 hi Comment         ctermfg=244    guifg=#808080
 
 " yellow
@@ -85,7 +85,7 @@ hi WildMenu        ctermfg=71     ctermbg=237    cterm=none    guifg=#5FAF5F    
 hi Visual          ctermfg=bg     ctermbg=117    guifg=bg    guibg=#87D7FF
 hi VisualNOS       ctermfg=bg     ctermbg=116    guifg=bg    guibg=#87D7D7
 hi VertSplit       ctermfg=244    ctermbg=237    cterm=none    guifg=#808080    guibg=#3A3A3A    gui=none
-hi LineNr          ctermfg=244    ctermbg=237    guifg=#808080    guibg=#3A3A3A
+hi LineNr          ctermfg=244    ctermbg=237    guifg=#808080    guibg=#232323
 
 hi Title           ctermfg=109    guifg=#87AFAF
 hi SpecialKey      ctermfg=114    guifg=#87D787
@@ -107,8 +107,8 @@ hi FoldColumn      ctermfg=79     ctermbg=237    guifg=#5FD7AF    guibg=#3A3A3A
 hi SignColumn      ctermfg=79     ctermbg=237    guifg=#5FD7AF    guibg=#3A3A3A
 hi ColorColumn     ctermfg=79     ctermbg=237    guifg=#5FD7AF    guibg=#3A3A3A
 
-hi CursorColumn    ctermbg=237    cterm=none    guibg=#3A3A3A    gui=none
-hi CursorLine      ctermbg=237    cterm=none    guibg=#3A3A3A    gui=none
+hi CursorColumn    ctermbg=237    cterm=none    guibg=#2A2A2A    gui=none
+hi CursorLine      ctermbg=237    cterm=none    guibg=#2A2A2A    gui=none
 
 hi vimFold         ctermfg=244    guifg=#808080
 hi vimCommentTitle ctermfg=fg    guifg=fg
