@@ -22,7 +22,7 @@
     "editor.fontLigatures": false,
     "editor.formatOnType": true,
     "editor.scrollBeyondLastLine": false,
-    "editor.cursorSmoothCaretAnimation": true,
+    "editor.cursorSmoothCaretAnimation": "on",
 
     "terminal.integrated.fontSize": 14,
 
@@ -150,5 +150,7 @@
     },
     "security.workspace.trust.untrustedFiles": "open",
     "notebook.lineNumbers": "on",
-    "notebook.output.textLineLimit": 50
+    "notebook.output.textLineLimit": 50,
+    "editor.inlineSuggest.enabled": true,
+    "terminal.integrated.copyOnSelection": true
 }

@@ -7,8 +7,6 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
 
   "nnao45/zsh-kubectl-completion"
   "hlissner/zsh-autopair"
-
-
 )
 
 # "NonLogicalDev/fork.util.zsh.pure-prompt"
@@ -30,14 +28,6 @@ if (( $+commands[antibody] )); then
   fi
   source "$_ANTIBODY_PLUGIN_INIT"
 
-  #-------------------------------------------------------------------------------
-  # Plugin Configurations:
-  #
-
-  # autoload -Uz promptinit
-  # if [[ -z $ZSH_DISABLE_PROMPT ]]; then
-  #   promptinit && prompt_pure_setup
-  # fi
 
   #=======================================
   # zsh-users/zsh-history-substring-search
