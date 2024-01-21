@@ -81,4 +81,13 @@ if (( $+commands[direnv] )); then
   eval "$(direnv hook zsh)"
 fi
 
+#=======================================
+# atuinsh/atuin
+#=======================================
+if (( $+commands[atuin] )); then
+  eval "$(atuin init zsh)"
+else
+  # Allow FZF
+fi
+
 FZF_CTRL_R_OPTS="-i"

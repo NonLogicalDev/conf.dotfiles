@@ -11,24 +11,24 @@ function init.list {
 ################################################################################
 
 ## RTX Version Manger (ASDF compatible)
-function init.vm.rtx {
-  [[ -n ${INIT_LIST[rtx]} ]] && return
+function init.vm.mise {
+  [[ -n ${INIT_LIST[mise]} ]] && return
 
-  if ! (( $+commands[rtx] )); then
+  if ! (( $+commands[mise] )); then
     return 1
   fi
 
-  eval "$(rtx activate zsh)"
-  INIT_LIST[rtx]="rtx.vm: $(rtx version)"
+  eval "$(mise activate zsh)"
+  INIT_LIST[mise]="mise.vm: $(mise version)"
 }
 
-function init.vm.rtx-use {
-  init.vm.rtx || return $?
+function init.vm.mise-use {
+  init.vm.mise || return $?
 
-  rtx install "${1}"
+  mise install "${1}"
 
-  ( rm -f /tmp/.rtx.toml  && rtx use "${1}" --path /tmp/.rtx.toml ) 
-  eval "$(zsh -c 'cd /tmp && unset __RTX_DIFF __RTX_WATCH && rtx hook-env -s zsh | grep -v __RTX')"
+  ( rm -f /tmp/.mise.toml  && mise use "${1}" --path /tmp/.mise.toml )
+  eval "$(zsh -c 'cd /tmp && unset __RTX_DIFF __RTX_WATCH && mise hook-env -s zsh | grep -v __RTX')"
 }
 
 ################################################################################
@@ -40,8 +40,8 @@ function init.vm.rtx-use {
 function init.vm.go {
   local INIT_VERSION="${1:-latest}"
 
-  if init.vm.rtx-use "go@${INIT_VERSION}"; then 
-    INIT_LIST[go]="rtx: $(go version)"
+  if init.vm.mise-use "go@${INIT_VERSION}"; then
+    INIT_LIST[go]="mise: $(go version)"
   fi
 }
 
@@ -49,8 +49,8 @@ function init.vm.go {
 function init.vm.node {
   local INIT_VERSION="${1:-latest}"
 
-  if init.vm.rtx-use "node@${INIT_VERSION}"; then 
-    INIT_LIST[node]="rtx: $(node version)"
+  if init.vm.mise-use "node@${INIT_VERSION}"; then
+    INIT_LIST[node]="mise: $(node version)"
   fi
 }
 
@@ -58,8 +58,8 @@ function init.vm.node {
 function init.vm.java {
   local INIT_VERSION="${1:-latest}"
 
-  if init.vm.rtx-use "java@${INIT_VERSION}"; then 
-    INIT_LIST[java]="rtx: $(java version)"
+  if init.vm.mise-use "java@${INIT_VERSION}"; then
+    INIT_LIST[java]="mise: $(java version)"
   fi
 }
 
@@ -67,8 +67,8 @@ function init.vm.java {
 function init.vm.python {
   local INIT_VERSION="${1:-latest}"
 
-  if init.vm.rtx-use "python@${INIT_VERSION}"; then 
-    INIT_LIST[python]="rtx: $(python --version)"
+  if init.vm.mise-use "python@${INIT_VERSION}"; then
+    INIT_LIST[python]="mise: $(python --version)"
   fi
 }
 
