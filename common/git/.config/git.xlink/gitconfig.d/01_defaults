@@ -27,7 +27,7 @@
   enabled = true
 
 [log]
-  excludeDecoration = refs/patches/*
+  #excludeDecoration = refs/patches/*
 
 [diff]
   tool = vimdiff

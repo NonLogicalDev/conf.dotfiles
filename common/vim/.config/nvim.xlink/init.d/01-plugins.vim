@@ -1,6 +1,9 @@
 " vim:foldmethod=marker
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+let g:polyglot_disabled = ['python-indent', 'indent/python.vim', 'autoindent']
+let g:pymode_indent = 0
+
 " Initialising Plugins:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """ Plugin Manager Setup: {{{
@@ -60,14 +63,14 @@ Plug 'tpope/vim-repeat'
 Plug 'Shougo/unite.vim'
 Plug 'rizzatti/funcoo.vim'
 
-if has('nvim')
+if (has('nvim') && 0)
   Plug 'nvim-lua/plenary.nvim'
 endif
 
 " }}}
 " Language Definitions: {{{
 
-Plug 'sheerun/vim-polyglot' " One pack to rule them all and in the darkness bind them.
+" Plug 'sheerun/vim-polyglot' " One pack to rule them all and in the darkness bind them.
 
 Plug 'lepture/vim-jinja', { 'for': 'jinja' }
 
@@ -140,7 +143,7 @@ if (!(version < 704) && (has("python") || has("python3")) )
   Plug 'honza/vim-snippets'
 endif
 
-if has('nvim')
+if (has('nvim') && 0)
   " Language Server Support (requires up-to-date NeoVim to work)
   " (!See LUA Config Section for Configuration Details, this does not work out of the box!)
   Plug 'neovim/nvim-lspconfig', { 'branch': 'master' }
@@ -175,7 +178,7 @@ call s:PlugInitEnd()
 " NeoVim LUA Plugin Configuration: {{{
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if has("nvim")
+if (has("nvim") && 0)
   execute 'source' g:VimConfig("init.d/01-plugins.lua")
 endif
 
