@@ -9,6 +9,8 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
   "hlissner/zsh-autopair"
 )
 
+ZSH_PLUGIN_DIR=$HOME/.config/zsh/plugins
+
 # "NonLogicalDev/fork.util.zsh.pure-prompt"
 # "rupa/z"
 # "changyuheng/fz"
@@ -82,12 +84,11 @@ if (( $+commands[direnv] )); then
 fi
 
 #=======================================
-# atuinsh/atuin
+# history search (autin/fzf-history)
 #=======================================
 if (( $+commands[atuin] )); then
   eval "$(atuin init zsh)"
 else
-  # Allow FZF
+  FZF_CTRL_R_OPTS="-i"
+  source "$ZSH_PLUGIN_DIR/extras/fzf-history.zsh"
 fi
-
-FZF_CTRL_R_OPTS="-i"
