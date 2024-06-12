@@ -21,15 +21,13 @@ alias rm='nocorrect rm'
 # No Globbing (Disable globbing)
 #
 
-alias bower='noglob bower'
 alias fc='noglob fc'
 alias find='noglob find'
-alias ftp='noglob ftp'
 alias history='noglob history'
-alias locate='noglob locate'
-alias rake='noglob rake'
 alias rsync='noglob rsync'
+
 alias scp='noglob scp'
+alias ftp='noglob ftp'
 alias sftp='noglob sftp'
 
 #-------------------------------------------------------------------------------
@@ -52,7 +50,7 @@ alias ln='lni'
 # LS (Color & Aliases)
 #
 
-if is-callable 'dircolors'; then
+if (( $+commands[dircolors] )); then
   # GNU Core Utilities
   alias ls="${aliases[ls]:-ls} --group-directories-first"
 
@@ -91,7 +89,6 @@ alias lk='ll -Sr'        # Lists sorted by size, largest last.
 alias lt='ll -tr'        # Lists sorted by date, most recent last.
 alias lc='lt -c'         # Lists sorted by date, most recent last, shows change time.
 alias lu='lt -u'         # Lists sorted by date, most recent last, shows access time.
-# alias sl='ls'            # I often screw this up.
 
 #-------------------------------------------------------------------------------
 # Grep (Color & Aliases)

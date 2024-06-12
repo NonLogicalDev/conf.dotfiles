@@ -12,12 +12,6 @@ function is-callable {
   (( $+commands[$1] || $+functions[$1] || $+aliases[$1] || $+builtins[$1] ))
 }
 
-# Checks a boolean variable for "true".
-# Case insensitive: "1", "y", "yes", "t", "true", "o", and "on".
-function is-true {
-  [[ -n "$1" && "$1" == (1|[Yy]([Ee][Ss]|)|[Tt]([Rr][Uu][Ee]|)|[Oo]([Nn]|)) ]]
-}
-
 # Prints the first non-empty string in the arguments array.
 function coalesce {
   for arg in $argv; do
@@ -56,43 +50,78 @@ function coalesce {
 #
 
 function path_list {
-  for p in $path
-  do
-    echo $p
+  for p in "${path[@]}"; do
+    printf "%s\n" $p
   done
 }
 
 function path_dedup {
-  if [ -n "$PATH" ]; then
-    old_PATH=$PATH:; PATH=
-    while [ -n "$old_PATH" ]; do
-      x=${old_PATH%%:*}      # the first remaining entry
-      case $PATH: in
-        *:"$x":*) ;;         # already there
-        *) PATH=$PATH:$x;;   # not there yet
-      esac
-      old_PATH=${old_PATH#*:}
+  local -A path_seen
+  local -a new_path
+
+  for p in "${path[@]}"; do
+    if [[ -n ${path_seen[$p]} ]]; then
+      continue
+    fi
+
+    path_seen[$p]=1
+    new_path+=( "$p" )
+  done
+
+  path=( "${new_path[@]}")
+}
+
+function path_drop {
+  local args=()
+  if [[ $1 == '-' ]]; then
+    while IFS= read -r a; do
+      args+=( "$a" )
     done
-    PATH=${PATH#:}
-    unset old_PATH x
+  else
+    args=( "$@" )
   fi
+
+  local new_path=()
+  for p in "${path[@]}"; do
+    local match=0
+    for pn in "${args[@]}"; do
+      if [[ $p == $pn ]]; then
+        match=1
+        break
+      fi
+    done
+    if [[ match -eq 1 ]]; then
+      continue
+    fi
+    new_path+=( "$p" )
+  done
+  path=( "${new_path[@]}" )
 }
 
-function path_append() {
-  for ARG in "$@"
-  do
-    if [ -d "$ARG" ] && [[ ":$PATH:" != *":$ARG:"* ]]; then
-        PATH="${PATH:+"$PATH:"}$ARG"
-    fi
-  done
+function path_append {
+  local args=()
+  if [[ $1 == '-' ]]; then
+    while IFS= read -r a; do
+      args+=( "$a" )
+    done
+  else
+    args=( "$@" )
+  fi
+
+  path_drop "${args[@]}"
+  path=( "${path[@]}" "${args[@]}" )
 }
 
-function path_prepend() {
-  for ((i=$#; i>0; i--));
-  do
-    eval "ARG=\${$i}"
-    if [ -d "$ARG" ] && [[ ":$PATH:" != *":$ARG:"* ]]; then
-        PATH="$ARG${PATH:+":$PATH"}"
-    fi
-  done
+function path_prepend {
+  local args=()
+  if [[ $1 == '-' ]]; then
+    while IFS= read -r a; do
+      args+=( "$a" )
+    done
+  else
+    args=( "$@" )
+  fi
+
+  path_drop "${args[@]}"
+  path=( "${args[@]}" "${path[@]}" )
 }

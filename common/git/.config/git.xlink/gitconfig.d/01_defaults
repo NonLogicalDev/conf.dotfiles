@@ -1,4 +1,3 @@
-# vim: ft=gitconfig
 [core]
   excludesfile = ~/.config/git/gitignore.default
   hooksPath = "~/bin/git-hooks"

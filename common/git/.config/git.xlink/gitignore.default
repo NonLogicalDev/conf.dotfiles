@@ -2,11 +2,6 @@
 .vscode/
 .idea/
 
-buck-out
-
-.gitrefs
-__local__
-
 ### Vim ###
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]

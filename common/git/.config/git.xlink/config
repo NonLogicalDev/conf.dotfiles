@@ -1,2 +1,2 @@
 [include]
-  path = ~/.config/git/gitconfig.d/00_index
+  path = gitconfig.d/00_index
