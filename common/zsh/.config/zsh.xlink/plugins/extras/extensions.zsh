@@ -10,13 +10,6 @@ function exists { which $1 &> /dev/null }
 #     '
 # }
 
-#> lspath: print all components of the path
-function lspath() {
-    for p in $path; do
-        echo $p
-    done
-}
-
 #-------------------------------------------------------------------------------
 
 #> cpd: copy dir to target, ensuring target hierarchy exists
@@ -84,37 +77,6 @@ if (( $+commands[docker] )); then
   }
 fi
 
-#-------------------------------------------------------------------------------
-
-# macOS Everywhere
-if [[ "$OSTYPE" == darwin* ]]; then
-  alias o='open'
-elif [[ "$OSTYPE" == cygwin* ]]; then
-  alias o='cygstart'
-
-  alias pbcopy='tee > /dev/clipboard'
-  alias pbpaste='cat /dev/clipboard'
-elif [[ "$OSTYPE" == linux* ]]; then
-  __open_cmd() {
-    xdg-open "$@" 1> /dev/null 2> /dev/null & disown
-  }
-  alias o='__open_cmd'
-
-  if (( $+commands[xclip] )); then
-    alias pbcopy='xclip -selection clipboard -in'
-    alias pbpaste='xclip -selection clipboard -out'
-  fi
-
-  if (( $+commands[xsel] )); then
-    alias pbcopy='xsel --clipboard --input'
-    alias pbpaste='xsel --clipboard --output'
-  fi
-
-  if (( $+commands[wl-copy] )); then
-    alias pbcopy='wl-copy'
-    alias pbpaste='wl-paste'
-  fi
-fi
 
 #-------------------------------------------------------------------------------
 

@@ -19,6 +19,7 @@ elif [[ "$OSTYPE" == darwin* ]]; then
   fi
 fi
 
+#> rm: an idiot proof wrapper, because sometimes I am that idiot
 function rm() {
   local IS_R=0
   local IS_F=0
@@ -69,3 +70,9 @@ function rm() {
   command rm -v $@
 }
 
+#> lspath: print all components of the path
+function lspath() {
+    for p in $path; do
+        echo $p
+    done
+}
