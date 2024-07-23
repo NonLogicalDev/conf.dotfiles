@@ -107,12 +107,13 @@ endif
 
 " Builtin language plugins setup:
 
-let g:python3_host_prog = g:CoalesceFile(
-      \ expand("~/.pyenv/shims/python3"),
-      \ "/usr/local/opt/asdf/shims/python3",
-      \ expand("/usr/local/bin/python3"),
-      \ expand("/usr/bin/python3"),
-      \ )
+" let g:python3_host_prog = g:CoalesceFile(
+"       \ expand("~/.nix-profile/bin/python3"),
+"       \ expand("~/.pyenv/shims/python3"),
+"       \ "/usr/local/opt/asdf/shims/python3",
+"       \ expand("/usr/local/bin/python3"),
+"       \ expand("/usr/bin/python3"),
+"       \ )
 
 " }}}
 " Load Extra Config: {{{

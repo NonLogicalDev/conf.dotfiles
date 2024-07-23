@@ -21,13 +21,13 @@ export PAGER=${PAGER:-$(which less)}
 #
 
 # NOTE: This might cause issues
-if [[ -z "$LANG" ]]; then
-  export LANG='en_US.UTF-8'
-fi
+#if [[ -z "$LANG" ]]; then
+#  export LANG='en_US.UTF-8'
+#fi
 
 # NOTE: This might cause issues
-export LC_COLLATE="C"
-export LC_ALL="C"
+#export LC_COLLATE="C"
+#export LC_ALL="C"
 
 #-------------------------------------------------------------------------------
 # Paths

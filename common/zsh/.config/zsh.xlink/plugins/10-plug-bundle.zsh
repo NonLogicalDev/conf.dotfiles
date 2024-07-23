@@ -5,11 +5,21 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
   "zsh-users/zsh-syntax-highlighting"
   "zsh-users/zsh-history-substring-search"
 
-  "nnao45/zsh-kubectl-completion"
   "hlissner/zsh-autopair"
 )
 
 ZSH_PLUGIN_DIR=$HOME/.config/zsh/plugins
+
+if (( $+commands[nix] )); then
+  __ZSH_ANTIBODY_PLUGINS+=(
+    "nix-community/nix-zsh-completions.git"
+  )
+fi
+if (( $+commands[kubectl] )); then
+  __ZSH_ANTIBODY_PLUGINS+=(
+    "nnao45/zsh-kubectl-completion"
+  )
+fi
 
 # "NonLogicalDev/fork.util.zsh.pure-prompt"
 # "rupa/z"
