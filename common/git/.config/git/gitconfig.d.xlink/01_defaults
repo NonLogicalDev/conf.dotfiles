@@ -44,6 +44,9 @@
 [difftool "intellij"]
     cmd = idea diff $(cd $(dirname "$LOCAL") && pwd)/$(basename "$LOCAL") $(cd $(dirname "$REMOTE") && pwd)/$(basename "$REMOTE")
 
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
 [tig "color"]
   cursor = green black
   title-focus = green black
