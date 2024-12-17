@@ -1,40 +1,18 @@
-typeset -A INIT_LIST=()
-
-function init.list {
-  for key value in ${(kv)INIT_LIST}; do
-    echo "$key -> $value"
-  done
-}
-
 ################################################################################
 # General Version Managers:
 ################################################################################
 
-## RTX Version Manger (ASDF compatible)
-function init.vm.mise {
-  [[ -n ${INIT_LIST[mise]} ]] && return
-
-  if ! (( $+commands[mise] )); then
-    return 1
-  fi
-
-  eval "$(mise activate zsh)"
-  INIT_LIST[mise]="mise.vm: $(mise version)"
-}
-
-function init.vm.mise-use {
-  init.vm.mise || return $?
-
-  mise install "${1}"
-
-  ( rm -f /tmp/.mise.toml  && mise use "${1}" --path /tmp/.mise.toml )
-  eval "$(zsh -c 'cd /tmp && unset __RTX_DIFF __RTX_WATCH && mise hook-env -s zsh | grep -v __RTX')"
-}
+# [Depreacted] Use mise like intended (moved activation to plugins)
+#
+# function init.vm.mise-use {
+#   mise install "${1}"
+#   ( rm -f /tmp/.mise.toml  && mise use "${1}" --path /tmp/.mise.toml )
+#   eval "$(zsh -c 'cd /tmp && unset __RTX_DIFF __RTX_WATCH && mise hook-env -s zsh | grep -v __RTX')"
+# }
 
 ################################################################################
 # Language Version Managers:
 ################################################################################
-
 
 ## Go Version Manger (via RTX)
 function init.vm.go {
@@ -99,12 +77,3 @@ function init.term.iterm {
     INIT_LIST[iterm] = "iterm"
   fi
 }
-
-################################################################################
-# Auto Init (auto detect integrations)
-################################################################################
-
-if [[ -d "$HOME/.krew" ]]; then
-  # Setting up Kubeclt Krew
-  path_prepend "$HOME/.krew/bin"
-fi

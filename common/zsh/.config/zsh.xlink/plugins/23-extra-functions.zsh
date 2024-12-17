@@ -3,22 +3,6 @@
 #                              Functions                              #
 #######################################################################
 
-if [[ "$OSTYPE" == linux* ]]; then
-  __millis() {
-    date '+%s%3N'
-  }
-elif [[ "$OSTYPE" == darwin* ]]; then
-  if (( $+commands[gdate] )); then
-    __millis() {
-      gdate '+%s%3N'
-    }
-  else
-    __millis() {
-      python -c "import time; print(int(time.time()*1000))";
-    }
-  fi
-fi
-
 #> rm: an idiot proof wrapper, because sometimes I am that idiot
 function rm() {
   local IS_R=0

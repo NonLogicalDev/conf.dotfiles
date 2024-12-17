@@ -25,14 +25,14 @@
 # __stg_fixup_rewind: (`stg-fixup rewind`)
 #
 #   syncs the stacked git metadata to current head:
-#     * by marking all patches as unapplied 
+#     * by marking all patches as unapplied
 #     * and changing the head to current HEAD
 
-#   This is the easiest fastest, and least destructive way to repair a broken stack 
+#   This is the easiest fastest, and least destructive way to repair a broken stack
 #   if you are not immediately sure what went wrong, and would rather get yourself to
 #   a clean state as soon as possible.
-#   
-#   The result of this operation is that all of patches are marked unapplied 
+#
+#   The result of this operation is that all of patches are marked unapplied
 #   while commits that are backing the patches are left in the branch unmodified.
 #
 #   So in essense you are left in a similar state comparable to running `stg pop -a && stg pull`
@@ -47,10 +47,10 @@
 #   (assmuing stack):
 #    S SHA   MSG     PATCH
 #      ffff0 base    N/A (plain git commit)
-#    + ffff1 commit1 (patch1) 
+#    + ffff1 commit1 (patch1)
 #    > ffff2 commit2 (patch2) (stg head)
 #    - ffff3 commit3 (patch3)
-#   
+#
 #   (after `stg-fixup rewind`)
 #    S SHA   MSG     PATCH
 #      ffff0 base    N/A (plain git commit)
@@ -83,7 +83,7 @@ __CMD_stg_fixup_rewind() {
       | .unapplied = .applied + .unapplied
       | .applied = []
     ')
-    
+
     # Imperatively modify the index, by adding newly created and hashed stack.json and patch meta file.
     git update-index --add --cacheinfo \
       100644 "$(__git_hash "$STG_STACK_JSON")" "stack.json"
@@ -132,7 +132,7 @@ EOS
 #   fixes the top most applied patch to be in sync with current HEAD
 #     (only works if previous patch is on the stack)
 #
-#   This is the quickest option to fixup stack metadata if you accidentally 
+#   This is the quickest option to fixup stack metadata if you accidentally
 #   modified top most commit with `git amend` or something else.
 #
 #   NOTE:
@@ -146,14 +146,14 @@ EOS
 #   (assmuing stack):
 #    S SHA   ACTUAL MSG     PATCH
 #      ffff0        base    N/A (plain git commit)
-#    + ffff1        commit1 (patch1) 
+#    + ffff1        commit1 (patch1)
 #    > ffff2 ffff5  commit2 (patch2) (stg head) 'after amend'
 #    - ffff3        commit3 (patch3)
-#   
+#
 #   (after `stg-fixup top`)
 #    S SHA   ACTUAL MSG     PATCH
 #      ffff0        base    N/A (plain git commit)
-#    + ffff1        commit1 (patch1) 
+#    + ffff1        commit1 (patch1)
 #    > ffff5        commit2 (patch2) (stg head)
 #    - ffff3        commit3 (patch3)
 #
@@ -204,11 +204,11 @@ __CMD_stg_fixup_top() {
       | sub("(?<v>Top:\\s+).*"; "\(.v)\($top)")
       | sub("(?<v>Bottom:\\s+).*"; "\(.v)\($prev)")
       | split("\n")
-        | .[0:4] + ["", $patch_body] 
+        | .[0:4] + ["", $patch_body]
       | join("\n")
     '
     )
-    
+
     # Imperatively modify the index, by adding newly created and hashed stack.json and patch meta file.
     git update-index --add --cacheinfo \
       100644 "$(__git_hash "$STG_STACK_JSON")" "stack.json"

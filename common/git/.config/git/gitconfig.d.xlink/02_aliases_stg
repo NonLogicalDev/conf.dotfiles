@@ -3,8 +3,13 @@
   rfs   = !stg refresh --spill
   spill = !stg refresh --spill
 
+  l   = !stg series -d --short=10
+  e   = !stg edit
+  ed  = !stg edit --save-template -
+
   ls  = !stg series --noprefix
   lg  = !stg series -d
+  lgf  = !stg series -d
   lga  = !stg series -d -A
   lgr  = !stg series -d --color=always | tac
   lgs = !(stg series -AP && (stg series -UP | head -n 4)) | xargs stg lg
@@ -16,11 +21,12 @@
   # [Extended :: Custom Git Utils]
   ################################################################################
 
+  r     = !stg-utils checked-refresh-update
+
   rfi   = !stg-utils checked-refresh-index
   rfu   = !stg-utils checked-refresh-update
   check = !stg-utils check-index
   spilli = !stg-utils spill-interactive
-
 
   pushm = !stg-utils push-set
   mpush = !stg-utils push-set

@@ -29,7 +29,7 @@ log-patch-changes() {
   echo $1{~1,} | xargs -n1 sh -c 'git show $1:stack.json' -- | jq -s '.[0]?.patches as $a|.[1]?.patches as $b|reduce ($b|to_entries|.[]) as $be ($a; (.[$be.key] |= (.oid_new = $be.value.oid))) | with_entries(select(.value.oid != .value.oid_new))'
 }
 
-spill-interactive() { 
+spill-interactive() {
   stg files|gum filter --no-limit --height=20|cut -f 2|(cd $(git root); xargs stg spill --)
 }
 
@@ -52,10 +52,10 @@ __check-header() {
   git show -s "$GIT_HEAD" --format=%s | sed 's/^/   /'
 
   echo
-  stg files "$TARGET_PATCH" 
+  stg files "$TARGET_PATCH"
 }
 
-check-index() { 
+check-index() {
   __assert_stg_enabled "check-index"
 
   TARGET_PATCH=$(stg top)
@@ -146,7 +146,7 @@ checked-refresh-update() {
   echo ">> Diff:"
   echo
   git --no-pager diff --stat HEAD -- "$@"
-  
+
   # echo
   # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
   #   # Display difference between head and updated files
@@ -175,10 +175,10 @@ checked-refresh-update() {
   fi
 }
 
-push-interactive() { 
+push-interactive() {
   local TO_PUSH=$( stg series -U -P | gum choose --no-limit )
   if [[ -z $TO_PUSH ]]; then
-    return 
+    return
   fi
 
   echo "Selected:"
@@ -197,12 +197,13 @@ push-set() {
 
   __assert_stg_enabled "push-set"
 
-  local SEARCH_PATTERN=$1
-
   local ALL="# ALL #"
   local DONE="# DONE #"
 
-  local FILTERED_SERIES=$(stg series -da | grep "^$SEARCH_PATTERN")
+  local FILTERED_SERIES=$(stg series -da)
+  if [[ 0 -eq "$(printf "%s" "$FILTERED_SERIES" | wc -l)" ]]; then
+    __die "push-set: no patches"
+  fi
 
   local SELECT
   SELECT=$(set -e -o pipefail;
@@ -221,31 +222,31 @@ push-set() {
   fi
 
   local TOAPPLY=$(
-    for PATCH in $TOAPPLY_RAW; do 
+    for PATCH in $TOAPPLY_RAW; do
       echo "$PATCH" | awk '{print $2}'
     done
   )
 
-  echo ">> APPLYING:"
-  echo ">> --------"
-  echo "$TOAPPLY"
-  echo ">> --------"
-
-  local STG_PUSH_CMD=( stg push --noapply $(echo $TOAPPLY) )
-  ( set -x; : "$STG_PUSH_CMD[@]" ) 2>&1
-
+  echo ">> Will Appply:"
   echo
-  if ! ( read -q 'choice?$$ Confirm? ' ); then
-    echo
+  echo "$TOAPPLY"
+  echo
+  echo ">> ------------"
+
+  if gum confirm --default=No "Confirm Apply?"; then
+  else
     echo ">> [cancelled]"
     exit 120
   fi
 
+  local SELECT=""
+  if gum confirm --default=No "Also goto a certain patch? "; then
+    SELECT=$(echo $TOAPPLY | fzf --prompt 'goto:')
+  fi
 
   local APPLIED_COUNT=$(stg series -A --count)
   # Only pop patches if there are patches to pop.
   if [[ $APPLIED_COUNT -ne 0 ]]; then
-    echo
     echo ">> [popping all patches...]"
     ( set -x; stg pop -a )
 
@@ -255,9 +256,9 @@ push-set() {
     fi
   fi
 
-  echo
-  echo ">> [applying...]"
+  echo ">> [applying $(echo $TOAPPLY)...]"
 
+  local STG_PUSH_CMD=( stg push --noapply $(echo $TOAPPLY) )
   local STG_PUSH
   STG_PUSH=$(set -e -o pipefail;
     ( set -x; "$STG_PUSH_CMD[@]" )
@@ -269,15 +270,9 @@ push-set() {
   if [[ $STG_PUSH != $DONE ]]; then
     return 100
   fi
-
-  echo
-  if ( read -q 'choice?$$ Also goto a certain patch? ' ); then
-    local SELECT=$(echo $TOAPPLY | fzf --prompt 'goto:')
-    if [[ -n $SELECT ]]; then
-        echo
-        echo ">> [going to $SELECT...]"
-        stg goto "$SELECT"
-    fi
+  if [[ -n $SELECT ]]; then
+      echo ">> [going to $SELECT...]"
+      ( set -x; stg goto "$SELECT" )
   fi
 }
 
@@ -422,7 +417,7 @@ patches-by-file() {
     if ( print "$diff_file" | grep -q "$search" ); then
       print "$diff_file"
       local patches=("${(@f)$(git run stg patches "$diff_file")}")
-      for patch in "${patches[@]}"; do 
+      for patch in "${patches[@]}"; do
         stg series -d "$patch"
       done
       echo
@@ -430,7 +425,7 @@ patches-by-file() {
   done
 }
 
-new-patch() { 
+new-patch() {
   local PATCH_PREFIX=$1
   shift 1;
 

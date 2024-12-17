@@ -1,6 +1,6 @@
-
 .idea
 .vscode
+common/zsh/.config/zsh.xlink/local
 
 # Created by https://www.gitignore.io/api/zsh,vim
 # Edit at https://www.gitignore.io/?templates=zsh,vim

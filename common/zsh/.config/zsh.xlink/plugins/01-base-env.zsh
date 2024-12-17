@@ -4,6 +4,11 @@ if [[ ! -d $__zsh_cache_dir ]]; then
   mkdir -p "$__zsh_cache_dir"
 fi
 
+# Append extra paths
+for _path in "${ZSH_PATH_APPEND[@]}"; do
+  export PATH="$PATH:$_path"
+done
+
 #-------------------------------------------------------------------------------
 # Common Extra User Paths
 #
