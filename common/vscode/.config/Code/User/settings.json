@@ -33,7 +33,7 @@
     "workbench.list.keyboardNavigation": "filter",
 
     "workbench.iconTheme": "vscode-icons",
-    "workbench.colorTheme": "Atom One Dark",
+    "workbench.colorTheme": "Copilot Theme",
 
     "workbench.colorCustomizations": {
         // "[Atom One Dark]": {
@@ -152,5 +152,12 @@
     "notebook.lineNumbers": "on",
     "notebook.output.textLineLimit": 50,
     "editor.inlineSuggest.enabled": true,
-    "terminal.integrated.copyOnSelection": true
+    "terminal.integrated.copyOnSelection": true,
+    "cmake.pinnedCommands": [
+        "workbench.action.tasks.configureTaskRunner",
+        "workbench.action.tasks.runTask"
+    ],
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
 }

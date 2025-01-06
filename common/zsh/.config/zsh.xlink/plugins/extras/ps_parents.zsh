@@ -3,10 +3,12 @@ if [[ "$OSTYPE" == linux* ]]; then
       local current_pid=$$
       local parent_pid
 
+      echo "$current_pid"
+
       # Loop to traverse up the process tree
-      while [ "$current_pid" -ne 1 ]; do
+      while [ "$current_pid" -gt 1 ] && [ -n "$current_pid" ]; do
           # Get the parent PID and the command of the current PID
-          read parent_pid cmd < <(ps -o ppid=,cmd= -p $current_pid)
+          read parent_pid cmd < <(ps -o ppid=,cmd= -p "$current_pid")
 
           # Print current PID and command
           echo "$current_pid | $cmd"
@@ -25,9 +27,9 @@ elif [[ $OSTYPE == darwin* ]]; then
       local parent_pid
 
       # Loop to traverse up the process tree
-      while [ "$current_pid" -ne 1 ]; do
+      while [ "$current_pid" -gt 1 ] && [ -n "$current_pid" ]; do
           # Get the parent PID and the command of the current PID
-          read parent_pid cmd < <(ps -p $current_pid -o ppid= -o command=)
+          read parent_pid cmd < <(ps -p "$current_pid" -o ppid= -o command=)
 
           # Print current PID and command
           echo "$current_pid | $cmd"

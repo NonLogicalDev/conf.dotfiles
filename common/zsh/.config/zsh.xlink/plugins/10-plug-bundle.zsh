@@ -1,6 +1,6 @@
 ZSH_PLUGIN_DIR=$HOME/.config/zsh/plugins
 
-declare -a __ZSH_ANTIBODY_PLUGINS=(
+declare -ga __ZSH_ANTIBODY_PLUGINS=(
   "mafredri/zsh-async"
 
   "zsh-users/zsh-completions"
@@ -9,11 +9,13 @@ declare -a __ZSH_ANTIBODY_PLUGINS=(
 
   "hlissner/zsh-autopair"
 )
+
 if (( $+commands[nix] )); then
   __ZSH_ANTIBODY_PLUGINS+=(
     "nix-community/nix-zsh-completions.git"
   )
 fi
+
 if (( $+commands[kubectl] )); then
   __ZSH_ANTIBODY_PLUGINS+=(
     "nnao45/zsh-kubectl-completion"
@@ -27,13 +29,19 @@ fi
 if (( $+commands[antibody] )); then
   __plug.set antibody "v:$(antibody --version 2>&1 | awk '{print $NF}')"
 
-  local _ANTIBODY_PLUGIN_LIST="$ZSH_CACHE_DIR/antibody.plugins.txt"
-  local _ANTIBODY_PLUGIN_INIT="$ZSH_CACHE_DIR/antibody.plugins.zsh"
+  _ANTIBODY_PLUGIN_LIST="$ZSH_CACHE_DIR/antibody.plugins.txt"
+  _ANTIBODY_PLUGIN_INIT="$ZSH_CACHE_DIR/antibody.plugins.zsh"
 
   antibody-compile() {
-    echo "COMPILING: $_ANTIBODY_PLUGIN_INIT"
-    echo ${(j:\n:)__ZSH_ANTIBODY_PLUGINS} > "$_ANTIBODY_PLUGIN_LIST"
-    antibody bundle < "$_ANTIBODY_PLUGIN_LIST" > "$_ANTIBODY_PLUGIN_INIT"
+    echo "Plugins:"
+    echo "${(j:\n:)__ZSH_ANTIBODY_PLUGINS}" | sed 's/^/ * /g'
+
+    echo "COMPILING:" 
+    echo " * $_ANTIBODY_PLUGIN_LIST -> $_ANTIBODY_PLUGIN_INIT"
+    echo "${(j:\n:)__ZSH_ANTIBODY_PLUGINS}" > "$_ANTIBODY_PLUGIN_LIST"
+    ( set -x; antibody bundle < "$_ANTIBODY_PLUGIN_LIST" > "$_ANTIBODY_PLUGIN_INIT" )
+
+    echo "DONE"
   }
   if [[ ! -f $_ANTIBODY_PLUGIN_INIT ]]; then
     antibody-compile
@@ -210,4 +218,12 @@ if (( $+commands[homebrew] )); then
   __plug.set config/neovim "loaded"
   export TERM_ITALICS='true'
   export NVIM_TUI_ENABLE_TRUE_COLOR=1
+fi
+
+#=======================================
+# DistroPrompt:
+#=======================================
+if [[ -f "$ZSH_PLUGIN_DIR/extras/distro-icon.zsh" ]]; then
+  __plug.set extra/distroprompt "loaded"
+  source "$ZSH_PLUGIN_DIR/extras/distro-icon.zsh"
 fi

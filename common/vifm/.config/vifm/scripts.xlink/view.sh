@@ -31,16 +31,16 @@ guess_file() {
 	esac
 	case "$1" in
 		*.zip)
-			echo "zip"
+			echo "zip"; return
 			;;
 		*.tar)
-			echo "tar"
+			echo "tar"; return
 			;;
 		*.tar.gz)
-			echo "tar_gz"
+			echo "tar_gz"; return
 			;;
 		*)
-			echo "generic"
+			echo "generic"; return
 	esac
 }
 
