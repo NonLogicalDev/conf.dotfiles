@@ -15,6 +15,8 @@
 
     "ignore" : [
       "*/.DS_Store",
+      "*/.vscode",
+      "*/.vscode/*",
       "*/*.bak",
       "*/.gitkeep",
       "*/.idea/*",
