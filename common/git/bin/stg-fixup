@@ -5,64 +5,70 @@
 #  - stg
 #  - jq
 
-# Stacked git records metadata in two commits:
-#
-# 1. Octopus commit that is a "merge" commit that has parent links to:
-#   * ^1 Simple Parent commit (this one has stack.json modifications)
-#   * ^2 Previous octopus commit
-#   * ^3 The associated commit on the branch (if this stack modifies the tree or commit metadata)
-#
-# $ STG_STACK_OCT=$(git rev-parse "stacks/$STG_STACK_REF")
-#
-# 2. Simple commit that contains the changes to the stack.json and patch files.
-#
-# $ STG_STACK_DAT=$(git rev-parse "$STG_STACK_OCTOPUS^1")
+#@ Stacked git records metadata in two commits:
+#@
+#@ 1. Octopus commit that is a "merge" commit that has parent links to:
+#@   * ^1 Simple Parent commit (this one has stack.json modifications)
+#@   * ^2 Previous octopus commit
+#@   * ^3 The associated commit on the branch (if this stack modifies the tree or commit metadata)
+#@
+#@ $ STG_STACK_OCT=$(git rev-parse "stacks/$STG_STACK_REF")
+#@
+#@ 2. Simple commit that contains the changes to the stack.json and patch files.
+#@
+#@ $ STG_STACK_DAT=$(git rev-parse "$STG_STACK_OCTOPUS^1")
 
-# ------------------------------------------------------------------------------
-# COMMANDS
-# ------------------------------------------------------------------------------
+#@
+#@ COMMANDS
+#@ ------------------------------------------------------------------------------
+#@
 
-# __stg_fixup_rewind: (`stg-fixup rewind`)
-#
-#   syncs the stacked git metadata to current head:
-#     * by marking all patches as unapplied
-#     * and changing the head to current HEAD
-
-#   This is the easiest fastest, and least destructive way to repair a broken stack
-#   if you are not immediately sure what went wrong, and would rather get yourself to
-#   a clean state as soon as possible.
-#
-#   The result of this operation is that all of patches are marked unapplied
-#   while commits that are backing the patches are left in the branch unmodified.
-#
-#   So in essense you are left in a similar state comparable to running `stg pop -a && stg pull`
-#   if the updates from upstream already include your merged patches.
-#
-#   NOTE:
-#     * no modifications are applied to the branch
-#     * the only modifications that are done are done to stack metadata
-#
-#   EXAMPLE:
-#
-#   (assmuing stack):
-#    S SHA   MSG     PATCH
-#      ffff0 base    N/A (plain git commit)
-#    + ffff1 commit1 (patch1)
-#    > ffff2 commit2 (patch2) (stg head)
-#    - ffff3 commit3 (patch3)
-#
-#   (after `stg-fixup rewind`)
-#    S SHA   MSG     PATCH
-#      ffff0 base    N/A (plain git commit)
-#      ffff1 commit1 N/A (plain git commit)
-#      ffff2 commit2 N/A (plain git commit) (stg head)
-#
-#    - ffff1 commit1 (patch1)
-#    - ffff2 commit2 (patch2)
-#    - ffff3 commit3 (patch3)
-#
+#@ $ stg-fixup rewind
+#@
+#@   syncs the stacked git metadata to current head:
+#@     * by marking all patches as unapplied
+#@     * and changing the head to current HEAD
+#@
+#@   This is the easiest fastest, and least destructive way to repair a broken stack
+#@   if you are not immediately sure what went wrong, and would rather get yourself to
+#@   a clean state as soon as possible.
+#@
+#@   The result of this operation is that all of patches are marked unapplied
+#@   while commits that are backing the patches are left in the branch unmodified.
+#@
+#@   So in essense you are left in a similar state comparable to running `stg pop -a && stg pull`
+#@   if the updates from upstream already include your merged patches.
+#@
+#@   NOTE:
+#@     * no modifications are applied to the branch
+#@     * the only modifications that are done are done to stack metadata
+#@
+#@   EXAMPLE:
+#@
+#@   (assmuing stack):
+#@    S SHA   MSG     PATCH
+#@      ffff0 base    N/A (plain git commit)
+#@    + ffff1 commit1 (patch1)
+#@    > ffff2 commit2 (patch2) (stg head)
+#@    - ffff3 commit3 (patch3)
+#@
+#@   (after `stg-fixup rewind`)
+#@    S SHA   MSG     PATCH
+#@      ffff0 base    N/A (plain git commit)
+#@      ffff1 commit1 N/A (plain git commit)
+#@      ffff2 commit2 N/A (plain git commit) (stg head)
+#@
+#@    - ffff1 commit1 (patch1)
+#@    - ffff2 commit2 (patch2)
+#@    - ffff3 commit3 (patch3)
+#@
 __CMD_stg_fixup_rewind() {
   ( # set -x;
+    if ! ( stg top 2>/dev/null >/dev/null ); then
+      echo "error: no applied patched detected, nothing to fix (stg top)"
+      return
+    fi
+
     # Create a temporary file that will hold temporary git index.
     # This will make it much simpler to update files in the git tree.
     # Alternative purer would require fiddling with recursively rebuilding the tree with `git ls-tree` and `git mktree`.
@@ -127,38 +133,43 @@ cat <<EOS | stg edit -f -
 EOS
 }
 
-# __CMD_stg_fixup_top: (`stg-fixup top`)
-#
-#   fixes the top most applied patch to be in sync with current HEAD
-#     (only works if previous patch is on the stack)
-#
-#   This is the quickest option to fixup stack metadata if you accidentally
-#   modified top most commit with `git amend` or something else.
-#
-#   NOTE:
-#     * no modifications are applied to the branch
-#     * the only modifications that are done are done to stack metadata
-#
-#   EXAMPLE:
-
-#   `ACTUAL` column stands for actual SHA if different from one known to stacked git.
-#
-#   (assmuing stack):
-#    S SHA   ACTUAL MSG     PATCH
-#      ffff0        base    N/A (plain git commit)
-#    + ffff1        commit1 (patch1)
-#    > ffff2 ffff5  commit2 (patch2) (stg head) 'after amend'
-#    - ffff3        commit3 (patch3)
-#
-#   (after `stg-fixup top`)
-#    S SHA   ACTUAL MSG     PATCH
-#      ffff0        base    N/A (plain git commit)
-#    + ffff1        commit1 (patch1)
-#    > ffff5        commit2 (patch2) (stg head)
-#    - ffff3        commit3 (patch3)
-#
+#@ $ stg-fixup top
+#@
+#@   fixes the top most applied patch to be in sync with current HEAD
+#@     (only works if previous patch is on the stack)
+#@
+#@   This is the quickest option to fixup stack metadata if you accidentally
+#@   modified top most commit with `git amend` or something else.
+#@
+#@   NOTE:
+#@     * no modifications are applied to the branch
+#@     * the only modifications that are done are done to stack metadata
+#@
+#@   EXAMPLE:
+#@
+#@   `ACTUAL` column stands for actual SHA if different from one known to stacked git.
+#@
+#@   (assmuing stack):
+#@    S SHA   ACTUAL MSG     PATCH
+#@      ffff0        base    N/A (plain git commit)
+#@    + ffff1        commit1 (patch1)
+#@    > ffff2 ffff5  commit2 (patch2) (stg head) 'after amend'
+#@    - ffff3        commit3 (patch3)
+#@
+#@   (after `stg-fixup top`)
+#@    S SHA   ACTUAL MSG     PATCH
+#@      ffff0        base    N/A (plain git commit)
+#@    + ffff1        commit1 (patch1)
+#@    > ffff5        commit2 (patch2) (stg head)
+#@    - ffff3        commit3 (patch3)
+#@
 __CMD_stg_fixup_top() {
   ( # set -x;
+    if ! ( stg top 2>/dev/null >/dev/null ); then
+      echo "error: no applied patched detected, nothing to fix (stg top)"
+      return
+    fi
+
     # Create a temporary file that will hold temporary git index.
     # This will make it much simpler to update files in the git tree.
     # Alternative purer would require fiddling with recursively rebuilding the tree with `git ls-tree` and `git mktree`.
@@ -295,6 +306,9 @@ __stg_stack_file() {
 '
 }
 
+#@ __stg_stack_info: (`__stg_stack_info $GIT_BRANCH`)
+#@
+#@   returns metadata about the stack for the given branch
 __stg_stack_info() {
   local GIT_BRANCH=$1
 
@@ -333,6 +347,10 @@ __stg_stack_info() {
 # MAIN
 # ------------------------------------------------------------------------------
 
+__CMD_help() {
+  grep "^#@" <"$0" | sed 's/^#@//'
+}
+
 case $1 in
   info )
     __stg_stack_info $(__git_current_branch) | jq .
@@ -346,8 +364,11 @@ case $1 in
   align )
     __CMD_stg_fixup_align "$@"
     ;;
+  help|-h|--help )
+    __CMD_help
+    ;;
   * )
-    echo "available commands [ info, top, rewind ]"
+    echo "available commands [ info, top, rewind, help ]"
     ;;
 esac
 # ------------------------------------------------------------------------------
