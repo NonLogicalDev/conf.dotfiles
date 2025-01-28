@@ -1,9 +1,14 @@
 #!/bin/bash
 
-# DEPENDENCIES:
-#  - git
-#  - stg
-#  - jq
+#@ DEPENDENCIES:
+#@  - git
+#@  - stg
+#@  - jq
+
+#@
+#@ Overview
+#@ ------------------------------------------------------------------------------
+#@
 
 #@ Stacked git records metadata in two commits:
 #@
