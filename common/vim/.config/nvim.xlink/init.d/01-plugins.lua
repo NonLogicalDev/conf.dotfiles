@@ -2,7 +2,27 @@
 -- [[ Set up nvim-cmp. ]]
 --
 
+require('nvim-treesitter.configs').setup({
+  ensure_installed = { "lua", "python", "javascript", "go", "rust" },
+  highlight = { enable = true },
+})
+
 local cmp = require('cmp')
+local lspconfig = require("lspconfig")
+
+local mason = require("mason")
+local mason_lspconfig = require("mason-lspconfig")
+
+mason.setup()
+mason_lspconfig.setup({
+  ensure_installed = { "pyright", "tsserver", "gopls", "rust_analyzer" },
+})
+
+mason_lspconfig.setup_handlers({
+  function(server_name)
+    lspconfig[server_name].setup({})
+  end,
+})
 
 cmp.setup({
   snippet = {
@@ -72,7 +92,7 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities()
 -- * https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#gopls 
 --
 -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-require('lspconfig')['gopls'].setup {
+lspconfig['gopls'].setup {
   capabilities = capabilities
 }
 

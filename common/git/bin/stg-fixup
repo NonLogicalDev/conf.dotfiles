@@ -81,6 +81,11 @@ __CMD_stg_fixup_rewind() {
     export GIT_INDEX_FILE="$TMP_GIT_INDEX"
 
     local STG_STACK_INFO=$(__stg_stack_info $(__git_current_branch))
+    if [[ -z $STG_STACK_INFO ]]; then
+      echo "error: no stack metadata found for the current branch"
+      exit 1
+    fi
+
     local STG_STACK_REF=$(__json_get "$STG_STACK_INFO" .stg_stack_ref)
 
     git read-tree "$(__json_get "$STG_STACK_INFO" .stg_stack_dat_ref)^{tree}"
@@ -184,6 +189,12 @@ __CMD_stg_fixup_top() {
     local GIT_TOP_SHA=$(__git_deref HEAD)
 
     local STG_STACK_INFO=$(__stg_stack_info $(__git_current_branch))
+    if [[ -z $STG_STACK_INFO ]]; then
+      echo "error: no stack metadata found for the current branch"
+      exit 1
+    fi
+
+
     local STG_STACK_REF=$(__json_get "$STG_STACK_INFO" .stg_stack_ref)
 
     local STG_TOP_PATCH=$(__json_get "$STG_STACK_INFO" .stg_top_patch)
@@ -255,7 +266,7 @@ __git_current_branch() {
 }
 
 __git_deref() {
-  git rev-parse $1
+  git rev-parse $1 2>/dev/null
 }
 
 __git_hash() {
@@ -299,10 +310,15 @@ __stg_stack_file() {
 
   local STG_STACK_REF=$(__stg_stack_ref "$GIT_BRANCH")
   local STG_STACK_JSON=$STG_STACK_REF:stack.json
+  local STG_STACK_FILE_JSON=$(git cat-file -p "$STG_STACK_JSON" 2>/dev/null)
+
+  if [[ -z $STG_STACK_FILE_JSON ]]; then
+    exit 1
+  fi
 
   jq -nc \
     --arg ref "$STG_STACK_JSON" \
-    --argjson data "$(git cat-file -p "$STG_STACK_JSON")" \
+    --argjson data "$STG_STACK_FILE_JSON" \
 '
   {
     ref: $ref,
@@ -315,37 +331,45 @@ __stg_stack_file() {
 #@
 #@   returns metadata about the stack for the given branch
 __stg_stack_info() {
-  local GIT_BRANCH=$1
+  ( #set -x;
+    local GIT_BRANCH=$1
 
-  local STG_STACK_REF=$(__stg_stack_ref "$GIT_BRANCH")
-  local STG_STACK_OCT_REF=$(__git_deref "$STG_STACK_REF")
-  local STG_STACK_DAT_REF=$(__git_deref "$STG_STACK_REF^1")
-  local STG_STACK_JSON=$STG_STACK_REF:stack.json
+    local STG_STACK_REF=$(__stg_stack_ref "$GIT_BRANCH")
+    local STG_STACK_OCT_REF=$(__git_deref "$STG_STACK_REF")
+    local STG_STACK_DAT_REF=$(__git_deref "$STG_STACK_REF^1")
+    local STG_STACK_JSON=$STG_STACK_REF:stack.json
 
-  local STG_TOP_PATCH=$(stg top 2>/dev/null)
-  local GIT_TOP_SHA=$(git rev-parse HEAD)
+    local STG_TOP_PATCH=$(stg top 2>/dev/null)
+    local GIT_TOP_SHA=$(git rev-parse HEAD)
+    local STG_STACK_FILE_JSON=$(__stg_stack_file "$GIT_BRANCH")
 
-  jq -nc \
-    --arg git_branch "$GIT_BRANCH" \
-    --arg git_top_sha "$GIT_TOP_SHA" \
-    --arg stg_stack_ref "$STG_STACK_REF" \
-    --arg stg_stack_oct_ref "$STG_STACK_OCT_REF" \
-    --arg stg_stack_dat_ref "$STG_STACK_DAT_REF" \
-    --argjson stg_stack "$(__stg_stack_file "$GIT_BRANCH")" \
-    --arg stg_top_patch "$STG_TOP_PATCH" \
-'
-{
-  git_branch: $git_branch,
+    if [[ -z $STG_STACK_FILE_JSON ]]; then
+      exit 1
+    fi
 
-  git_top_sha: $git_top_sha,
-  stg_top_patch: $stg_top_patch,
+    jq -nc \
+      --arg git_branch "$GIT_BRANCH" \
+      --arg git_top_sha "$GIT_TOP_SHA" \
+      --arg stg_stack_ref "$STG_STACK_REF" \
+      --arg stg_stack_oct_ref "$STG_STACK_OCT_REF" \
+      --arg stg_stack_dat_ref "$STG_STACK_DAT_REF" \
+      --argjson stg_stack "$STG_STACK_FILE_JSON" \
+      --arg stg_top_patch "$STG_TOP_PATCH" \
+  '
+  {
+    git_branch: $git_branch,
 
-  stg_stack_ref: $stg_stack_ref,
-  stg_stack_oct_ref: $stg_stack_oct_ref,
-  stg_stack_dat_ref: $stg_stack_dat_ref,
-  stg_stack: $stg_stack,
-}
-'
+    git_top_sha: $git_top_sha,
+    stg_top_patch: $stg_top_patch,
+
+    stg_stack_ref: $stg_stack_ref,
+    stg_stack_oct_ref: $stg_stack_oct_ref,
+    stg_stack_dat_ref: $stg_stack_dat_ref,
+    stg_stack: $stg_stack,
+  }
+  '
+
+  )
 }
 
 # ------------------------------------------------------------------------------

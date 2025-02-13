@@ -70,7 +70,7 @@ endif
 " }}}
 " Language Definitions: {{{
 
-" Plug 'sheerun/vim-polyglot' " One pack to rule them all and in the darkness bind them.
+Plug 'sheerun/vim-polyglot' " One pack to rule them all and in the darkness bind them.
 
 Plug 'lepture/vim-jinja', { 'for': 'jinja' }
 
@@ -143,10 +143,12 @@ if (!(version < 704) && (has("python") || has("python3")) )
   Plug 'honza/vim-snippets'
 endif
 
-if (has('nvim') && 0)
+if (has('nvim'))
   " Language Server Support (requires up-to-date NeoVim to work)
   " (!See LUA Config Section for Configuration Details, this does not work out of the box!)
   Plug 'neovim/nvim-lspconfig', { 'branch': 'master' }
+  Plug 'williamboman/mason.nvim'
+  Plug 'williamboman/mason-lspconfig.nvim'
 
   " NeoVim Completion Plugin (this is what actually shows Language Server completions in UI)
   Plug 'hrsh7th/nvim-cmp', { 'branch': 'main' }
@@ -161,6 +163,9 @@ if (has('nvim') && 0)
 
   " LSP Ultisnips Integration
   Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+  
+  " Syntax highlighting
+  Plug 'nvim-treesitter/nvim-treesitter'
 
   " Old Deoplete Completer (does not require JS):
   " Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
@@ -178,12 +183,11 @@ call s:PlugInitEnd()
 " NeoVim LUA Plugin Configuration: {{{
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if (has("nvim") && 0)
+if (has("nvim"))
   execute 'source' g:VimConfig("init.d/01-plugins.lua")
 endif
 
 " }}}
-
 " Plugin Confuguration: {{{
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Theme: GruvBox: {{{
