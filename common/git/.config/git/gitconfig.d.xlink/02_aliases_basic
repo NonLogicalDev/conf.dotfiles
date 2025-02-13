@@ -5,6 +5,7 @@
   # [Basics]
   ################################################################################
 
+  s  = show
   b  = branch
   co = checkout
   sw = switch
@@ -12,11 +13,12 @@
   # [Logging]
   ################################################################################
 
+  l    = !git log -n 10 --first-parent --pretty=nice-cons $(git upstream)..HEAD
   lg   = log -n 10 --first-parent --pretty=nice
   lgr  = lg --reverse
   lgf  = log -n 10 --first-parent --pretty=nice-sep --name-status
   lgg  = log -n 10 --graph --pretty=nice-cons
-  lgt  = !git lg --pretty=nice-cols --color | column -xt -s "::"
+  lgt  = !git lg --pretty=nice-cols --color | column -t -s "::"
   lgu  = !git lg -n 100 $(git upstream)..HEAD
   lguu = !git lg -n 100 HEAD..$(git upstream)
 
@@ -87,7 +89,7 @@
 
   # dir -- Returns the location of the git dir (worktree's index dir)
   dir-git = rev-parse --git-dir
-  
+
   # dir -- Returns the location of the git dir (database dir)
   dir-db = rev-parse --git-common-dir
 
@@ -121,7 +123,7 @@
   addu = !git-utils git-checked-add-update
   browse = !git-utils git-browse
   review = !frk
-  
+
   # [Extended :: Phabricator]
   ################################################################################
 

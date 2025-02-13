@@ -3,9 +3,10 @@
   rfs   = !stg refresh --spill
   spill = !stg refresh --spill
 
-  l   = !stg series -d --short=10
-  e   = !stg edit
-  ed  = !stg edit --save-template -
+  l  = !stg series -d --short=5
+  s  = !env GIT_PAGER=cat stg show
+  e  = !stg edit
+  ed = !stg edit --diff
 
   ls  = !stg series --noprefix
   lg  = !stg series -d
@@ -21,13 +22,19 @@
   # [Extended :: Custom Git Utils]
   ################################################################################
 
-  r     = !stg-utils checked-refresh-update
+  t     = !stg-utils patch-info
 
+  pn    = !stg-utils patch-new
+  pi    = !stg-utils push-interactive
+
+  r     = !stg-utils checked-refresh-update
   rfi   = !stg-utils checked-refresh-index
   rfu   = !stg-utils checked-refresh-update
   check = !stg-utils check-index
   spilli = !stg-utils spill-interactive
 
+
+  replace = !stg pop -a && stg push
   pushm = !stg-utils push-set
   mpush = !stg-utils push-set
 

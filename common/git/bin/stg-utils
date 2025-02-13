@@ -25,6 +25,145 @@ __die() {
 #                          Stacked Git Utils                          #
 #######################################################################
 
+patch-info() {
+  local PATCH=$1
+  if [[ -z $PATCH ]]; then
+    PATCH=$(stg top)
+  fi
+  if [[ -z $PATCH ]]; then
+    return 1
+  fi
+
+  local PATCH_SHA=$(stg id $PATCH)
+
+  echo "# [$PATCH_SHA]"
+  stg series -d "$PATCH"
+  echo "Stat:"
+  git --no-pager diff-tree --no-commit-id --stat-width=-1 --no-relative -r "$PATCH_SHA"
+}
+
+checked-refresh-index() {
+  #: checked-refresh-index [TARGET_PATCH]
+  #:   `stg refresh --index` but with diff preview and confirmation
+  #:
+  __assert_stg_enabled "checked-refresh-index"
+
+  TARGET_PATCH=$(stg top)
+  if [[ -n $1 ]]; then
+    TARGET_PATCH=$1
+  fi
+
+  __check-header "$TARGET_PATCH"
+  echo
+  echo ">> Diff:"
+  echo
+
+  git --no-pager diff --cached --stat
+  echo
+
+  if gum confirm --default=No "View Diff?"; then
+    # Display difference between head and updated files
+    git diff --cached -u --stat
+  fi
+
+  if gum confirm --default=No "Confirm Refresh?"; then
+    echo ">> [applying...]"
+    ( set -x; stg refresh --index -p $TARGET_PATCH; )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo ">> [cancelled]"
+  fi
+}
+
+checked-refresh-update() {
+  #: checked-refresh-update
+  #:   `stg refresh` but with diff preview and confirmation
+  #:
+  __assert_stg_enabled "checked-refresh-update"
+
+  local TARGET_PATCH=$(stg top)
+  __check-header "$TARGET_PATCH"
+
+  echo
+  echo ">> Diff:"
+  echo
+  git --no-pager diff --stat HEAD -- "$@"
+
+  if gum confirm --default=No "View Diff?"; then
+    # Display difference between head and updated files
+    git diff -u --stat HEAD -- "$@"
+  fi
+
+  if gum confirm --default=No "Confirm Refresh?"; then
+    echo ">> [applying...]"
+    ( set -x; stg refresh -- "$@" ; )
+    echo ">> Verifying Git Status:"
+    git status -s
+  else
+    echo ">> [cancelled]"
+  fi
+}
+
+patch-new() {
+  local PATCH_GROUP=$1
+  if [[ -z $PATCH_GROUP ]]; then
+    local CUR_VAL=$(stg top | awk -F@ '{print $1}')
+    PATCH_GROUP=$(gum input --placeholder "patch-group-name" --value="$CUR_VAL")
+  fi
+  if [[ -z $PATCH_GROUP ]]; then
+    return 1
+  fi
+  stg new "$(patch-gen-id "$PATCH_GROUP")" "$@"
+}
+
+patch-gen-id() {
+  local PATCH_NAME=$1
+  local PATCH_FULL_NAME=""
+
+  if [[ -z $PATCH_NAME ]]; then
+    return 1
+  fi
+
+  while true; do
+    PATCH_FULL_NAME="${PATCH_NAME}@$(__gen_id 4)"
+    if ! stg id "$PATCH_FULL_NAME" 2>/dev/null; then
+      break
+    fi
+  done
+  echo $PATCH_FULL_NAME
+}
+
+
+push-interactive() {
+  __assert_stg_enabled "push-interactive"
+
+  local NEW_STACK=$(stg series -d -U | gum choose --no-limit)
+  if [[ -z $NEW_STACK ]]; then
+    echo "(1) No Patches Selected: NOOP"
+    return
+  fi
+
+  local PATCH_SET=$(echo "$NEW_STACK" | awk '{print $2}')
+  if [[ -z $PATCH_SET ]]; then
+    echo "(2) No Patches Selected: NOOP"
+    return
+  fi
+
+  echo ">> Applying:"
+  echo "$PATCH_SET"
+  echo ""
+  if ! gum confirm --default=No "Confirm Apply?"; then
+    echo "(3) Cancelled Apply"
+  fi
+
+  local PATCH_SET_A=( $PATCH_SET )
+
+  stg push "${PATCH_SET_A[@]}" "$@"
+}
+
+#######################################################################
+
 log-patch-changes() {
   echo $1{~1,} | xargs -n1 sh -c 'git show $1:stack.json' -- | jq -s '.[0]?.patches as $a|.[1]?.patches as $b|reduce ($b|to_entries|.[]) as $be ($a; (.[$be.key] |= (.oid_new = $be.value.oid))) | with_entries(select(.value.oid != .value.oid_new))'
 }
@@ -41,154 +180,6 @@ new-patch-from-index() {
   stg new "$@" && checked-refresh-index
 }
 
-__check-header() {
-  local TARGET_PATCH=$1
-
-  local GIT_HEAD=$(git rev-parse --short $(stg id $TARGET_PATCH))
-  local STG_STACK_REF=$(stg log -n 1 | head -n 1 | awk '{print $1}')
-
-  echo ">> Applying diff to patch: $TARGET_PATCH"
-  echo "   (sha:$GIT_HEAD) (stg-stack:$STG_STACK_REF)"
-  git show -s "$GIT_HEAD" --format=%s | sed 's/^/   /'
-
-  echo
-  stg files "$TARGET_PATCH"
-}
-
-check-index() {
-  __assert_stg_enabled "check-index"
-
-  TARGET_PATCH=$(stg top)
-  if [[ -n $1 ]]; then
-    TARGET_PATCH=$1
-  fi
-
-  __check-header "$TARGET_PATCH"
-  echo
-
-  echo ">> Diff:"
-  echo
-  git --no-pager diff --cached --stat
-  echo
-
-  # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
-  #   # Display difference between head and updated files
-  #   git diff --cached -u --stat
-  # fi
-
-  if gum confirm --default=No "View Diff?"; then
-    # Display difference between head and updated files
-    git diff --cached -u --stat
-  fi
-}
-
-checked-refresh-index() {
-  #: checked-refresh-index [TARGET_PATCH]
-  #:   `stg refresh --index` but with diff preview and confirmation
-  #:
-
-  __assert_stg_enabled "checked-refresh-index"
-
-  TARGET_PATCH=$(stg top)
-  if [[ -n $1 ]]; then
-    TARGET_PATCH=$1
-  fi
-
-  __check-header "$TARGET_PATCH"
-  echo
-
-  echo ">> Diff:"
-  echo
-  git --no-pager diff --cached --stat
-  echo
-
-  # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
-  #   # Display difference between head and updated files
-  #   git diff --cached -u --stat
-  # fi
-
-  if gum confirm --default=No "View Diff?"; then
-    # Display difference between head and updated files
-    git diff --cached -u --stat
-  fi
-
-  # if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
-  #   echo ">> [applying...]"
-  #   ( set -x; stg refresh --index -p $TARGET_PATCH; )
-  #   echo ">> Verifying Git Status:"
-  #   git status -s
-  # else
-  #   echo ">> [cancelled]"
-  # fi
-
-  if gum confirm --default=No "Confirm Refresh?"; then
-    echo ">> [applying...]"
-    ( set -x; stg refresh --index -p $TARGET_PATCH; )
-    echo ">> Verifying Git Status:"
-    git status -s
-  else
-    echo ">> [cancelled]"
-  fi
-}
-
-checked-refresh-update() {
-  #: checked-refresh-update
-  #:   `stg refresh` but with diff preview and confirmation
-  #:
-
-  __assert_stg_enabled "checked-refresh-update"
-
-  local TARGET_PATCH=$(stg top)
-
-  __check-header "$TARGET_PATCH"
-  echo
-
-  echo ">> Diff:"
-  echo
-  git --no-pager diff --stat HEAD -- "$@"
-
-  # echo
-  # if ( read 'choice?$$ View Diff? ' && [[ $choice == (Y|y)* ]] ); then
-  #   # Display difference between head and updated files
-  #   git diff -u --stat HEAD -- "$@"
-  # fi
-  if gum confirm --default=No "View Diff?"; then
-    # Display difference between head and updated files
-    git diff -u --stat HEAD -- "$@"
-  fi
-
-  # if ( read 'choice?$$ Confirm? ' && [[ $choice == (Y|y)* ]] ); then
-  #   echo ">> [applying...]"
-  #   ( set -x; stg refresh -- "$@" ; )
-  #   echo ">> Verifying Git Status:"
-  #   git status -s
-  # else
-  #   echo ">> [cancelled]"
-  # fi
-  if gum confirm --default=No "Confirm Refresh?"; then
-    echo ">> [applying...]"
-    ( set -x; stg refresh -- "$@" ; )
-    echo ">> Verifying Git Status:"
-    git status -s
-  else
-    echo ">> [cancelled]"
-  fi
-}
-
-push-interactive() {
-  local TO_PUSH=$( stg series -U -P | gum choose --no-limit )
-  if [[ -z $TO_PUSH ]]; then
-    return
-  fi
-
-  echo "Selected:"
-  echo "$TO_PUSH"
-  if ! gum confirm --default=No ; then
-    return
-  fi
-
-  printf "%s" "$TO_PUSH" | xargs stg push -m
-}
 
 push-set() {
   #: push-set [GREP_EXPR]
@@ -444,143 +435,6 @@ stack-files() {
   git diff "$(stack-top)~1.." --name-status | cat
 }
 
-series-pretty() {
-  #: stg-series-pretty [-f] [-e] [-n] [<stg series options>]
-  #:   prints expanded information about the patches in the current stack
-  #:
-  #:   -n | --notes : show notes associated with git commit
-  #:   -e | --extra : show git sha, notes
-  #:   -f | --full  : show git sha, notes, commit msg & files affected
-  #:
-
-  local ARGS=()
-
-  local _full=0
-  local _extra=0
-  local _notes=0
-  local _help=0
-  local _filter_set=0
-  while [[ $# -gt 0 ]]; do
-    if [[ $1 == (--full|-f) ]]; then
-      _full=1
-      shift
-    elif [[ $1 == (--extra|-e) ]]; then
-      _extra=1
-      shift
-    elif [[ $1 == (--notes|-n) ]]; then
-      _notes=1
-      shift
-    elif [[ $1 == (--help|-h) ]]; then
-      _help=1
-      shift
-    elif [[ $1 == (-a|-A|-U|-H) ]]; then
-      _filter_set=1
-
-      ARGS+=($1)
-      shift
-    else
-      ARGS+=($1)
-      shift
-    fi
-  done
-
-  if [[ $_filter_set -eq 0 ]]; then
-    ARGS=(-A)
-  fi
-
-  if [[ _help -eq 1 ]]; then
-    stg series -h
-    exit $?
-  fi
-
-  while read line; do
-    if [[ $line == "" ]]; then
-      continue
-    fi
-
-    # ZSH-NOTE: ( ${(@f)$( command )} ) splits command output by newline, returns array. (zsh)
-    stg_fields=( "${(@f)$(
-      echo $line | jq -r '"\(.op)\n\(.patch)\n\(.subject)\n\(.patchCOL)"'
-    )}" )
-
-    stg_patch_status=${stg_fields[1]}
-    stg_patch_name=${stg_fields[2]}
-    stg_patch_description=${stg_fields[3]}
-    stg_patch_name_col=${stg_fields[4]}
-
-    git_sha=$(stg id "$stg_patch_name" | xargs git rev-parse --short)
-
-    COLOR=1
-    if [[ $stg_patch_status == "+" ]]; then
-      COLOR=2
-    elif [[ $stg_patch_status == ">" ]]; then
-      COLOR=3
-    fi
-
-    printf "%s" $(tput setaf $COLOR)
-    printf "%s %s" $stg_patch_status $stg_patch_name_col
-    printf "%s" $(tput sgr0)
-    printf " # %s" $stg_patch_description
-    printf "\n"
-
-    details=$(
-      if [[ $_full -eq 1 || $_extra -eq 1 ]]; then
-        printf "%s" "$(tput setaf 5)"
-        printf "git-sha "
-        printf "%s" "$(tput setaf 4)"
-        printf "%s" $git_sha
-        printf "%s" "$(tput sgr0)"
-        printf "\n\n"
-      fi
-
-      if [[ $_full -eq 1 ]]; then
-        git_commit_msg=$(
-          git show -s --format=%b "$git_sha" \
-            | fold -w 80 -s \
-            | perl -0pe 's:[\n\s]+$:\n:'
-        )
-
-        commit_prefix="$(tput setaf 1)#$(tput sgr0)"
-        if [[ -n $git_commit_msg ]]; then
-          echo "$git_commit_msg" \
-            | awk -v prefix="$commit_prefix" '{print prefix " " $0}'
-        else
-          echo "$commit_prefix [ No Commit Summary ]"
-        fi
-        echo
-      fi
-
-      if [[ $_full -eq 1 || $_notes -eq 1 || $_extra -eq 1 ]]; then
-        git_notes=$(
-          git notes show "$git_sha" 2>/dev/null
-        )
-        if [[ -n $git_notes ]]; then
-          echo "$git_notes" \
-            | perl -pe "s:^\\s*([^\s]+)\\s+(.*):$(tput setaf 4)\\1$(tput sgr0) \\2:" \
-            | column -tx -s " "
-          echo
-        fi
-      fi
-
-      if [[ $_full -eq 1 ]]; then
-        git show --name-status --format= "$git_sha" \
-          | perl -pe "s:^(\\s*\\w+)(.*):$(tput setaf 2)\\1$(tput setaf 4)\\2$(tput sgr0):"
-      fi
-    )
-
-    if [[ -n "$details" ]]; then
-      result=$(
-          printf "%s" "$details"
-          printf "\n \n"
-      )
-      echo "$result" | sed 's:^:    :'
-    fi
-  done << EOF
-$(__series_json "${ARGS[@]}")
-EOF
-}
-
-
 #######################################################################
 # Helpers
 #######################################################################
@@ -608,6 +462,20 @@ stack-bottom() {
 #######################################################################
 # Internal
 #######################################################################
+
+__check-header() {
+  local TARGET_PATCH=$1
+
+  local GIT_HEAD=$(git rev-parse --short $(stg id $TARGET_PATCH))
+  local STG_STACK_REF=$(stg log -n 1 | head -n 1 | awk '{print $1}')
+
+  echo ">> Applying diff to patch: $TARGET_PATCH"
+  echo "   (sha:$GIT_HEAD) (stg-stack:$STG_STACK_REF)"
+  git show -s "$GIT_HEAD" --format=%s | sed 's/^/   /'
+
+  echo
+  stg files "$TARGET_PATCH"
+}
 
 __assert_stg_enabled() {
   # Check that STG is enabled
@@ -663,6 +531,11 @@ __series_json() {
     | capture("(?<op>(\\+|-))\\s+(?<patchCOL>[^#]+)\\s#\\s+(?<subject>.*)")
     | .patch = ( .patchCOL | gsub("\\s+";"") )
     '
+}
+
+__gen_id() {
+  local LEN=$1
+  cat /dev/urandom | tr -dc 'a-z0-9' | fold -w "$LEN" | head -n 1
 }
 
 #######################################################################
