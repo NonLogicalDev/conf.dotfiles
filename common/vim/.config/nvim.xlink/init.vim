@@ -511,7 +511,7 @@ set nolazyredraw
 try
   let g:lightline={'colorscheme': 'seoul256'}
   colorscheme bubblegum
-  set background=light
+  " set background=light
 catch /.*/
 endtry
 

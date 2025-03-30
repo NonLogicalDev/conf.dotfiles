@@ -535,7 +535,7 @@ __series_json() {
 
 __gen_id() {
   local LEN=$1
-  cat /dev/urandom | tr -dc 'a-z0-9' | fold -w "$LEN" | head -n 1
+  LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | tr -dc 'a-z0-9' | fold -w "$LEN" | head -n 1
 }
 
 #######################################################################
