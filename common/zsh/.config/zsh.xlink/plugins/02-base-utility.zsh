@@ -52,7 +52,7 @@ alias ln='lni'
 
 if (( $+commands[dircolors] )); then
   # GNU Core Utilities
-  alias ls="${aliases[ls]:-ls} --group-directories-first"
+  # alias ls="${aliases[ls]:-ls} --group-directories-first"
 
   # Call dircolors to define colors if they're missing
   if [[ -z "$LS_COLORS" ]]; then
