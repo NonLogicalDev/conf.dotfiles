@@ -85,7 +85,7 @@ fi
 # sharkdp/bat
 #=======================================
 if (( $+commands[bat] )); then
-  __plug.set zoxide "v:$(bat --version 2>&1 | awk '{print $NF}')"
+  __plug.set cat/bat "v:$(bat --version 2>&1 | awk '{print $NF}')"
   alias cat="bat -p --pager=never"
 fi
 
@@ -93,8 +93,12 @@ fi
 # ogham/exa
 #=======================================
 if (( $+commands[exa] )); then
-  __plug.set exa "v:$(exa --version 2>&1 | awk 'NR==2{print $0}')"
-  alias ls=exa
+  __plug.set ls/exa "v:$(exa --version 2>&1 | awk 'NR==2{print $0}')"
+  alias ls="exa --group-directories-first"
+fi
+if (( $+commands[eza] )); then
+  __plug.set ls/eza "v:$(eza --version 2>&1 | awk 'NR==2{print $0}')"
+  alias ls="eza --group-directories-first"
 fi
 
 #=======================================
