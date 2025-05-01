@@ -27,9 +27,13 @@
   pn    = !stg-utils patch-new
   pi    = !stg-utils push-interactive
 
-  r     = !stg-utils checked-refresh-update
-  rfi   = !stg-utils checked-refresh-index
-  rfu   = !stg-utils checked-refresh-update
+  rc    = refresh --checked
+  rci   = refresh --checked --index
+  rcu   = refresh --checked --update
+
+  # r     = !stg-utils checked-refresh-update
+  # rfi   = !stg-utils checked-refresh-index
+  # rfu   = !stg-utils checked-refresh-update
   check = !stg-utils check-index
   spilli = !stg-utils spill-interactive
 

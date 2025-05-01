@@ -174,6 +174,14 @@ if (( $+functions[__ps_parents] )); then
       export EDITOR="code --wait"
       export VISUAL="code --wait"
   fi
+  # Set up vscode as an editor if it exists in parent process chain.
+  if (__ps_parents $$ | grep -q cursor); then
+      __plug.set "editor/cursor" "enabled"
+
+      export GIT_EDITOR="cursor --wait"
+      export EDITOR="cursor --wait"
+      export VISUAL="cursor --wait"
+  fi
 fi
 
 #=======================================
