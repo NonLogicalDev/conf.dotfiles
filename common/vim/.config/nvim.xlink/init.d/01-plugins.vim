@@ -163,7 +163,7 @@ if (has('nvim'))
 
   " LSP Ultisnips Integration
   Plug 'quangnguyen30192/cmp-nvim-ultisnips'
-  
+
   " Syntax highlighting
   Plug 'nvim-treesitter/nvim-treesitter'
 

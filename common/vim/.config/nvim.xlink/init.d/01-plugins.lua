@@ -18,11 +18,11 @@ mason_lspconfig.setup({
   ensure_installed = { "pyright", "tsserver", "gopls", "rust_analyzer" },
 })
 
-mason_lspconfig.setup_handlers({
-  function(server_name)
-    lspconfig[server_name].setup({})
-  end,
-})
+-- mason_lspconfig.setup_handlers({
+--   function(server_name)
+--     lspconfig[server_name].setup({})
+--   end,
+-- })
 
 cmp.setup({
   snippet = {
@@ -89,7 +89,7 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 -- Refs:
 -- * https://github.com/hrsh7th/cmp-nvim-lsp
--- * https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#gopls 
+-- * https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#gopls
 --
 -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
 lspconfig['gopls'].setup {
@@ -138,22 +138,22 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 telescope_theme = require('telescope.themes')
 
-vim.keymap.set('n', 'fr', 
+vim.keymap.set('n', 'fr',
     function() require('telescope.builtin').lsp_references(telescope_theme.get_cursor()) end,
     { noremap = true, silent = true })
 
-vim.keymap.set('n', 'fd', 
+vim.keymap.set('n', 'fd',
     function() require('telescope.builtin').lsp_definitions(telescope_theme.get_cursor()) end,
     { noremap = true, silent = true })
-  
-vim.keymap.set('n', 'fj', 
+
+vim.keymap.set('n', 'fj',
     function() require('telescope.builtin').jumplist(telescope_theme.get_ivy()) end,
     { noremap = true, silent = true })
 
-vim.keymap.set('n', 'fb', 
+vim.keymap.set('n', 'fb',
     function() require('telescope.builtin').buffers(telescope_theme.get_ivy()) end,
     { noremap = true, silent = true })
 
-vim.keymap.set('n', 'fT', 
+vim.keymap.set('n', 'fT',
     function() require('telescope.builtin').builtin() end,
     { noremap = true, silent = true })
