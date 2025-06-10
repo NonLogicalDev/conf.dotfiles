@@ -61,6 +61,7 @@ keybind = global:ctrl+grave_accent=toggle_quick_terminal
 theme = Earthsong
 #background = 1b2330
 background-opacity = 0.95
+background-blur = 5
 
 #custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/bloom.glsl
 #custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/crt.glsl

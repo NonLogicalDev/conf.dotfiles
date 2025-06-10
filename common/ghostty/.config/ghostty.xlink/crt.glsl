@@ -20,22 +20,22 @@
 
 // How far apart the different colors are from each other
 // x \in R
-#define COLOR_FRINGING_SPREAD 0.5
+#define COLOR_FRINGING_SPREAD 0.4
 
 // How much the ghost images are spread out
 // x \in R : x >= 0
-#define GHOSTING_SPREAD 0.3
+#define GHOSTING_SPREAD 0.1
 // How visible ghost images are
 // x \in R : x >= 0
 #define GHOSTING_STRENGTH 0.1
 
 // How much of the non-linearly darkened colors are mixed in
 // [0, 1]
-#define DARKEN_MIX 0.4
+#define DARKEN_MIX 0.5
 
 // How far in the vignette spreads
 // x \in R : x >= 0
-#define VIGNETTE_SPREAD 0.2
+#define VIGNETTE_SPREAD 0.14
 // How bright the vignette is
 // x \in R : x >= 0
 #define VIGNETTE_BRIGHTNESS 6.4
@@ -47,10 +47,10 @@
 // How visible the scan line effect is
 // NOTE: Technically these are not scan lines, but rather the lack of them
 // [0, 1]
-#define SCAN_LINES_STRENGTH 1.0
+#define SCAN_LINES_STRENGTH 0.7
 // How bright the spaces between the lines are
 // [0, 1]
-#define SCAN_LINES_VARIANCE 1.0
+#define SCAN_LINES_VARIANCE 0.9
 // Pixels per scan line effect
 // x \in R : x > 0
 #define SCAN_LINES_PERIOD 4.0
@@ -87,7 +87,7 @@
 #define BLOOM_SPREAD 1.0
 // How visible the bloom is
 // [0, 1]
-#define BLOOM_STRENGTH 0.03
+#define BLOOM_STRENGTH 0.04
 
 // How fast colors fade in and out
 // [0, 1]
@@ -315,5 +315,5 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // NOTE: May need to be iTime/iTimeDelta dependent
     fragColor = vec4(FADE_FACTOR*fragColor.rgb, FADE_FACTOR);
 
-		fragColor.rgb = adjustBrightness(fragColor.rgb, 2.3);
+		fragColor.rgb = adjustContrast(adjustBrightness(fragColor.rgb, 2.3), 1.0);
 }
