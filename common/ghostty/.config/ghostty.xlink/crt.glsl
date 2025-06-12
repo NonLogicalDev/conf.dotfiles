@@ -87,7 +87,7 @@
 #define BLOOM_SPREAD 1.0
 // How visible the bloom is
 // [0, 1]
-#define BLOOM_STRENGTH 0.04
+#define BLOOM_STRENGTH 0.07
 
 // How fast colors fade in and out
 // [0, 1]

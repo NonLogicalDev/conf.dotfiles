@@ -53,17 +53,26 @@ selection-invert-fg-bg = true
 clipboard-read = ask
 
 term = xterm-256color
+
 alpha-blending = linear-corrected
 #window-colorspace = display-p3
 
-keybind = global:ctrl+grave_accent=toggle_quick_terminal
-#theme = BirdsOfParadise
 theme = Earthsong
+#theme = BirdsOfParadise
+
 #background = 1b2330
-background-opacity = 0.95
-background-blur = 5
+#background-opacity = 0.95
+#background-blur = 5
 
 #custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/bloom.glsl
 #custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/crt.glsl
 custom-shader = /Users/oleg.utkin/.config/ghostty/crt.glsl
 
+# Keyboard
+# ------------------------------------------------------------------------------
+
+# Ctrl + ` -> Quick Term Dropdown
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
+
+# Cmd + F -> Ctrl-A + [ + ?
+keybind = "command+f=text:\x01[?"
