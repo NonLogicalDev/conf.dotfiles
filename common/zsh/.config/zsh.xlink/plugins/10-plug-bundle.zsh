@@ -36,7 +36,7 @@ if (( $+commands[antibody] )); then
     echo "Plugins:"
     echo "${(j:\n:)__ZSH_ANTIBODY_PLUGINS}" | sed 's/^/ * /g'
 
-    echo "COMPILING:" 
+    echo "COMPILING:"
     echo " * $_ANTIBODY_PLUGIN_LIST -> $_ANTIBODY_PLUGIN_INIT"
     echo "${(j:\n:)__ZSH_ANTIBODY_PLUGINS}" > "$_ANTIBODY_PLUGIN_LIST"
     ( set -x; antibody bundle < "$_ANTIBODY_PLUGIN_LIST" > "$_ANTIBODY_PLUGIN_INIT" )
@@ -66,6 +66,14 @@ fi
 #=======================================
 if [[ -f "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh" ]]; then
   source "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh"
+fi
+
+
+#=======================================
+# PROMPT: microprompt
+#=======================================
+if [[ -f "$ZSH_PLUGIN_DIR/../themes/microprompt.zsh" ]]; then
+  source "$ZSH_PLUGIN_DIR/../themes/microprompt.zsh"
 fi
 
 #-------------------------------------------------------------------------------
@@ -200,12 +208,16 @@ if (( $__INFO_VSCODE_DETECTED == 1 )); then
   export GIT_EDITOR="code --wait"
   export EDITOR="code --wait"
   export VISUAL="code --wait"
+
+  microprompt_init
 elif (( $__INFO_CURSOR_DETECTED == 1 )); then
   __plug.set "editor/cursor" "enabled"
 
   export GIT_EDITOR="cursor --wait"
   export EDITOR="cursor --wait"
   export VISUAL="cursor --wait"
+
+  microprompt_init
 fi
 
 #=======================================
