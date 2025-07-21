@@ -61,14 +61,36 @@ if (( $+commands[antibody] )); then
   ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
 fi
 
+#=======================================
+# ps_parents (utils)
+#=======================================
+if [[ -f "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh" ]]; then
+  source "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh"
+fi
+
 #-------------------------------------------------------------------------------
 # External Plugin Configurations:
-#
+
+declare -g __INFO_WARP_DETECTED=0
+declare -g __INFO_VSCODE_DETECTED=0
+declare -g __INFO_CURSOR_DETECTED=0
+
+if (( $+functions[__ps_parents] )); then
+  if (__ps_parents $$ | grep -qi warp.app); then
+    __INFO_WARP_DETECTED=1
+  fi
+  if (__ps_parents $$ | grep -qi vscode); then
+    __INFO_VSCODE_DETECTED=1
+  fi
+  if (__ps_parents $$ | grep -qi cursor); then
+    __INFO_CURSOR_DETECTED=1
+  fi
+fi
 
 #=======================================
 # NonLogicalDev/shell.async-goprompt
 #=======================================
-if (( $+commands[goprompt] )); then
+if (( $+commands[goprompt] )) && (( $__INFO_WARP_DETECTED == 0 )); then
   __plug.set goprompt "v:?.?.?"
   eval "$(goprompt install zsh)"
 fi
@@ -164,24 +186,18 @@ fi
 # vscode integration
 #=======================================
 
-source "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh"
-if (( $+functions[__ps_parents] )); then
-  # Set up vscode as an editor if it exists in parent process chain.
-  if (__ps_parents $$ | grep -q vscode); then
-      __plug.set "editor/vscode" "enabled"
+if (( $__INFO_VSCODE_DETECTED == 1 )); then
+  __plug.set "editor/vscode" "enabled"
 
-      export GIT_EDITOR="code --wait"
-      export EDITOR="code --wait"
-      export VISUAL="code --wait"
-  fi
-  # Set up vscode as an editor if it exists in parent process chain.
-  if (__ps_parents $$ | grep -q cursor); then
-      __plug.set "editor/cursor" "enabled"
+  export GIT_EDITOR="code --wait"
+  export EDITOR="code --wait"
+  export VISUAL="code --wait"
+elif (( $__INFO_CURSOR_DETECTED == 1 )); then
+  __plug.set "editor/cursor" "enabled"
 
-      export GIT_EDITOR="cursor --wait"
-      export EDITOR="cursor --wait"
-      export VISUAL="cursor --wait"
-  fi
+  export GIT_EDITOR="cursor --wait"
+  export EDITOR="cursor --wait"
+  export VISUAL="cursor --wait"
 fi
 
 #=======================================

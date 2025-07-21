@@ -16,7 +16,7 @@
 // Settings:
 // How straight the terminal is in each axis
 // (x, y) \in R^2 : x, y > 0
-//#define CURVE 200.0, 200.0
+//#define CURVE 10.0, 15.0
 
 // How far apart the different colors are from each other
 // x \in R
@@ -31,11 +31,11 @@
 
 // How much of the non-linearly darkened colors are mixed in
 // [0, 1]
-#define DARKEN_MIX 0.5
+#define DARKEN_MIX 0.65
 
 // How far in the vignette spreads
 // x \in R : x >= 0
-#define VIGNETTE_SPREAD 0.14
+#define VIGNETTE_SPREAD 0.15
 // How bright the vignette is
 // x \in R : x >= 0
 #define VIGNETTE_BRIGHTNESS 6.4
@@ -53,7 +53,7 @@
 #define SCAN_LINES_VARIANCE 0.9
 // Pixels per scan line effect
 // x \in R : x > 0
-#define SCAN_LINES_PERIOD 4.0
+#define SCAN_LINES_PERIOD 2.0
 
 // How visible the aperture grille is
 // x \in R : x >= 0

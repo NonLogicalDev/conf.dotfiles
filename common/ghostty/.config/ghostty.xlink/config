@@ -42,11 +42,22 @@
 # # Just for example:
 # resize-overlay-duration = 4s 200ms
 
+################################################################################
+#custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/bloom.glsl
+#custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/crt.glsl
+#custom-shader = /Users/oleg.utkin/.config/ghostty/crt.glsl
+################################################################################
+
 font-family = Iosevka
+#adjust-cell-height = -6
+
+#font-family = Fixedsys Excelsior
+font-feature = -calt, -liga, -dlig
+font-size = 16
+font-synthetic-style = false
+
 cursor-style = block
 shell-integration-features = no-cursor
-adjust-cell-height = -6
-font-size = 16
 window-inherit-font-size = false
 selection-invert-fg-bg = true
 
@@ -54,7 +65,8 @@ clipboard-read = ask
 
 term = xterm-256color
 
-alpha-blending = linear-corrected
+#alpha-blending = linear-corrected
+alpha-blending = linear
 #window-colorspace = display-p3
 
 theme = Earthsong
@@ -64,15 +76,33 @@ theme = Earthsong
 #background-opacity = 0.95
 #background-blur = 5
 
-#custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/bloom.glsl
-#custom-shader = /Users/oleg.utkin/Install/ghostty-shaders/crt.glsl
-custom-shader = /Users/oleg.utkin/.config/ghostty/crt.glsl
-
 # Keyboard
 # ------------------------------------------------------------------------------
 
 # Ctrl + ` -> Quick Term Dropdown
 keybind = global:ctrl+grave_accent=toggle_quick_terminal
 
-# Cmd + F -> Ctrl-A + [ + ?
+keybind = "command+shift+r=reload_config"
+
+# (TMUX) Cmd + Shift + T -> Ctrl-A + C
+keybind = "command+shift+t=text:\x01c"
+
+
+# (TMUX) Cmd + Shift + [ -> Ctrl-A + p
+keybind = "command+shift+[=text:\x01p"
+
+# (TMUX) Cmd + Shift + [ -> Ctrl-A + n
+keybind = "command+shift+]=text:\x01n"
+
+# (TMUX) Cmd + Shift + [ -> Ctrl-A + <
+keybind = "command+shift+,=text:\x01<"
+
+# (TMUX) Cmd + Shift + [ -> Ctrl-A + >
+keybind = "command+shift+.=text:\x01>"
+
+# (TMUX) Cmd + F -> Ctrl-A + [ + ?
 keybind = "command+f=text:\x01[?"
+
+# Cmd + K -> CSI
+keybind = "command+k>1=text:\x01>"
+keybind = "command+k>2=text:\x01<"

@@ -9,6 +9,7 @@ set fillchars=vborder:'│'
 set viewcolumns=-{name},6{size},15{mtime}
 
 set vicmd=nvim
+set mouse=a
 
 " ------------------------------------------------------------------------------
 
