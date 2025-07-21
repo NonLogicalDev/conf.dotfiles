@@ -74,25 +74,33 @@ fi
 declare -g __INFO_WARP_DETECTED=0
 declare -g __INFO_VSCODE_DETECTED=0
 declare -g __INFO_CURSOR_DETECTED=0
+declare -g __INFO_DISABLE_PROMPT=0
 
 if (( $+functions[__ps_parents] )); then
   if (__ps_parents $$ | grep -qi warp.app); then
     __INFO_WARP_DETECTED=1
+    __INFO_DISABLE_PROMPT=1
   fi
   if (__ps_parents $$ | grep -qi vscode); then
     __INFO_VSCODE_DETECTED=1
+    __INFO_DISABLE_PROMPT=1
   fi
   if (__ps_parents $$ | grep -qi cursor); then
     __INFO_CURSOR_DETECTED=1
+    __INFO_DISABLE_PROMPT=1
   fi
 fi
 
 #=======================================
 # NonLogicalDev/shell.async-goprompt
 #=======================================
-if (( $+commands[goprompt] )) && (( $__INFO_WARP_DETECTED == 0 )); then
+if (( $+commands[goprompt] )) && (( $__INFO_DISABLE_PROMPT != 1 )); then
   __plug.set goprompt "v:?.?.?"
   eval "$(goprompt install zsh)"
+fi
+if (( $__INFO_DISABLE_PROMPT == 1 )); then
+  # Set PS1 to empty
+  PS1="$ "
 fi
 
 #=======================================
