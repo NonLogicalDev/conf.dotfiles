@@ -68,7 +68,6 @@ if [[ -f "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh" ]]; then
   source "$ZSH_PLUGIN_DIR/extras/ps_parents.zsh"
 fi
 
-
 #=======================================
 # PROMPT: microprompt
 #=======================================
@@ -83,6 +82,7 @@ declare -g __INFO_WARP_DETECTED=0
 declare -g __INFO_VSCODE_DETECTED=0
 declare -g __INFO_CURSOR_DETECTED=0
 declare -g __INFO_DISABLE_PROMPT=0
+declare -g __INFO_SHELL_INTEGRATION_LOADED=0
 
 # Use TERM_PROGRAM for terminal detection
 case "$TERM_PROGRAM" in
@@ -225,6 +225,8 @@ if (( $__INFO_VSCODE_DETECTED == 1 )); then
   export VISUAL="code --wait"
 
   microprompt_init
+  source "$(code --locate-shell-integration-path zsh)"
+  __INFO_SHELL_INTEGRATION_LOADED=1
 elif (( $__INFO_CURSOR_DETECTED == 1 )); then
   __plug.set "editor/cursor" "enabled"
 
@@ -233,6 +235,8 @@ elif (( $__INFO_CURSOR_DETECTED == 1 )); then
   export VISUAL="cursor --wait"
 
   microprompt_init
+  source "$(cursor --locate-shell-integration-path zsh)"
+  __INFO_SHELL_INTEGRATION_LOADED=1
 fi
 
 #=======================================
