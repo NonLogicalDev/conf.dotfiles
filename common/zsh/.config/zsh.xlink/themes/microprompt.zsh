@@ -129,14 +129,16 @@ function __microprompt_prompt_func() {
   fi
 
   if (( __MICROPROMPT_ENABLE_NEWLINE == 1 )); then
-    echo "${(j: :)prompt_parts}$(__microprompt_prompt_newline)"
+    echo "> ${(j: :)prompt_parts}$(__microprompt_prompt_newline)"
   else
-    echo "${(j: :)prompt_parts} "
+    echo "> ${(j: :)prompt_parts} "
   fi
 }
 
 function microprompt_init() {
-  __plug.set microprompt "v:?.?.?"
+  if typeset -f __plug.set &>/dev/null; then
+    __plug.set microprompt "v:?.?.?"
+  fi
 
   zmodload zsh/datetime || :
   autoload -Uz +X promptinit 2>/dev/null

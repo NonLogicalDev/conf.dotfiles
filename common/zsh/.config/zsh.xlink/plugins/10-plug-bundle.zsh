@@ -84,7 +84,7 @@ declare -g __INFO_VSCODE_DETECTED=0
 declare -g __INFO_CURSOR_DETECTED=0
 declare -g __INFO_DISABLE_PROMPT=0
 
-# Use TERM_PROGRAM for terminal detection instead of __ps_parents
+# Use TERM_PROGRAM for terminal detection
 case "$TERM_PROGRAM" in
   "WarpTerminal")
     __INFO_WARP_DETECTED=1
@@ -99,6 +99,20 @@ case "$TERM_PROGRAM" in
     __INFO_DISABLE_PROMPT=1
     ;;
 esac
+
+__INFO_PS_PARENTS=()
+while IFS= read -r line; do
+  __INFO_PS_PARENTS+=("$line")
+
+  if [[ "${(L)line}" == *"vscode"* ]]; then
+    __INFO_VSCODE_DETECTED=1
+    __INFO_CURSOR_DETECTED=0
+  fi
+  if [[ "${(L)line}" == *"cursor"* ]]; then
+    __INFO_CURSOR_DETECTED=1
+    __INFO_VSCODE_DETECTED=0
+  fi
+done < <(__ps_parents)
 
 #=======================================
 # NonLogicalDev/shell.async-goprompt
