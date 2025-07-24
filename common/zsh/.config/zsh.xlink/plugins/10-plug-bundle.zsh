@@ -84,20 +84,21 @@ declare -g __INFO_VSCODE_DETECTED=0
 declare -g __INFO_CURSOR_DETECTED=0
 declare -g __INFO_DISABLE_PROMPT=0
 
-if (( $+functions[__ps_parents] )); then
-  if (__ps_parents $$ | grep -qi warp.app); then
+# Use TERM_PROGRAM for terminal detection instead of __ps_parents
+case "$TERM_PROGRAM" in
+  "WarpTerminal")
     __INFO_WARP_DETECTED=1
     __INFO_DISABLE_PROMPT=1
-  fi
-  if (__ps_parents $$ | grep -qi vscode); then
+    ;;
+  "vscode")
     __INFO_VSCODE_DETECTED=1
     __INFO_DISABLE_PROMPT=1
-  fi
-  if (__ps_parents $$ | grep -qi cursor); then
+    ;;
+  "cursor")
     __INFO_CURSOR_DETECTED=1
     __INFO_DISABLE_PROMPT=1
-  fi
-fi
+    ;;
+esac
 
 #=======================================
 # NonLogicalDev/shell.async-goprompt
