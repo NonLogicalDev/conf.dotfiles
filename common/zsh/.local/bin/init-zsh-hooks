@@ -1,61 +1,54 @@
 #!/bin/bash
+set -eao pipefail
 
+# ------------------------------------------------------------------------------
 # Script to add sourcing lines for zsh hook files to corresponding z* files
 # Hook files in ~/.config/zsh/hooks/ drive the z* file names
+# ------------------------------------------------------------------------------
 
-set -e  # Exit on any error
+__util_prepend_line() {
+    local line="$1"
+    local file="$2"
 
-HOOKS_DIR="$HOME/.config/zsh/hooks"
+    if [[ -f "$file" ]] && awk -v needle="$line" 'index($0, needle) { found=1; exit } END { exit !found }' "$file"; then
+        echo "  ✓ Sourcing line already present in $file :: $line"
+        return 0
+    fi
+
+    echo "  + Prepending sourcing line to $file :: $line"
+    echo "$line" | cat - "$file" > "$file.tmp"
+    mv "$file.tmp" "$file"
+}
+
+# ------------------------------------------------------------------------------
+
+ZSH_HOOKS_DIR="$HOME/.config/zsh/hooks"
 
 # Check if hooks directory exists
-if [[ ! -d "$HOOKS_DIR" ]]; then
-    echo "Error: Hooks directory $HOOKS_DIR does not exist"
+if [[ ! -d "$ZSH_HOOKS_DIR" ]]; then
+    echo "Error: Hooks directory $ZSH_HOOKS_DIR does not exist"
     exit 1
 fi
 
-# Get all hook files
-cd "$HOOKS_DIR"
-hook_files=(*)
-cd "$HOME"
+# ------------------------------------------------------------------------------
 
-if [[ ! -e "$HOOKS_DIR/${hook_files[0]}" ]]; then
-    echo "No hook files found in $HOOKS_DIR"
-    exit 0
-fi
+main() {
+    # ensure that all hooks are sourced in the .zshrc file
+    for hook_path in "$ZSH_HOOKS_DIR/"*; do
+        local hook_file_name=$(basename "$hook_path")
+        echo "Processing hook file: $hook_path ($hook_file_name)"
 
-echo "Processing hook files: ${hook_files[*]}"
+        local into_file="$HOME/.$hook_file_name"
+        local hook_path_ref="\$HOME/.config/zsh/hooks/$hook_file_name"
 
-# Function to check if sourcing line exists in file
-line_exists() {
-    local file="$1"
-    local hook_file="$2"
-    [[ -f "$file" ]] && grep -q "source.*\.config/zsh/hooks/$hook_file" "$file" 2>/dev/null
-}
-
-# Process each hook file
-for hook_file in "${hook_files[@]}"; do
-    zsh_file=".${hook_file}"
-    sourcing_line="[[ -s \"\$HOME/.config/zsh/hooks/$hook_file\" ]] && source \"\$HOME/.config/zsh/hooks/$hook_file\""
+        local hook_line="[[ -s \"$hook_path_ref\" ]] && source \"$hook_path_ref\""
+        __util_prepend_line "$hook_line" "$into_file"
+    done
 
     echo ""
-    echo "Processing $hook_file -> $zsh_file"
+    echo "Hooks initialized successfully!"
+}
 
-    if line_exists "$zsh_file" "$hook_file"; then
-        echo "  ✓ Sourcing line already present"
-    else
-        if [[ -f "$zsh_file" ]]; then
-            echo "  + Prepending sourcing line to existing file"
-            # Create temp file with new line + existing content
-            echo "$sourcing_line" > "${zsh_file}.tmp"
-            echo "" >> "${zsh_file}.tmp"
-            cat "$zsh_file" >> "${zsh_file}.tmp"
-            mv "${zsh_file}.tmp" "$zsh_file"
-        else
-            echo "  + Creating new file with sourcing line"
-            echo "$sourcing_line" > "$zsh_file"
-        fi
-    fi
-done
+# ------------------------------------------------------------------------------
 
-echo ""
-echo "Script completed!"
+main
