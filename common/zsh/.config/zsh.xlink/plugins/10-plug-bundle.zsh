@@ -8,6 +8,8 @@ declare -ga __ZSH_ANTIBODY_PLUGINS=(
   "zsh-users/zsh-history-substring-search"
 
   "hlissner/zsh-autopair"
+  
+  "Aloxaf/fzf-tab"
 )
 
 if (( $+commands[nix] )); then

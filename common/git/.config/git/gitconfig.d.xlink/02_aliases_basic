@@ -84,14 +84,15 @@
 
   sum = show --format=medium --stat
 
-  # root -- Returns the root folder of the repo.
-  root = rev-parse --show-toplevel
+  # dir-root -- Returns the root folder of the repo.
+  dir-root = rev-parse --path-format=absolute --show-toplevel 
+  root = dir-root
 
-  # dir -- Returns the location of the git dir (worktree's index dir)
-  dir-git = rev-parse --git-dir
+  # dir-git -- Returns the location of the git dir (worktree's index dir)
+  dir-git = rev-parse --path-format=absolute --git-dir 
 
-  # dir -- Returns the location of the git dir (database dir)
-  dir-db = rev-parse --git-common-dir
+  # dir-db -- Returns the location of the git dir (database dir)
+  dir-db = rev-parse --path-format=absolute --git-common-dir 
 
   # upstream -- Returns the upstream of the current branch.
   upstream = "!f() { git rev-parse --abbrev-ref ${1:-HEAD}@{upstream}; }; f"
@@ -100,14 +101,18 @@
   # Usage: git run <command to run>
   run = "!f() { cd \"`git root`\"; \"$@\"; }; f"
 
-  # iadd -- Interactively select files to add
-  iadd = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git addu
+  # checkpoint -- quickly save progress in the repo
+  checkpoint = "!f() { git add -A && git commit -m \"$(date) :: checkpoint${1:+ :: $1}\"; }; f"
+  save = checkpoint
 
-  # ireset -- Interactively select files to revert
-  ireset = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git reset --
+  # addi -- Interactively select files to add
+  addi = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git add
 
-  # ireset -- Interactively restore files back to original HEAD state
-  irestore = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git restore --
+  # reseti -- Interactively select files to revert
+  reseti = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git reset --
+
+  # reseti -- Interactively restore files back to original HEAD state
+  restorei = !git status -u --porcelain | fzf -m | cut -c 3- | xargs git run git restore --
 
   # files -- Displays changes done in either HEAD commit (if no args) or explicitly given one.
   # Usage: git affected [<ref>]

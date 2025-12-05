@@ -3,7 +3,7 @@ default:
 
 save:
     #!/usr/bin/env bash
-    if git diff-index --quiet HEAD --; then
+    if git diff-index --quiet HEAD -- ; then
         echo "No changes to commit."
     else
         git add -A
@@ -12,7 +12,7 @@ save:
 
 upload:
     #!/usr/bin/env bash
-    if git diff-index --quiet HEAD --; then
+    if git diff-index --quiet HEAD -- ; then
         git pull -r
         git push
     else
