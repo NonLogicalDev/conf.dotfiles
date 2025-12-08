@@ -1,4 +1,5 @@
 ZSH_PLUGIN_DIR=$HOME/.config/zsh/plugins
+ZSH_THEMES_DIR=$HOME/.config/zsh/themes
 
 declare -ga __ZSH_ANTIBODY_PLUGINS=(
   "mafredri/zsh-async"
@@ -73,8 +74,9 @@ fi
 #=======================================
 # PROMPT: microprompt
 #=======================================
-if [[ -f "$ZSH_PLUGIN_DIR/../themes/microprompt.zsh" ]]; then
-  source "$ZSH_PLUGIN_DIR/../themes/microprompt.zsh"
+if [[ -f "$ZSH_THEMES_DIR/microprompt.zsh" ]]; then
+  source "$ZSH_THEMES_DIR/microprompt.zsh"
+  microprompt_split
 fi
 
 #-------------------------------------------------------------------------------

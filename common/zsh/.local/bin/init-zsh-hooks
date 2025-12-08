@@ -60,7 +60,7 @@ main() {
 
         # Load hook_loader and call nl_hooks_load in one line
         # Check if loader exists, source it, then call the function
-        local hook_line="[[ -s $hook_loader_path ]] && { source \"$hook_loader_path\" && nl_hooks_load \"$hook_dir_ref\"; }"
+        local hook_line="[[ -s $hook_loader_path ]] && source \"$hook_loader_path\" && nl_hooks_load \"$hook_dir_ref\";"
         __util_prepend_line "$hook_line" "$into_file"
     done
     
