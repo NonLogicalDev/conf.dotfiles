@@ -9,7 +9,7 @@ declare -ga __ZSH_ANTIBODY_PLUGINS=(
   "zsh-users/zsh-history-substring-search"
 
   "hlissner/zsh-autopair"
-  
+
   "Aloxaf/fzf-tab"
 )
 
@@ -76,7 +76,6 @@ fi
 #=======================================
 if [[ -f "$ZSH_THEMES_DIR/microprompt.zsh" ]]; then
   source "$ZSH_THEMES_DIR/microprompt.zsh"
-  microprompt_split
 fi
 
 #-------------------------------------------------------------------------------
