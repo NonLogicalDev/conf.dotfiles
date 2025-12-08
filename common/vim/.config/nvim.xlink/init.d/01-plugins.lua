@@ -8,7 +8,6 @@ require('nvim-treesitter.configs').setup({
 })
 
 local cmp = require('cmp')
-local lspconfig = require("lspconfig")
 
 local mason = require("mason")
 local mason_lspconfig = require("mason-lspconfig")
@@ -20,7 +19,7 @@ mason_lspconfig.setup({
 
 -- mason_lspconfig.setup_handlers({
 --   function(server_name)
---     lspconfig[server_name].setup({})
+--     vim.lsp.config(server_name, {})
 --   end,
 -- })
 
@@ -92,9 +91,9 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities()
 -- * https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#gopls
 --
 -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-lspconfig['gopls'].setup {
+vim.lsp.config('gopls', {
   capabilities = capabilities
-}
+})
 
 -- Use LspAttach autocommand to only map the following keys
 -- after the language server attaches to the current buffer

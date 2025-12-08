@@ -160,4 +160,6 @@ function microprompt_init() {
   function microprompt_hide() {
     __MICROPROMPT_ENABLE_ERICHMENTS=$((1 - __MICROPROMPT_ENABLE_ERICHMENTS))
   }
+
+  microprompt_split
 }
