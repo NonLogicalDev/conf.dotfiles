@@ -37,7 +37,7 @@ function __perf.run {
   __perf_runs[$__perf_key]="$__perf_run_td"
 }
 
-typeset -A __plug_recs=()
+declare -gA __plug_recs=()
 
 function __plug.ls {
   for key value in ${(kv)__plug_recs}; do
@@ -46,7 +46,7 @@ function __plug.ls {
 }
 
 function __plug.set {
-  __plug_recs[$1]=$2
+  __plug_recs["$1"]=$2
 }
 
 function __plug.add {
@@ -86,4 +86,3 @@ fi
 for plugin in $HOME/.config/zsh/plugins/*.zsh; do
   __perf.run "$plugin" source $plugin
 done
-
