@@ -18,15 +18,17 @@ fpath=("${0:h}/external/src" $fpath)
 # cache time of 20 hours, so it should almost always regenerate the first time a
 # shell is opened each day.
 
-autoload -Uz compinit
+nl_zsh_hook_reload_compinit() {
+  autoload -Uz compinit
 
-_zsh_comp_files=(${__zsh_cache_dir}/compdump(Nm-20))
-if (( $#_zsh_comp_files )); then
-  compinit -i -C -d ${__zsh_cache_dir}/compdump
-else
-  compinit -i -d ${__zsh_cache_dir}/compdump
-fi
-unset _zsh_comp_files
+  _zsh_comp_files=(${__zsh_cache_dir}/compdump(Nm-20))
+  if (( $#_zsh_comp_files )); then
+    compinit -i -C -d ${__zsh_cache_dir}/compdump
+  else
+    compinit -i -d ${__zsh_cache_dir}/compdump
+  fi
+  unset _zsh_comp_files
+}
 
 # Use caching to make completion for commands such as dpkg and apt usable.
 zstyle ':completion::complete:*' use-cache on

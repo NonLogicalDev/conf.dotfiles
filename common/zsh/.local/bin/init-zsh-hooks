@@ -33,17 +33,39 @@ fi
 # ------------------------------------------------------------------------------
 
 main() {
-    # ensure that all hooks are sourced in the .zshrc file
-    for hook_path in "$ZSH_HOOKS_DIR/"*; do
-        local hook_file_name=$(basename "$hook_path")
-        echo "Processing hook file: $hook_path ($hook_file_name)"
+    local hook_loader_path="\$HOME/.config/zsh/hooks/_loader.zsh"
+    
+    # Enable nullglob so unmatched globs don't produce literal strings
+    shopt -s nullglob
+    
+    # Expand glob directly into array - variable quoted, glob unquoted
+    local hook_dirs=("$ZSH_HOOKS_DIR"/*.d)
+    
+    # If no directories found, hook_dirs will be empty (thanks to nullglob)
+    if [[ ${#hook_dirs[@]} -eq 0 ]]; then
+        echo "No .d hook directories found in $ZSH_HOOKS_DIR"
+        shopt -u nullglob
+        return 0
+    fi
+    
+    for hook_dir_path in "${hook_dirs[@]}"; do
+        # Skip if not a directory (shouldn't happen with .d pattern, but be safe)
+        [[ ! -d "$hook_dir_path" ]] && continue
+        
+        local hook_dir_name=$(basename "$hook_dir_path" .d)
+        echo "Processing hook directory: $hook_dir_path ($hook_dir_name.d)"
 
-        local into_file="$HOME/.$hook_file_name"
-        local hook_path_ref="\$HOME/.config/zsh/hooks/$hook_file_name"
+        local into_file="$HOME/.$hook_dir_name"
+        local hook_dir_ref="\$HOME/.config/zsh/hooks/$hook_dir_name.d"
 
-        local hook_line="[[ -s \"$hook_path_ref\" ]] && source \"$hook_path_ref\""
+        # Load hook_loader and call nl_hooks_load in one line
+        # Check if loader exists, source it, then call the function
+        local hook_line="[[ -s $hook_loader_path ]] && { source \"$hook_loader_path\" && nl_hooks_load \"$hook_dir_ref\"; }"
         __util_prepend_line "$hook_line" "$into_file"
     done
+    
+    # Restore nullglob setting
+    shopt -u nullglob
 
     echo ""
     echo "Hooks initialized successfully!"

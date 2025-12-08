@@ -59,9 +59,3 @@ export ZSH_CACHE_DIR="$HOME/.cache/zsh"
 if [[ "$SHLVL" -eq 0 && ! -o LOGIN && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
 fi
-
-# Import Local evn VARIABLES
-if [[ ! -f ${HOME}/SHELL_VARS ]]; then
-  touch "${HOME}/SHELL_VARS"
-fi
-source "${HOME}/SHELL_VARS"

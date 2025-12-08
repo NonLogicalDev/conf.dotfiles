@@ -87,12 +87,3 @@ for plugin in $HOME/.config/zsh/plugins/*.zsh; do
   __perf.run "$plugin" source $plugin
 done
 
-#######################################################################
-#                               Imports                               #
-#######################################################################
-
-# Import Local settings
-if [[ ! -f ${ZDOTDIR-$HOME}/.zshrc.local ]]; then
-  touch ${ZDOTDIR:-$HOME}/.zshrc.local
-fi
-source ${ZDOTDIR:-$HOME}/.zshrc.local
