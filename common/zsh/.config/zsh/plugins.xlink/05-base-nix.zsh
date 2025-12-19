@@ -1,6 +1,6 @@
 # For single user nix installation (which sometimes is not correctly initialized)
 _NIX_DAEMON_PATH=/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;
-if ! (( $+commands[nix] )) && [[ -f $_NIX_DAEMON_PATH ]]; then
+if [[ -f $_NIX_DAEMON_PATH ]] && ! (( $+commands[nix] )); then
     echo >&2 "nix: re-loading";
     unset __ETC_PROFILE_NIX_SOURCED;
     source "$_NIX_DAEMON_PATH";
