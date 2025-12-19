@@ -1,3 +1,12 @@
+# For single user nix installation (which sometimes is not correctly initialized)
+_NIX_DAEMON_PATH=/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh;
+if ! (( $+commands[nix] )) && [[ -f $_NIX_DAEMON_PATH ]]; then
+    echo >&2 "nix: re-loading";
+    unset __ETC_PROFILE_NIX_SOURCED;
+    source "$_NIX_DAEMON_PATH";
+fi
+
+# Fixup locale archive path
 if [[ -f /usr/lib/locale/locale-archive ]]; then
     # This configuration is necessary for Nix to work properly on your system.
     # It sets the LOCALE_ARCHIVE environment variable, which points to the location
