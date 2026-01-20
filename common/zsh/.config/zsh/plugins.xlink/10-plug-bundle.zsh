@@ -1,7 +1,7 @@
 ZSH_PLUGIN_DIR=$HOME/.config/zsh/plugins
 ZSH_THEMES_DIR=$HOME/.config/zsh/themes
 
-declare -ga __ZSH_ANTIBODY_PLUGINS=(
+declare -ga __ZSH_PLUG_BUNDLE_PLUGINS=(
   "mafredri/zsh-async"
 
   "zsh-users/zsh-completions"
@@ -14,13 +14,13 @@ declare -ga __ZSH_ANTIBODY_PLUGINS=(
 )
 
 if (( $+commands[nix] )); then
-  __ZSH_ANTIBODY_PLUGINS+=(
+  __ZSH_PLUG_BUNDLE_PLUGINS+=(
     "nix-community/nix-zsh-completions.git"
   )
 fi
 
 if (( $+commands[kubectl] )); then
-  __ZSH_ANTIBODY_PLUGINS+=(
+  __ZSH_PLUG_BUNDLE_PLUGINS+=(
     "nnao45/zsh-kubectl-completion"
   )
 fi
@@ -29,8 +29,58 @@ fi
 # "rupa/z"
 # "changyuheng/fz"
 
-if (( $+commands[antibody] )); then
-  __plug.set antibody "v:$(antibody --version 2>&1 | awk '{print $NF}')"
+__zsh_plugin_manager_init_antidote() {
+  local check_locations=(
+    "$HOME/.nix-profile/share/antidote/antidote.zsh"
+  )
+
+  local antidote_location=""
+
+  for location in "${check_locations[@]}"; do
+    if [[ -f "$location" ]]; then
+      antidote_location="$location"
+      break
+    fi
+  done
+
+  if [[ -z "$antidote_location" ]]; then
+    return 1 # not found
+  fi
+  source "$antidote_location"
+
+  __plug.set "antidote" "v:?.?.? (src: $antidote_location)"
+
+  _ANTIDOTE_PLUGIN_LIST="$ZSH_CACHE_DIR/antidote.plugins.txt"
+  _ANTIDOTE_PLUGIN_INIT="$ZSH_CACHE_DIR/antidote.plugins.zsh"
+
+  # Set the root name of the plugins files (.txt and .zsh) antidote will use
+  [[ -f $_ANTIDOTE_PLUGIN_LIST ]] || touch $_ANTIDOTE_PLUGIN_LIST
+
+  antidote-compile() {
+    echo "Plugins:"
+    echo "${(j:\n:)__ZSH_PLUG_BUNDLE_PLUGINS}" | sed 's/^/ * /g'
+
+    echo "COMPILING:"
+    echo " * $_ANTIDOTE_PLUGIN_LIST -> $_ANTIDOTE_PLUGIN_INIT"
+    echo "${(j:\n:)__ZSH_PLUG_BUNDLE_PLUGINS}" > "$_ANTIDOTE_PLUGIN_LIST"
+    ( set -x; antidote bundle < "$_ANTIDOTE_PLUGIN_LIST" > "$_ANTIDOTE_PLUGIN_INIT" )
+
+    echo "DONE"
+  }
+  if [[ ! -f $_ANTIDOTE_PLUGIN_INIT ]]; then
+    antidote-compile
+  fi
+
+  # Source your static plugins file
+  source $_ANTIDOTE_PLUGIN_INIT
+}
+
+__zsh_plugin_manager_init_antibody() {
+  if ! (( $+commands[antibody] )); then
+    return 1 # not found
+  fi
+
+  __plug.set "antibody" "v:$(antibody --version 2>&1 | awk '{print $NF}')"
 
   _ANTIBODY_PLUGIN_LIST="$ZSH_CACHE_DIR/antibody.plugins.txt"
   _ANTIBODY_PLUGIN_INIT="$ZSH_CACHE_DIR/antibody.plugins.zsh"
@@ -49,8 +99,11 @@ if (( $+commands[antibody] )); then
   if [[ ! -f $_ANTIBODY_PLUGIN_INIT ]]; then
     antibody-compile
   fi
-  source "$_ANTIBODY_PLUGIN_INIT"
 
+  source "$_ANTIBODY_PLUGIN_INIT"
+}
+
+__zsh_plugin_manager_init_plugins_hook() {
   #=======================================
   # zsh-users/zsh-history-substring-search
   #=======================================
@@ -62,7 +115,9 @@ if (( $+commands[antibody] )); then
   # zsh-users/zsh-syntax-highlighting
   #=======================================
   ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
-fi
+}
+
+{ __zsh_plugin_manager_init_antibody || __zsh_plugin_manager_init_antidote; } && __zsh_plugin_manager_init_plugins_hook
 
 #=======================================
 # ps_parents (utils)

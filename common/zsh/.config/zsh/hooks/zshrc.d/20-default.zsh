@@ -73,7 +73,7 @@ fi
 
 [[ -r "/etc/zshrc_$TERM_PROGRAM" ]] && . "/etc/zshrc_$TERM_PROGRAM"
 
-# Add completionks.
+# Add completions.
 if [[ -d ${HOME}/.local/bin/completions ]]; then
   export fpath=(${HOME}/.local/bin/completions $fpath)
 fi
