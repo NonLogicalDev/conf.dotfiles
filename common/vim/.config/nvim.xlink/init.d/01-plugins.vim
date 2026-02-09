@@ -63,7 +63,7 @@ Plug 'tpope/vim-repeat'
 Plug 'Shougo/unite.vim'
 Plug 'rizzatti/funcoo.vim'
 
-if (has('nvim') && 0)
+if (has('nvim'))
   Plug 'nvim-lua/plenary.nvim'
 endif
 
@@ -93,7 +93,7 @@ Plug 'itchyny/lightline.vim' " Status Line Replacement
 Plug 'ojroques/vim-oscyank'  " Use OSC 52 for copying to clibboard
 if has('nvim')
   " NeoVim LUA Specific QuickSearch Plugin
-  Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.0' }
+  Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.8' }
 else
   " Standard VIM QuickSearch Plugin
   Plug 'kien/ctrlp.vim'
@@ -133,6 +133,10 @@ Plug 'michaeljsmith/vim-indent-object' " Selecting things at the current indent 
 
 Plug 'rizzatti/dash.vim'  " Dash integration (Documentation Lookup)
 Plug 'tpope/vim-fugitive' " Git Integration
+
+if (has('nvim'))
+  Plug 'lewis6991/gitsigns.nvim' " Git gutter signs and hunk management
+endif
 
 " }}}
 " Code Completers: {{{
