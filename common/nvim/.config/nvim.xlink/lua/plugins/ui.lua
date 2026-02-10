@@ -2,6 +2,7 @@ return {
   -- Colorscheme
   {
     "ellisonleao/gruvbox.nvim",
+    lazy = false,
     priority = 1000,
     config = function()
       require("gruvbox").setup({
@@ -30,47 +31,23 @@ return {
 
   -- File explorer
   {
-    "nvim-tree/nvim-tree.lua",
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      "nvim-tree/nvim-web-devicons", -- optional, but recommended
+    },
     keys = {
-      { "<leader>n", "<cmd>NvimTreeToggle<cr>", desc = "Toggle File Explorer" },
+      { "<leader>n", "<cmd>Neotree toggle<cr>", desc = "Toggle File Explorer" },
       {
         "<leader>m",
         function()
-          require("nvim-tree.api").tree.open()
-          require("nvim-tree.api").tree.change_root(vim.fn.getcwd())
+          vim.cmd("Neotree dir=" .. vim.fn.getcwd())
         end,
         desc = "Open File Explorer at CWD"
       },
     },
-    config = function()
-      require("nvim-tree").setup({
-        view = { width = 30 },
-        renderer = {
-          icons = {
-            show = {
-              file = false,
-              folder = false,
-              folder_arrow = true,
-              git = false,
-            },
-            glyphs = {
-              default = "",
-              symlink = "",
-              folder = {
-                arrow_closed = "+",
-                arrow_open = "-",
-                default = "",
-                open = "",
-                empty = "",
-                empty_open = "",
-                symlink = "",
-                symlink_open = "",
-              },
-            },
-          },
-        },
-      })
-    end,
   },
 
   -- OSC Yank (clipboard via terminal)
