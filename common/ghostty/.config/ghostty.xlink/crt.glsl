@@ -31,11 +31,11 @@
 
 // How much of the non-linearly darkened colors are mixed in
 // [0, 1]
-#define DARKEN_MIX 0.65
+#define DARKEN_MIX 0.7
 
 // How far in the vignette spreads
 // x \in R : x >= 0
-#define VIGNETTE_SPREAD 0.15
+#define VIGNETTE_SPREAD 0.10
 // How bright the vignette is
 // x \in R : x >= 0
 #define VIGNETTE_BRIGHTNESS 6.4
@@ -53,7 +53,7 @@
 #define SCAN_LINES_VARIANCE 0.9
 // Pixels per scan line effect
 // x \in R : x > 0
-#define SCAN_LINES_PERIOD 2.0
+#define SCAN_LINES_PERIOD 4.0
 
 // How visible the aperture grille is
 // x \in R : x >= 0
@@ -84,14 +84,14 @@
 
 // How big the bloom is
 // x \in R : x >= 0
-#define BLOOM_SPREAD 1.0
+#define BLOOM_SPREAD 1.1
 // How visible the bloom is
 // [0, 1]
-#define BLOOM_STRENGTH 0.07
+#define BLOOM_STRENGTH 0.04
 
 // How fast colors fade in and out
 // [0, 1]
-#define FADE_FACTOR 0.4
+#define FADE_FACTOR 0.35
 
 
 // Disabled values for when the settings are not defined

@@ -117,7 +117,7 @@ __zsh_plugin_manager_init_plugins_hook() {
   ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
 }
 
-{ __zsh_plugin_manager_init_antibody || __zsh_plugin_manager_init_antidote; } && __zsh_plugin_manager_init_plugins_hook
+{ __zsh_plugin_manager_init_antidote || __zsh_plugin_manager_init_antibody; } && __zsh_plugin_manager_init_plugins_hook
 
 #=======================================
 # ps_parents (utils)
