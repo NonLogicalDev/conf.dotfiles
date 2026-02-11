@@ -1,5 +1,4 @@
 -- Editor options
--- Note: Leader keys are set in init.lua before lazy.nvim loads
 vim.opt.encoding = "utf-8"
 vim.opt.fileencoding = "utf-8"
 vim.opt.termguicolors = true
@@ -69,10 +68,8 @@ vim.opt.completeopt = "menu,menuone,longest"
 vim.opt.switchbuf = "useopen,usetab"
 
 -- NeoVim specific
-if vim.fn.has("nvim") == 1 then
-  vim.opt.inccommand = "nosplit"
-  vim.cmd("syntax sync minlines=256")
-end
+vim.opt.inccommand = "nosplit"
+vim.cmd("syntax sync minlines=256")
 
 -- Disable polyglot for specific filetypes (must be before plugin load)
 vim.g.polyglot_disabled = {'python-indent', 'indent/python.vim', 'autoindent'}

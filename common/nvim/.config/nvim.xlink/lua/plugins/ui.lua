@@ -1,18 +1,4 @@
 return {
-  -- Colorscheme
-  {
-    "ellisonleao/gruvbox.nvim",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      require("gruvbox").setup({
-        contrast = "hard",
-        improved_strings = false,
-      })
-      vim.cmd.colorscheme("gruvbox")
-    end,
-  },
-
   -- Status line
   {
     "nvim-lualine/lualine.nvim",
@@ -20,7 +6,7 @@ return {
     config = function()
       require("lualine").setup({
         options = {
-          theme = "gruvbox",
+          theme = vim.g.user_colorway_lualine,
           icons_enabled = false,
           component_separators = "",
           section_separators = "",
@@ -29,25 +15,48 @@ return {
     end,
   },
 
+  {
+    'akinsho/bufferline.nvim',
+    version = "*", 
+    event = "VeryLazy",
+    dependencies = {'nvim-tree/nvim-web-devicons'},
+    config = function ()
+      require("bufferline").setup({})
+    end,
+  },
+
   -- File explorer
   {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
+    "nvim-tree/nvim-tree.lua",
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      "nvim-tree/nvim-web-devicons", -- optional, but recommended
+      "nvim-tree/nvim-web-devicons",
     },
     keys = {
-      { "<leader>n", "<cmd>Neotree toggle<cr>", desc = "Toggle File Explorer" },
-      {
-        "<leader>m",
-        function()
-          vim.cmd("Neotree dir=" .. vim.fn.getcwd())
-        end,
-        desc = "Open File Explorer at CWD"
-      },
+      { "<leader>n", "<cmd>NvimTreeToggle<cr>", desc = "Toggle File Explorer" },
+      { "<leader>m", "<cmd>NvimTreeFindFile<cr>", desc = "Find Current File in Explorer" },
     },
+    config = function()
+      require("nvim-tree").setup({
+        disable_netrw = false,
+        hijack_netrw = true,
+        renderer = {
+          icons = {
+            show = {
+              file = false,
+              folder = false,
+              folder_arrow = true,
+              git = false,
+            },
+          },
+        },
+        git = {
+          enable = false,
+        },
+        filters = {
+          dotfiles = true,
+        },
+      })
+    end,
   },
 
   -- OSC Yank (clipboard via terminal)
