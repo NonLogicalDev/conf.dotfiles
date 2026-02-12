@@ -1,4 +1,21 @@
 return {
+  -- Snippet engine
+  {
+    "SirVer/ultisnips",
+    event = "InsertEnter",
+    dependencies = { "honza/vim-snippets" },
+    config = function()
+      -- Custom snippet directories
+      vim.g.UltiSnipsSnippetDirectories = {
+        vim.fn.stdpath("config") .. "/UltiSnips",
+        "UltiSnips",
+      }
+    end,
+  },
+
+  -- Snippet collection
+  { "honza/vim-snippets", lazy = true },
+
   -- Completion engine
   {
     "hrsh7th/nvim-cmp",
@@ -9,9 +26,11 @@ return {
       "hrsh7th/cmp-path",
       "hrsh7th/cmp-cmdline",
       "quangnguyen30192/cmp-nvim-ultisnips",
+      "SirVer/ultisnips",
     },
     config = function()
       local cmp = require("cmp")
+      local cmp_ultisnips_mappings = require("cmp_nvim_ultisnips.mappings")
 
       cmp.setup({
         snippet = {
@@ -29,6 +48,26 @@ return {
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<C-e>"] = cmp.mapping.abort(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          ["<Tab>"] = cmp.mapping(
+            function(fallback)
+              if cmp.visible() then
+                cmp.select_next_item()
+              else
+                cmp_ultisnips_mappings.expand_or_jump_forwards(fallback)
+              end
+            end,
+            { "i", "s" }
+          ),
+          ["<S-Tab>"] = cmp.mapping(
+            function(fallback)
+              if cmp.visible() then
+                cmp.select_prev_item()
+              else
+                cmp_ultisnips_mappings.jump_backwards(fallback)
+              end
+            end,
+            { "i", "s" }
+          ),
         }),
         sources = cmp.config.sources({
           { name = "nvim_lsp" },

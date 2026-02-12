@@ -27,4 +27,10 @@ return {
 
   -- Buffer management
   { "vim-scripts/bufkill.vim", cmd = { "BD", "BUN" } },
+
+  -- OSC52 clipboard support for SSH/tmux
+  {
+    "ojroques/nvim-osc52",
+    event = "VeryLazy",
+  },
 }

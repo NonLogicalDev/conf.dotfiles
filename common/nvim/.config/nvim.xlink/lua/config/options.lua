@@ -47,8 +47,27 @@ vim.opt.autowrite = true
 if vim.fn.has('clipboard') == 1 then
   vim.opt.clipboard = "unnamedplus"
 else
-  -- System clipboard not available, OSC-52 will be used as fallback
+  -- System clipboard not available, set up OSC-52 as fallback
   vim.opt.clipboard = ""
+
+  local function copy(lines, _)
+    require('osc52').copy(table.concat(lines, '\n'))
+  end
+
+  local function paste()
+    return {vim.fn.split(vim.fn.getreg(''), '\n'), vim.fn.getregtype('')}
+  end
+
+  vim.g.clipboard = {
+    name = 'osc52',
+    copy = {['+'] = copy, ['*'] = copy},
+    paste = {['+'] = paste, ['*'] = paste},
+  }
+
+  -- Keymaps for OSC52 clipboard
+  vim.keymap.set('n', '<leader>c', '"+y', { desc = 'Copy to clipboard' })
+  vim.keymap.set('n', '<leader>cc', '"+yy', { desc = 'Copy line to clipboard' })
+  vim.keymap.set('v', '<leader>c', '"+y', { desc = 'Copy selection to clipboard' })
 end
 
 -- Misc
@@ -103,3 +122,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     end
   end,
 })
+
+-- Configure LSP Diagnostics Inline
+vim.diagnostic.config({ virtual_lines = true })
+vim.diagnostic.config({ virtual_text = true })

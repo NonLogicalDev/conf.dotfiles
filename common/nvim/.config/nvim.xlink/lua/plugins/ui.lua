@@ -14,48 +14,13 @@ return {
       })
     end,
   },
-
   {
     'akinsho/bufferline.nvim',
-    version = "*", 
+    version = "*",
     event = "VeryLazy",
     dependencies = {'nvim-tree/nvim-web-devicons'},
     config = function ()
       require("bufferline").setup({})
-    end,
-  },
-
-  -- File explorer
-  {
-    "nvim-tree/nvim-tree.lua",
-    dependencies = {
-      "nvim-tree/nvim-web-devicons",
-    },
-    keys = {
-      { "<leader>n", "<cmd>NvimTreeToggle<cr>", desc = "Toggle File Explorer" },
-      { "<leader>m", "<cmd>NvimTreeFindFile<cr>", desc = "Find Current File in Explorer" },
-    },
-    config = function()
-      require("nvim-tree").setup({
-        disable_netrw = false,
-        hijack_netrw = true,
-        renderer = {
-          icons = {
-            show = {
-              file = false,
-              folder = false,
-              folder_arrow = true,
-              git = false,
-            },
-          },
-        },
-        git = {
-          enable = false,
-        },
-        filters = {
-          dotfiles = true,
-        },
-      })
     end,
   },
 

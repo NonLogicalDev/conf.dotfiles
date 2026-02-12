@@ -1,9 +1,9 @@
 return {
   -- Git commands
-  {
-    "tpope/vim-fugitive",
-    cmd = { "Git", "Gdiffsplit", "Gread", "Gwrite", "Ggrep" },
-  },
+  -- {
+  --   "tpope/vim-fugitive",
+  --   cmd = { "Git", "Gdiffsplit", "Gread", "Gwrite", "Ggrep" },
+  -- },
 
   -- Git signs in gutter
   {
