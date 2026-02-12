@@ -2,12 +2,29 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
+------------------------------------------------------------------------
+--                         ColorScheme Setup                          --
+------------------------------------------------------------------------
+
+-----------------------------
+-- @ NeoVim ColorScheme: @ --
+-----------------------------
+
+-- vim.cmd.colorscheme("ao")
 -- vim.g.user_colorway = "ayu-mirage"
 -- vim.g.user_colorway = "ayu-dark"
-vim.g.user_colorway = "gruvbox"
+-- vim.g.user_colorway = "gruvbox"
 -- vim.g.user_colorway = "catpucchin"
+-- vim.g.user_colorway = "catpucchin-latte"
+vim.g.user_colorway = "catppuccin-mocha"
 -- vim.g.user_colorway = "ayu-dark"
-vim.g.user_colorway_lualine = "gruvbox"
+
+-------------------------------------
+-- @ NeoVim LuaLine ColorScheme: @ --
+-------------------------------------
+
+vim.g.user_colorway_lualine = "nightfly"
+-- vim.g.user_colorway_lualine = "gruvbox"
 -- vim.g.user_colorway_lualine = "ayu_dark"
 -- vim.g.user_colorway_lualine = "palenight"
 

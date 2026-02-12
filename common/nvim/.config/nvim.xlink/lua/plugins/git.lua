@@ -5,18 +5,28 @@ return {
   --   cmd = { "Git", "Gdiffsplit", "Gread", "Gwrite", "Ggrep" },
   -- },
 
+  {
+    "nicolasgb/jj.nvim",
+    version = "*", -- Use latest stable release
+    -- Or from the main branch (uncomment the branch line and comment the version line)
+    -- branch = "main",
+    config = function()
+        require("jj").setup({})
+    end,
+  },
+
   -- Git signs in gutter
   {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPre", "BufNewFile" },
     opts = {
-      signs = {
-        add = { text = "+" },
-        change = { text = "~" },
-        delete = { text = "_" },
-        topdelete = { text = "‾" },
-        changedelete = { text = "~" },
-      },
+      -- signs = {
+      --   add = { text = "+" },
+      --   change = { text = "~" },
+      --   delete = { text = "_" },
+      --   topdelete = { text = "‾" },
+      --   changedelete = { text = "~" },
+      -- },
       on_attach = function(bufnr)
         local gs = package.loaded.gitsigns
         local function map(mode, lhs, rhs, opts)

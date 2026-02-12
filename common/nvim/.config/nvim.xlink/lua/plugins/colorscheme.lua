@@ -19,6 +19,12 @@ return {
       if vim.g.user_colorway == "catppuccin" then
         vim.cmd.colorscheme(vim.g.user_colorway)
       end
+      if vim.g.user_colorway == "catppuccin-latte" then
+        vim.cmd.colorscheme(vim.g.user_colorway)
+      end
+      if vim.g.user_colorway == "catppuccin-mocha" then
+        vim.cmd.colorscheme(vim.g.user_colorway)
+      end
     end,
   },
   { "Shatur/neovim-ayu", lazy = false, priority = 1000, config = function()

@@ -26,7 +26,7 @@ return {
           },
         },
         filters = {
-          dotfiles = true,
+          dotfiles = false,
         },
       })
     end,
@@ -72,7 +72,7 @@ return {
     },
     cmd = "Telescope",
     keys = {
-      { "ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+      { "ff", "<cmd>Telescope find_files hidden=true<cr>", desc = "Find Files" },
       { "fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
       { "fw", "<cmd>Telescope grep_string<cr>", desc = "Grep Word" },
       { "fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
