@@ -29,8 +29,8 @@ vim.g.user_colorway_lualine = "nightfly"
 -- vim.g.user_colorway_lualine = "palenight"
 
 -- Disable Netrw for NvimTree
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+-- vim.g.loaded_netrw = 1
+-- vim.g.loaded_netrwPlugin = 1
 
 -- enable 24-bit colour
 vim.opt.termguicolors = true

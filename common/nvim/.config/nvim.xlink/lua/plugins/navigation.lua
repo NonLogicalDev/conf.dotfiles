@@ -32,6 +32,22 @@ return {
     end,
   },
 
+  -- {
+  --   'stevearc/oil.nvim',
+  --   ---@module 'oil'
+  --   ---@type oil.SetupOpts
+  --   opts = {},
+  --   -- Optional dependencies
+  --   dependencies = { { "nvim-mini/mini.icons", opts = {} } },
+  --   -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+  --   -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+  --   lazy = false,
+	-- 	-- config
+	-- 	config = function ()
+	-- 		require("oil").setup()
+	-- 	end
+  -- },
+
   -- Bookmark Manager
   {
     "LintaoAmons/bookmarks.nvim",
@@ -62,13 +78,15 @@ return {
   },
 
   -- Telescope fuzzy finder
-  { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
+  { "nvim-telescope/telescope-fzf-native.nvim", build = 'make' },
+  { "nvim-telescope/telescope-frecency.nvim", version = "*" },
   {
     "nvim-telescope/telescope.nvim",
     branch = "master",
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope-fzf-native.nvim",
+      "nvim-telescope/telescope-frecency.nvim"
     },
     cmd = "Telescope",
     keys = {
@@ -88,7 +106,9 @@ return {
       telescope.setup({
         defaults = themes.get_ivy(),
       })
+
       telescope.load_extension("fzf")
+      telescope.load_extension("frecency")
     end,
   },
 

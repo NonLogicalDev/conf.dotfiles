@@ -52,7 +52,7 @@ set novisualbell
 set showmatch
 
 " Set colorscheme
-colorscheme slate
+colorscheme sorbet
 
 " Highlight current line
 set cursorline
