@@ -14,12 +14,30 @@ return {
       disable_netrw = false,
       hijack_netrw = true,
       renderer = {
+        indent_markers = {
+          enable = true,
+          inline_arrows = true,
+          icons = {
+            corner = "└",
+            edge = "│",
+            item = "│",
+            bottom = "─",
+            none = " ",
+          },
+        },
         icons = {
           show = {
             file = false,
             folder = false,
             folder_arrow = true,
             git = false,
+          },
+          glyphs = {
+            folder = {
+              arrow_closed = "▸",
+              arrow_open = "▾",
+            },
+            bookmark = "●",
           },
         },
       },
