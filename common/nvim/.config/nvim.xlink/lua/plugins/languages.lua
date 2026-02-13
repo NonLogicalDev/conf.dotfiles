@@ -1,36 +1,31 @@
 return {
   -- Treesitter
   {
-    "nvim-treesitter/nvim-treesitter",
-    lazy = false,
-    build = ":TSUpdate",
-    event = { "BufReadPost", "BufNewFile" },
-    main = "nvim-treesitter.config",
-    opts = {
-      ensure_installed = {
-        "lua",
-        "python",
-        "javascript",
-        "typescript",
-        "go",
-        "rust",
-        "vim",
-        "vimdoc",
-        "markdown",
-        "json",
-        "yaml",
-        "toml",
-        "bash",
-      },
-      highlight = {
-        enable = true,
-        -- additional_vim_regex_highlighting = false,
-      },
-      indent = {
-        enable = true,
-      },
-    },
-  },
+  "nvim-treesitter/nvim-treesitter",
+  lazy = false,
+  build = ":TSUpdate",
+  config = function ()
+    local treesitter = require("nvim-treesitter")
+    local enabled_langs = {
+      'c', 'lua', 'vim', 'vimdoc', 'query', 'javascript', 'typescript', 'html', 'yaml', 'go', 'rust'
+    }
+    treesitter.setup()
+    treesitter.install(enabled_langs)
+
+    vim.api.nvim_create_autocmd('FileType', {
+      callback = function()
+        -- syntax highlighting, provided by Neovim
+        pcall(vim.treesitter.start)
+        -- folds, provided by Neovim (I don't like folds)
+        -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+        -- vim.wo.foldmethod = 'expr'
+        -- indentation, provided by nvim-treesitter
+        vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end,
+    })
+
+  end
+ },
 
   -- {
   --   'm-demare/hlargs.nvim',
@@ -40,7 +35,7 @@ return {
   --   end
   -- },
 
-  -- LSP config integration
+    -- LSP config integration
   {
     "mason-org/mason-lspconfig.nvim",
     dependencies = {
@@ -49,7 +44,7 @@ return {
     },
     lazy = false,
     opts = {
-        ensure_installed = { "lua_ls" },
+        ensure_installed = { "lua_ls", "gopls" },
     },
   },
 
@@ -58,19 +53,23 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      -- "mason-org/mason-lspconfig.nvim",
-      -- "mason-org/mason.nvim",
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
+      -- Apply capabilities to all servers as a default
+      vim.lsp.config("*", {
+        capabilities = capabilities,
+      })
+
       -- LSP keybindings on attach
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("UserLspConfig", {}),
         callback = function(ev)
-          -- Enable completion triggered by <c-x><c-o>
-          vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+
+          vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
 
           local opts = { buffer = ev.buf }
           vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
@@ -90,26 +89,36 @@ return {
           vim.keymap.set("n", "<space>f", function()
             vim.lsp.buf.format({ async = true })
           end, opts)
+
+          -- Toggle inlay hints (useful for gopls hints)
+          if vim.lsp.inlay_hint then
+            vim.keymap.set("n", "<space>uh", function()
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+            end, opts)
+          end
+
+          -- gopls semantic tokens workaround
+          if client and client.name == "gopls" then
+            if not client.server_capabilities.semanticTokensProvider then
+              local semantic = client.config.capabilities.textDocument.semanticTokens
+              if semantic then
+                client.server_capabilities.semanticTokensProvider = {
+                  full = true,
+                  legend = {
+                    tokenTypes = semantic.tokenTypes,
+                    tokenModifiers = semantic.tokenModifiers,
+                  },
+                  range = true,
+                }
+              end
+            end
+          end
         end,
       })
 
-      -- Configure servers using new vim.lsp.config API
-      -- vim.lsp.config('gopls', { capabilities = capabilities })
-      -- vim.lsp.config('pyright', { capabilities = capabilities })
-      -- vim.lsp.config('ts_ls', { capabilities = capabilities })
-      -- vim.lsp.config('rust_analyzer', { capabilities = capabilities })
-      vim.lsp.config('lua_ls', {
-        -- capabilities = capabilities,
-        settings = {
-          Lua = {
-            diagnostics = { globals = { "vim" } },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true),
-              checkThirdParty = false,
-            },
-          },
-        },
-      })
+      -- Enable all configured servers
+      -- (server configs are automatically discovered from lsp/<server_name>.lua files)
+      vim.lsp.enable({ "lua_ls", "gopls" })
     end,
   },
 
