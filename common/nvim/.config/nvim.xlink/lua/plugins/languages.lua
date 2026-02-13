@@ -2,6 +2,7 @@ return {
   -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
     event = { "BufReadPost", "BufNewFile" },
     main = "nvim-treesitter.config",
@@ -23,7 +24,7 @@ return {
       },
       highlight = {
         enable = true,
-        additional_vim_regex_highlighting = false,
+        -- additional_vim_regex_highlighting = false,
       },
       indent = {
         enable = true,
@@ -31,28 +32,25 @@ return {
     },
   },
 
-  -- LSP manager
-  {
-    "williamboman/mason.nvim",
-    build = ":MasonUpdate",
-    config = true,
-  },
+  -- {
+  --   'm-demare/hlargs.nvim',
+  --   event = { "VeryLazy" },
+  --   config = function()
+  --     require('hlargs').setup()
+  --   end
+  -- },
 
   -- LSP config integration
   {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = { "mason.nvim" },
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = {
-          "lua_ls",
-          "pyright",
-          "ts_ls",
-          "gopls",
-          "rust_analyzer",
-        },
-      })
-    end,
+    "mason-org/mason-lspconfig.nvim",
+    dependencies = {
+        { "mason-org/mason.nvim", opts = {} },
+        "neovim/nvim-lspconfig",
+    },
+    lazy = false,
+    opts = {
+        ensure_installed = { "lua_ls" },
+    },
   },
 
   -- LSP configuration
@@ -60,8 +58,8 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-      "mason.nvim",
-      "mason-lspconfig.nvim",
+      -- "mason-org/mason-lspconfig.nvim",
+      -- "mason-org/mason.nvim",
       "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
@@ -96,12 +94,12 @@ return {
       })
 
       -- Configure servers using new vim.lsp.config API
-      vim.lsp.config('gopls', { capabilities = capabilities })
-      vim.lsp.config('pyright', { capabilities = capabilities })
-      vim.lsp.config('ts_ls', { capabilities = capabilities })
-      vim.lsp.config('rust_analyzer', { capabilities = capabilities })
+      -- vim.lsp.config('gopls', { capabilities = capabilities })
+      -- vim.lsp.config('pyright', { capabilities = capabilities })
+      -- vim.lsp.config('ts_ls', { capabilities = capabilities })
+      -- vim.lsp.config('rust_analyzer', { capabilities = capabilities })
       vim.lsp.config('lua_ls', {
-        capabilities = capabilities,
+        -- capabilities = capabilities,
         settings = {
           Lua = {
             diagnostics = { globals = { "vim" } },
@@ -113,6 +111,72 @@ return {
         },
       })
     end,
+  },
+
+  -- {
+  --   "ray-x/go.nvim",
+  --   dependencies = {  -- optional packages
+  --     "ray-x/guihua.lua",
+  --     "neovim/nvim-lspconfig",
+  --     "nvim-treesitter/nvim-treesitter",
+  --   },
+  --   opts = function()
+  --     require("go").setup({})
+  --     local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
+  --     vim.api.nvim_create_autocmd("BufWritePre", {
+  --       pattern = "*.go",
+  --       callback = function()
+  --       require('go.format').goimports()
+  --       end,
+  --       group = format_sync_grp,
+  --     })
+  --     return {
+  --       -- lsp_keymaps = false,
+  --       -- other options
+  --     }
+  --   end,
+  --   event = {"CmdlineEnter"},
+  --   ft = {"go", 'gomod'},
+  --   build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+  -- },
+
+  -- Diagnostics
+  {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "<leader>xx",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xX",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>cs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>cl",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+      {
+        "<leader>xL",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "<leader>xQ",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
+    },
   },
 
   -- Polyglot language pack

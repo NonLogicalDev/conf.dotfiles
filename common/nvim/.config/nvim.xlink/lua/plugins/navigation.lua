@@ -113,5 +113,5 @@ return {
   },
 
   -- Enhanced jump list
-  { "vim-scripts/EnhancedJumps", event = "VeryLazy" },
+  -- { "vim-scripts/EnhancedJumps", event = "VeryLazy" },
 }
