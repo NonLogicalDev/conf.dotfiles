@@ -43,13 +43,12 @@ vim.opt.writebackup = false
 vim.opt.swapfile = false
 vim.opt.autowrite = true
 
--- Clipboard: use system clipboard if available, otherwise rely on OSC-52
-if vim.fn.has('clipboard') == 1 then
-  vim.opt.clipboard = "unnamedplus"
-else
-  -- System clipboard not available, set up OSC-52 as fallback
-  vim.opt.clipboard = ""
+-- Clipboard: disable auto-sync with system clipboard
+-- Use explicit "+ register or keybindings to copy to system clipboard
+vim.opt.clipboard = ""
 
+-- If system clipboard is not available, override + register with OSC-52
+if vim.fn.has('clipboard') == 0 then
   local function copy(lines, _)
     require('osc52').copy(table.concat(lines, '\n'))
   end
@@ -63,11 +62,6 @@ else
     copy = {['+'] = copy, ['*'] = copy},
     paste = {['+'] = paste, ['*'] = paste},
   }
-
-  -- Keymaps for OSC52 clipboard
-  vim.keymap.set('n', '<leader>c', '"+y', { desc = 'Copy to clipboard' })
-  vim.keymap.set('n', '<leader>cc', '"+yy', { desc = 'Copy line to clipboard' })
-  vim.keymap.set('v', '<leader>c', '"+y', { desc = 'Copy selection to clipboard' })
 end
 
 -- Misc
