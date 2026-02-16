@@ -1,0 +1,396 @@
+#!/bin/bash
+
+# Steam Game Wine Command Runner
+# This script runs wine commands within a specific Steam game's prefix
+
+# Exit on any error
+set -e
+
+show_usage() {
+    echo "Usage: $0 <command> [args...]"
+    echo ""
+    echo "Commands:"
+    echo "  run <game_id> <wine_command> [command_args...]  Run a wine command for a specific game"
+    echo "  list-games                                      List all games with Wine prefixes"
+    echo ""
+    echo "Examples:"
+    echo "  $0 run 123456 winecfg"
+    echo "  $0 run 123456 regedit"
+    echo "  $0 run 123456 \"wine explorer\""
+    echo "  $0 list-games"
+    echo ""
+    echo "Environment variables:"
+    echo "  STEAM_LIBRARY    Path to Steam library (default: $HOME/.local/share/Steam/steamapps)"
+    echo "  STEAM_HOME       Path to Steam Home (default: $HOME/.steam)"
+    exit 1
+}
+
+get_game_info() {
+    local game_id="$1"
+    local acf_file="$STEAM_LIBRARY/appmanifest_${game_id}.acf"
+
+    if [ -f "$acf_file" ]; then
+        awk '
+            # Reset state at start of file
+            BEGIN {
+                in_appstate = 0
+                found_name = 0
+                found_installdir = 0
+            }
+
+            # Look for AppState section
+            /^"AppState"/ { in_appstate = 1; next }
+
+            # Track nested braces
+            /^{/ { if (in_appstate) brace_depth++ }
+            /^}/ { if (in_appstate) {
+                brace_depth--
+                if (brace_depth < 0) in_appstate = 0
+            }}
+
+            # Find fields inside AppState
+            in_appstate && /^\s*"name"/ {
+                match($0, /"name"\s*"([^"]*(\\"[^"]*)*)"/, arr)
+                if (arr[1] != "") {
+                    gsub(/\\"/, "\"", arr[1])
+                    name = arr[1]
+                    found_name = 1
+                }
+            }
+
+            in_appstate && /^\s*"installdir"/ {
+                match($0, /"installdir"\s*"([^"]*(\\"[^"]*)*)"/, arr)
+                if (arr[1] != "") {
+                    gsub(/\\"/, "\"", arr[1])
+                    installdir = arr[1]
+                    found_installdir = 1
+                }
+            }
+
+            # If we found both, we can exit early
+            found_name && found_installdir { exit }
+
+            # If we reach EOF
+            END {
+                if (!found_name) name = "unknown-game"
+                if (!found_installdir) installdir = "unknown-dir"
+                print name "\t" installdir
+            }
+        ' "$acf_file"
+    else
+        printf "unknown-game\tunknown-dir\n"
+    fi
+}
+
+# List all games with Wine prefixes
+list_games() {
+    local compatdata_dir="$STEAM_LIBRARY/compatdata"
+    local show_prefix=0
+    local tab_separted=0
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --show-prefix)
+                show_prefix=1
+                shift
+                ;;
+            --tsv)
+                tab_separted=1
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+
+    if [[ ! -d "$compatdata_dir" ]]; then
+        echo "Error: compatdata directory not found: $compatdata_dir"
+        exit 1
+    fi
+
+    echo "Games with Wine prefixes:"
+    echo "------------------------"
+
+    local formatter_command=( column -ts "$(printf "\t")" )
+    if [[ tab_separted -eq 1 ]]; then
+        formatter_command=( cat )
+    fi
+
+    (
+        for prefix_dir in "$compatdata_dir"/*/; do
+            if [[ -d "$prefix_dir/pfx" ]]; then
+                local game_id=$(basename "$prefix_dir")
+                IFS=$'\t' read -r game_name install_dir < <(get_game_info "$game_id")
+
+                local install_dir_checked="$STEAM_LIBRARY/common/$install_dir"
+                if [[ ! -d $install_dir_checked ]]; then
+                    install_dir_checked="unknown-install-dir"
+                else
+                    install_dir_checked="$(quote_path "$install_dir_checked")"
+                fi
+
+                    if [[ $show_prefix -eq 1 ]]; then
+                        printf "%s\t%s\t%s\t%s\n" \
+                            "$game_id" \
+                            "$game_name" \
+                            "$install_dir_checked"\
+                            "${prefix_dir}pfx"
+                    else
+                        printf "%s\t%s\t%s\n" \
+                            "$game_id" \
+                            "$game_name" \
+                            "$install_dir_checked"
+                    fi
+            fi
+        done
+    ) | "${formatter_command[@]}"
+}
+
+quote_path() {
+    local path="$1"
+    if [[ $path =~ [[:space:]] ]]; then
+        printf '%q' "$path"
+    else
+        printf '%s' "$path"
+    fi
+}
+
+# Find the appropriate Proton installation
+find_proton() {
+    local proton_version="$1"
+    local proton_path=""
+
+    if [ -n "$proton_version" ]; then
+        # Try exact match first, then fallback to case-insensitive
+        for dir in "$STEAM_LIBRARY/common"/*; do
+            if [[ "${dir,,}" == *"${proton_version,,}"* ]]; then
+                proton_path="$dir"
+                echo "Found game's configured Proton: $proton_path"
+                return 0
+            fi
+        done
+    fi
+
+    # If no specific version found, try latest version
+    echo "Looking for latest Proton version..."
+    local latest_version
+    latest_version=$(find "$STEAM_LIBRARY/common" -maxdepth 1 -type d -name "Proton [0-9]*" -printf '%P\n' 2>/dev/null | \
+                    sort -V | tail -n1)
+    if [ -n "$latest_version" ]; then
+        echo "Using alternative Proton: $STEAM_LIBRARY/common/$latest_version"
+        echo "$STEAM_LIBRARY/common/$latest_version"
+        return 0
+    fi
+
+    # Try experimental as last resort
+    for dir in "$STEAM_LIBRARY/common"/*; do
+        if [[ "${dir,,}" == *"proton"*"experimental"* ]]; then
+            echo "Using Proton Experimental: $dir"
+            echo "$dir"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Get game's configured Proton version from Steam's config
+get_game_proton_version() {
+    local game_id="$1"
+    local config_file="$STEAM_HOME/root/config/config.vdf"
+
+    if [ ! -f "$config_file" ]; then
+        return 1
+    fi
+
+    awk -v game_id="\"$game_id\"" '
+        /^[[:space:]]*"CompatToolMapping"/ {
+            in_compat = 1
+            next
+        }
+        in_compat && /^[[:space:]]*{/ {
+            brace_count++
+            next
+        }
+        in_compat && /^[[:space:]]*}/ {
+            brace_count--
+            if (brace_count == 0) {
+                in_compat = 0
+            }
+            next
+        }
+        in_compat && $1 == game_id {
+            in_game = 1
+            next
+        }
+        in_game && /^[[:space:]]*"name"/ {
+            gsub(/^[[:space:]]*"name"[[:space:]]*"/, "")
+            gsub(/".*$/, "")
+            print
+            exit
+        }
+    ' "$config_file"
+}
+
+# Check for running wineserver and handle gracefully
+check_wineserver() {
+    local prefix="$1"
+
+    if WINEPREFIX="$prefix" wineserver -w0 2>/dev/null; then
+        echo "Warning: Found running wineserver for prefix: $prefix"
+        echo "Running wine processes:"
+        ps aux | grep -E "\\bwine(server)?\\b.*$prefix" | grep -v grep
+
+        read -rp "Do you want to terminate the existing wineserver? (y/N) " response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            echo "Terminating wineserver..."
+            if [ -n "$WINESERVER" ] && [ -x "$WINESERVER" ]; then
+                env WINEPREFIX="$prefix" "$WINESERVER" -k
+            else
+                env WINEPREFIX="$prefix" wineserver -k
+            fi
+            sleep 1  # Give it a moment to shut down
+            return 0
+        else
+            echo "Aborted. Please close running wine applications first."
+            exit 1
+        fi
+    fi
+    return 0
+}
+
+run_wine_command() {
+    if [ $# -lt 2 ]; then
+        show_usage
+    fi
+
+    local game_id="$1"
+    local wine_command="$2"
+    shift 2
+    local command_args="$@"
+
+    # Check if game prefix exists
+    local game_prefix="$STEAM_LIBRARY/compatdata/$game_id/pfx"
+    if [ ! -d "$game_prefix" ]; then
+        echo "Error: Game prefix not found: $game_prefix"
+        exit 1
+    fi
+
+    # Find appropriate Proton version
+    local proton_version
+    proton_version=$(get_game_proton_version "$game_id" || :)
+    local proton_path=$(find_proton "$proton_version" || :)
+
+    # Set up wine environment
+    if [ -n "$proton_path" ]; then
+        local proton_wine="$proton_path/files/bin/wine"
+        if [ -x "$proton_wine" ]; then
+            echo "Using Proton wine from: $proton_path"
+            export WINESERVER="$proton_path/files/bin/wineserver"
+            unset WINELOADER WINEDLLPATH
+
+            export PATH="$proton_path/files/bin:$PATH"
+            if [ -d "$proton_path/files/lib" ]; then
+                export LD_LIBRARY_PATH="$proton_path/files/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            fi
+            if [ -d "$proton_path/files/lib64" ]; then
+                export LD_LIBRARY_PATH="$proton_path/files/lib64:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            fi
+
+            check_wineserver "$game_prefix"
+        else
+            echo "Warning: Proton wine executable not found at $proton_wine"
+            echo "Falling back to system wine"
+        fi
+    else
+        echo "No Proton installation found, using system wine"
+    fi
+
+    # Run the wine command
+    echo "Running '$wine_command $command_args' in prefix: $game_prefix"
+
+    # Function to get Windows PATH from registry
+    get_windows_path() {
+        local reg_output
+        reg_output=$(env WINEPREFIX="$game_prefix" wine reg query 'HKLM\System\CurrentControlSet\Control\Session Manager\Environment' /v PATH 2>/dev/null)
+        if [ $? -eq 0 ]; then
+            # Extract just the path value and convert to array
+            echo "$reg_output" | grep "PATH" | sed 's/^.*REG_[^ ]* //' | tr ';' '\n'
+        fi
+    }
+
+    # If the command doesn't contain a path separator, try to find it in the prefix
+    if [[ "$wine_command" != *"/"* ]] && [[ "$wine_command" != *"\\"* ]]; then
+        # Default Windows paths (fallback if registry query fails)
+        local prefix_paths=(
+            "C:/windows/system32"
+            "C:/windows"
+            "C:/windows/system32/wbem"
+            "C:/Program Files/Common Files"
+            "C:/Program Files (x86)/Common Files"
+        )
+
+        # Try to get paths from registry
+        while IFS= read -r winpath; do
+            if [ -n "$winpath" ]; then
+                prefix_paths+=("$winpath")
+            fi
+        done < <(get_windows_path)
+
+        # Convert Windows paths to prefix paths and check for the executable
+        for winpath in "${prefix_paths[@]}"; do
+            # Clean up the path (remove carriage returns, etc)
+            winpath=$(echo "$winpath" | tr -d '\r')
+            local prefix_path="$game_prefix/drive_c/${winpath#C:/}"
+            prefix_path="${prefix_path//\\/\/}"
+            if [ -x "$prefix_path/$wine_command" ] || [ -x "$prefix_path/$wine_command.exe" ]; then
+                wine_command="$winpath\\${wine_command%.exe}.exe"
+                wine_command="${wine_command//\//\\}"
+                break
+            fi
+        done
+    fi
+    if [ -n "$command_args" ]; then
+        ( set -x; env WINEPREFIX="$game_prefix" wine "$wine_command" $command_args )
+    else
+        ( set -x; env WINEPREFIX="$game_prefix" wine "$wine_command" )
+    fi
+
+    local exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo "Command failed with exit code: $exit_code"
+        exit $exit_code
+    fi
+}
+
+main() {
+    # Set default Steam library path if not already set
+    if [ -z "$STEAM_LIBRARY" ]; then
+        STEAM_LIBRARY="$HOME/.local/share/Steam/steamapps"
+    fi
+
+    if [ $# -lt 1 ]; then
+        show_usage
+    fi
+
+    local command="$1"
+    shift
+
+    case "$command" in
+        "run")
+            run_wine_command "$@"
+            ;;
+        "list-games")
+            list_games "$@"
+            ;;
+        *)
+            echo "Error: Unknown command: $command"
+            show_usage
+            ;;
+    esac
+}
+
+# Execute main function with all arguments
+main "$@"

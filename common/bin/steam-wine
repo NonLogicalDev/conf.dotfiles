@@ -1,0 +1,354 @@
+#!/usr/bin/env python3
+"""
+Steam Game Wine Command Runner
+
+This script provides functionality to run Wine commands within specific Steam game prefixes.
+It's a Python implementation focused on maintainability and clear error handling.
+
+Features:
+- List all Steam games with Wine prefixes
+- Run Wine commands in specific game prefixes
+- Automatic Proton version detection and configuration
+- Safe wineserver handling
+"""
+
+DESCRIPTION = """
+Steam Game Wine Command Runner
+
+examples:
+  steam-wine list-games
+  steam-wine list-games --prefix
+  steam-wine run 123456 winecfg
+  steam-wine run 123456 regedit
+  steam-wine run 123456 explorer.exe
+
+environment variables:
+  STEAM_LIBRARY    Path to Steam library (default: {steam_lib})
+  STEAM_HOME       Path to Steam Home (default: {steam_home})
+"""
+
+import argparse
+import json
+import logging
+import os
+import shutil
+import shlex
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional, List, Dict, Tuple, Iterator
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class SteamPaths:
+    """Container for Steam-related paths"""
+    library: Path
+    home: Path
+
+    @classmethod
+    def from_environment(cls) -> 'SteamPaths':
+        """Create SteamPaths using environment variables or defaults"""
+        return cls(
+            library=Path(os.getenv('STEAM_LIBRARY', Path.home() / '.local/share/Steam/steamapps')),
+            home=Path(os.getenv('STEAM_HOME', Path.home() / '.steam'))
+        )
+
+@dataclass
+class GameInfo:
+    """Container for Steam game information"""
+    id: str
+    name: str
+    install_dir: Optional[Path] = None
+    prefix_path: Optional[Path] = None
+
+class VDFParser:
+    """Simple parser for Valve Data Format (VDF) files"""
+    
+    @staticmethod
+    def parse_game_info(acf_path: Path, steam_library: Path) -> Optional[GameInfo]:
+        """Parse game information from an ACF file"""
+        game_id = acf_path.stem.split('_')[1]
+
+        if not acf_path.exists():
+            return GameInfo(
+                id=acf_path.stem.split('_')[1],
+                name="unknown-game",
+            )
+
+        try:
+            with open(acf_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # Simple state machine for parsing
+            in_appstate = False
+            name = install_dir = None
+            
+            for line in content.splitlines():
+                line = line.strip()
+                
+                if '"AppState"' in line:
+                    in_appstate = True
+                    continue
+                
+                if in_appstate:
+                    if '"name"' in line:
+                        name = line.split('"')[-2]
+                    elif '"installdir"' in line:
+                        install_dir = line.split('"')[-2]
+
+                    if name and install_dir:
+                        break
+
+            if name and install_dir:
+                install_dir_full = steam_library / 'common' / install_dir
+                if not install_dir_full.exists():
+                    install_dir_full = None
+
+                return GameInfo(
+                    id=game_id,
+                    name=name,
+                    install_dir=install_dir_full,
+                )
+            else:
+                return None
+
+        except Exception as e:
+            logger.warning(f"Failed to parse {acf_path}: {repr(e)}")
+            return None
+
+class ProtonManager:
+    """Handles Proton version detection and configuration"""
+    
+    def __init__(self, steam_paths: SteamPaths):
+        self.steam_paths = steam_paths
+
+    def get_game_proton_version(self, game_id: str) -> Optional[str]:
+        """Get configured Proton version for a specific game"""
+        config_path = self.steam_paths.home / 'root/config/config.vdf'
+        if not config_path.exists():
+            return None
+
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if f'"{game_id}"' in line and 'CompatToolMapping' in line:
+                        return line.split('"name"')[1].split('"')[1]
+        except Exception as e:
+            logger.warning(f"Failed to read Proton version: {e}")
+            return None
+
+    def find_proton_path(self, version: Optional[str] = None) -> Optional[Path]:
+        """Find appropriate Proton installation"""
+        common_path = self.steam_paths.library / 'common'
+        
+        if version:
+            # Try exact match first
+            for path in common_path.glob('*'):
+                if version.lower() in path.name.lower():
+                    logger.info(f"Found configured Proton: {path}")
+                    return path
+
+        # Try latest version
+        proton_versions = list(common_path.glob('Proton [0-9]*'))
+        if proton_versions:
+            latest = sorted(proton_versions, key=lambda p: p.name)[-1]
+            logger.info(f"Using latest Proton: {latest}")
+            return latest
+
+        # Try experimental
+        for path in common_path.glob('*'):
+            if 'proton' in path.name.lower() and 'experimental' in path.name.lower():
+                logger.info(f"Using Proton Experimental: {path}")
+                return path
+
+        return None
+
+class WineRunner:
+    """Handles Wine command execution within Steam game prefixes"""
+
+    def __init__(self, steam_paths: SteamPaths):
+        self.steam_paths = steam_paths
+        self.proton_manager = ProtonManager(steam_paths)
+
+    def list_games(self, show_prefix: bool = False) -> Iterator[GameInfo]:
+        """List all games with Wine prefixes"""
+        compatdata_dir = self.steam_paths.library / 'compatdata'
+        if not compatdata_dir.exists():
+            logger.error(f"Compatdata directory not found: {compatdata_dir}")
+            return
+
+        for prefix_dir in compatdata_dir.glob('*'):
+            if not (prefix_dir / 'pfx').is_dir():
+                continue
+
+            game_id = prefix_dir.name
+            acf_path = self.steam_paths.library / f'appmanifest_{game_id}.acf'
+            
+            if game_info := VDFParser.parse_game_info(acf_path, self.steam_paths.library):
+                if show_prefix:
+                    game_info.prefix_path = prefix_dir / 'pfx'
+                yield game_info
+
+    def check_wineserver(self, prefix: Path) -> bool:
+        """Check for running wineserver and handle gracefully"""
+        try:
+            o = subprocess.run(['wineserver', '-w0'], env={'WINEPREFIX': str(prefix)},
+                         check=True, capture_output=True)
+            
+            print(o.stderr)
+            # If we get here, wineserver is running
+            logger.warning(f"Found running wineserver for prefix: {prefix}")
+            
+            # Show running processes
+            processes = subprocess.run(
+                ['ps', 'aux'], capture_output=True, text=True, check=True
+            ).stdout
+            wine_processes = [p for p in processes.splitlines() 
+                            if 'wine' in p and str(prefix) in p]
+            
+            if wine_processes:
+                logger.warning("Running wine processes:\n" + "\n".join(wine_processes))
+            
+            response = input("Do you want to terminate the existing wineserver? (y/N) ")
+            if response.lower() == 'y':
+                logger.info("Terminating wineserver...")
+                env = {'WINEPREFIX': str(prefix)}
+                subprocess.run(['wineserver', '-k'], env=env, check=True)
+                return True
+            
+            logger.error("Aborted. Please close running wine applications first.")
+            return False
+            
+        except subprocess.CalledProcessError:
+            # No running wineserver
+            return True
+
+    def run_command(self, game_id: str, wine_command: List[str], run_tool: str = "wine"):
+        """Run a Wine command for a specific game"""
+        prefix_path = self.steam_paths.library / 'compatdata' / game_id / 'pfx'
+        if not prefix_path.exists():
+            logger.error(f"Game prefix not found: {prefix_path}")
+            return False
+
+        # Set up Proton environment
+        env = {}
+        env['WINEPREFIX'] = str(prefix_path)
+
+        proton_version = self.proton_manager.get_game_proton_version(game_id)
+        proton_bin = None
+        if proton_path := self.proton_manager.find_proton_path(proton_version):
+            proton_bin = proton_path / 'files/bin'
+            proton_wine = proton_bin / 'wine'
+            if proton_wine.exists():
+                logger.info(f"Using Proton wine from: {proton_path}")
+                env['WINESERVER'] = str(proton_path / 'files/bin/wineserver')
+                env.pop('WINELOADER', None)
+                env.pop('WINEDLLPATH', None)
+                
+                # Update PATH and LD_LIBRARY_PATH
+                env['PATH'] = f"{proton_path}/files/bin:{os.getenv('PATH', '')}"
+                for lib_dir in ['lib', 'lib64']:
+                    if (proton_path / 'files' / lib_dir).exists():
+                        ld_path = env.get('LD_LIBRARY_PATH', '')
+                        env['LD_LIBRARY_PATH'] = f"{proton_path}/files/{lib_dir}:{ld_path}"
+
+        env["WINEPATH"] = ";".join([
+            "C:\\windows\\system32",
+            "C:\\windows",
+            "C:\\windows\\system32\\wbem",
+            "C:\\Program Files\\Common Files",
+            "C:\\Program Files (x86)\\Common Files",
+        ])
+
+        # if not self.check_wineserver(prefix_path):
+        #     return False
+
+        wine_cmd = []
+        if proton_bin is not None:
+            if (proton_bin / run_tool).exists():
+                wine_cmd = [ str(proton_bin / run_tool) ]
+            elif 'wine' in run_tool and "/" not in run_tool:
+                raise RuntimeError(f'{repr(run_tool)} not found in wine prefix {shlex.quote(str(proton_bin))}')
+            else:
+                wine_cmd = [ run_tool ]
+
+        logger.warning(f"WINE: {proton_wine}")
+        env_full = os.environ.copy()
+        for k,v in env.items():
+            logger.warning(f"WINE_ENV({k}): {v}")
+            env_full[k] = v
+
+        # Execute wine command
+        try:
+            cmd = wine_cmd + wine_command
+            logger.info(f"Running: {' '.join(cmd)}")
+            subprocess.run(cmd, env=env_full, check=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Command failed with exit code: {e.returncode}")
+            return False
+
+def sh_quote(s):
+    return shlex.quote(s).removeprefix("'").removesuffix("'").replace(" ", "\\ ")
+
+def main():
+    steam_paths = SteamPaths.from_environment()
+
+    """Main entry point"""
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION.format(steam_lib=steam_paths.library, steam_home=steam_paths.home),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    subparsers = parser.add_subparsers(dest='command', required=True)
+
+    # List games command
+    list_parser = subparsers.add_parser('list-games', help='List all games with Wine prefixes')
+    list_parser.add_argument('--prefix', action='store_true', help='Show Wine prefix paths')
+
+    # Run command
+    run_parser = subparsers.add_parser('run', help='Run a wine command for a specific game')
+    run_parser.add_argument("--tool", default="wine", help="Run specific wine tool (wine, wineconsole, etc.) (default: wine)")
+    run_parser.add_argument('game_id', help='Steam game ID')
+    run_parser.add_argument('wine_command', nargs='*', help='Wine command to run')
+
+    args = parser.parse_args()
+    runner = WineRunner(steam_paths)
+
+    if args.command == 'list-games':
+        print("Games with Wine prefixes:")
+        print("-" * 80)
+
+        games = list(runner.list_games(args.prefix))
+        games_id_max = max([len(str(g.id)) for g in games])
+        games_name_max = max([len(g.name) for g in games])
+        games = sorted(games, key=lambda g: g.id)
+
+        for game in games:
+            if game.prefix_path:
+                print(f"{str(game.id).ljust(games_id_max)} {game.name.ljust(games_name_max)} {sh_quote(str(game.prefix_path))}")
+            else:
+                print(f"{str(game.id).ljust(games_id_max)} {game.name.ljust(games_name_max)} {sh_quote(str(game.install_dir))}")
+    
+    elif args.command == 'run':
+        print(repr(args))
+        success = runner.run_command(args.game_id, args.wine_command, run_tool=args.tool)
+        sys.exit(0 if success else 1)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("\nOperation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        if os.getenv('DEBUG'):
+            raise
+        sys.exit(1)
