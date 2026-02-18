@@ -1,6 +1,6 @@
 -- Editor options
-vim.opt.encoding = "utf-8"
-vim.opt.fileencoding = "utf-8"
+-- encoding is always utf-8 in Neovim (cannot be changed)
+-- fileencoding defaults to utf-8 for new files
 vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = false
