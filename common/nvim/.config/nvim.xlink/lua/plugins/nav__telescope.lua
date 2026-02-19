@@ -8,7 +8,7 @@ return {
   },
   cmd = "Telescope",
   keys = {
-    { "ff", "<cmd>Telescope find_files hidden=true<cr>", desc = "Find Files" },
+    { "ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
     { "fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
     { "fw", "<cmd>Telescope grep_string<cr>", desc = "Grep Word" },
     { "fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
@@ -23,6 +23,18 @@ return {
 
     telescope.setup({
       defaults = themes.get_ivy(),
+      pickers = {
+        live_grep = {
+          file_ignore_patterns = { 'node_modules', '.git', '.venv' },
+          additional_args = function(_)
+            return { "--hidden" }
+          end
+        },
+        find_files = {
+          file_ignore_patterns = { 'node_modules', '.git', '.venv' },
+          hidden = true
+        },
+      },
     })
 
     telescope.load_extension("fzf")
