@@ -75,9 +75,9 @@ theme = IBM 5153 CGA (custom)
 #theme = BirdsOfParadise
 
 #background = 1b2330
-background-opacity = 0.70
+background-opacity = 0.90
 background-opacity-cells = true
-background-blur = 90
+background-blur = 100
 
 # Keyboard
 # ------------------------------------------------------------------------------

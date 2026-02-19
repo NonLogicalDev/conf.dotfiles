@@ -175,13 +175,17 @@ done < <(__ps_parents)
 #=======================================
 # NonLogicalDev/shell.async-goprompt
 #=======================================
-if (( $+commands[goprompt] )) && (( $__INFO_DISABLE_PROMPT != 1 )); then
-  __plug.set goprompt "v:?.?.?"
-  eval "$(goprompt install zsh)"
-fi
-if (( $__INFO_DISABLE_PROMPT == 1 )); then
-  # Set PS1 to empty
-  PS1="$ "
+# if (( $+commands[goprompt] )) && (( $__INFO_DISABLE_PROMPT != 1 )); then
+#   __plug.set goprompt "v:?.?.?"
+#   eval "$(goprompt install zsh)"
+# fi
+# if (( $__INFO_DISABLE_PROMPT == 1 )); then
+#   # Set PS1 to empty
+#   PS1="$ "
+# fi
+
+if (( $__INFO_DISABLE_PROMPT != 1 )); then
+  microprompt_init
 fi
 
 #=======================================
