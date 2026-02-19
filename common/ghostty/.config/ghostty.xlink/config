@@ -49,13 +49,13 @@
 #custom-shader = /Users/oleg.utkin/.config/ghostty/crt.glsl
 ################################################################################
 
-font-family = Iosevka
-adjust-cell-height = -4
+#font-family = Iosevka Term
+adjust-cell-height = -2
 
-#font-family = Fixedsys Excelsior
+font-family = Fixedsys Excelsior
 font-feature = -calt, -liga, -dlig
 font-size = 16
-font-synthetic-style = false
+font-synthetic-style = true
 
 cursor-style = block
 shell-integration-features = no-cursor
@@ -63,19 +63,21 @@ window-inherit-font-size = false
 selection-invert-fg-bg = true
 
 clipboard-read = ask
+copy-on-select = clipboard
 
 term = xterm-256color
 
 #alpha-blending = linear-corrected
-alpha-blending = linear
-#window-colorspace = display-p3
+#alpha-blending = linear
+window-colorspace = display-p3
 
 theme = IBM 5153 CGA (custom)
 #theme = BirdsOfParadise
 
 #background = 1b2330
-#background-opacity = 0.95
-#background-blur = 6
+background-opacity = 0.70
+background-opacity-cells = true
+background-blur = 90
 
 # Keyboard
 # ------------------------------------------------------------------------------
@@ -87,7 +89,6 @@ keybind = "command+shift+r=reload_config"
 
 # (TMUX) Cmd + Shift + T -> Ctrl-A + C
 keybind = "command+shift+t=text:\x01c"
-
 
 # (TMUX) Cmd + Shift + [ -> Ctrl-A + p
 keybind = "command+shift+[=text:\x01p"
