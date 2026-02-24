@@ -1,6 +1,8 @@
 # vim: ft=gitignore
 .vscode/
 .idea/
+*.local.md
+.nvim.lua
 
 ### Vim ###
 [._]*.s[a-w][a-z]

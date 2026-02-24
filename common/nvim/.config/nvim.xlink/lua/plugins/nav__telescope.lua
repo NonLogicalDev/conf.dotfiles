@@ -8,14 +8,14 @@ return {
   },
   cmd = "Telescope",
   keys = {
-    { "ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
-    { "fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
-    { "fw", "<cmd>Telescope grep_string<cr>", desc = "Grep Word" },
-    { "fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
-    { "fj", "<cmd>Telescope jumplist<cr>", desc = "Jumplist" },
-    { "fr", "<cmd>Telescope lsp_references<cr>", desc = "LSP References" },
-    { "fd", "<cmd>Telescope lsp_definitions<cr>", desc = "LSP Definitions" },
-    { "fT", "<cmd>Telescope builtin<cr>", desc = "Telescope Builtin" },
+    { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
+    { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
+    { "<leader>fw", "<cmd>Telescope grep_string<cr>", desc = "Grep Word" },
+    { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
+    { "<leader>fj", "<cmd>Telescope jumplist<cr>", desc = "Jumplist" },
+    { "<leader>fr", "<cmd>Telescope lsp_references<cr>", desc = "LSP References" },
+    { "<leader>fd", "<cmd>Telescope lsp_definitions<cr>", desc = "LSP Definitions" },
+    { "<leader>fT", "<cmd>Telescope builtin<cr>", desc = "Telescope Builtin" },
   },
   config = function()
     local telescope = require("telescope")
