@@ -1,0 +1,149 @@
+#:schema https://jj-vcs.github.io/jj/latest/config-schema.json
+
+# --------------------------------------------------------------------------------
+# UI Settings
+# --------------------------------------------------------------------------------
+
+[ui]
+  default-command = ["lg"]
+
+  # use editor from $EDITOR environment variable
+  #editor = ["sh", "-c", "$EDITOR \"$@\"", "--"]
+
+  # use git diff formatter by default
+  diff-formatter = ":git"
+  conflict-marker-style = "git"
+
+  # Set up editors for diff, merge, and conflict resolution
+  pager = ":builtin"
+  diff-editor = ":builtin"
+  merge-editor = ":builtin"
+
+# --------------------------------------------------------------------------------
+# Colors
+# --------------------------------------------------------------------------------
+
+[colors]
+  "muted" = { fg = "black" }
+
+  "empty" = { fg = "red" }
+  "description placeholder" = { fg = "red" }
+  "empty description placeholder" = { fg = "red" }
+  "working_copy empty" = { fg = "red" }
+  "working_copy empty description placeholder" = { fg = "red" }
+
+  "author self" = { fg = "green", underline = true }
+  "author other" = { fg = "bright blue" }
+
+  "diff removed token" = { underline = false }
+  "diff added token" = { underline = false }
+
+  "bookmark" = { fg = "bright yellow" }
+  "bookmarks" = { fg = "bright yellow" }
+  "tag" = { fg = "bright yellow" }
+  "tags" = { fg = "bright yellow" }
+
+[git]
+  # private-commits is a built-in function that detects commits we would like to keep private
+  #   jj will by default refuse to push these commits to the remote repository
+  #
+  #   In this case any commit whose description is prefixed with "private:" will be considered private
+  private-commits = "description(glob:'private:*')"
+
+[snapshot]
+  # auto-track allows specifying which changes to track automatically
+  auto-track = "all()" # or "none()"
+
+  # immutable_heads() is a built-in function that returns the heads of the immutable changes
+  #   jj will by default refuse to alter immutable changes
+  "immutable_heads()" = "builtin_immutable_heads() | (bookmarks(glob:'oleg.utkin/*'))"
+
+# --------------------------------------------------------------------------------
+# General Config (templates, revset-aliases, etc.)
+# --------------------------------------------------------------------------------
+
+[revset-aliases]
+  # Helper: Closest bookmark to the commit
+  # https://github.com/jj-vcs/jj/discussions/5568
+  'closest_bookmark(to)' = 'heads(::to & bookmarks())'
+  'closest_pushable(to)' = 'heads(::to & ~description(exact:"") & (~empty() | merges()))'
+
+  # -- log revsets --
+
+  # log -- show the log of the current revision (default log expression)
+  'log' = 'present(@) | ancestors(immutable_heads().., 2) | present(trunk())'
+
+  # rlog -- show the ancestors and descendants of the current revision (up to 3 in each direction)
+  'rlog' = 'ancestors(trunk()..@, 2) | descendants(@, 3) | @'
+
+  # hlog -- show just the ancestors of the current revision (same as git log --oneline HEAD)
+  'hlog' = '::@'
+
+[template-aliases]
+  # Helper: check if the signature is the current user
+  'hlp_is_self(sig)' = 'stringify(sig.email()).lower() == config("user.email").as_string().lower()'
+
+  # DefaultOverride: Highlight unique prefix and show at least 5 characters
+  'format_short_id(id)' = 'id.shortest(6)'
+  'format_short_signature(signature)' = '''
+  label(
+    separate(" ",
+      "author",
+      if(hlp_is_self(signature), "self", "other"),
+    ),
+    concat("<", coalesce(signature.email().local(), email_placeholder), ">"),
+  )
+  '''
+
+[templates]
+  # git_push_bookmark -- dictates how remote branch is named for a given change-id
+  #   This is used by the `jj git push -c` (note the `-c` flag) command
+  git_push_bookmark = '''
+    separate("/",
+      self.author().email().local(),
+      "jj-change-id",
+      self.change_id().shortest(6)
+    )
+  '''
+
+  # Use builtin draft_commit_description template
+  draft_commit_description = '''
+    concat(
+      builtin_draft_commit_description,
+      "\nJJ: ignore-rest\n",
+      diff.git(),
+    )
+  '''
+
+# --------------------------------------------------------------------------------
+# Command Aliases
+# --------------------------------------------------------------------------------
+
+[aliases]
+  # -- missing useful helpers --
+  wt = ["workspace"]
+  ws = ["workspace"]
+
+  # lg -- just a nice short non-overwhelming log command
+  lg = ["log", "-n", "10", "--config", "revsets.log=rlog"]
+
+  # id -- show the change-id of a revision
+  id = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jj --ignore-working-copy log -n 1 -GT 'self.change_id()' -r "${1:-@}"
+  ''', ""]
+
+  # sha -- show the commit-id of a revision
+  sha = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jj --ignore-working-copy log -n 1 -GT 'self.commit_id()' -r "${1:-@}"
+  ''', ""]
+
+  # -- missing shorthands --
+
+  f = ["file"]
+
+  # tug -- pull up the most recent bookmark to the current revision
+  tug = ["bookmark", "move", "--from", "closest_bookmark(@)", "--to", "closest_pushable(@)"]
+
+  # -- diff-formatter options --
+  diff-git = ["diff", "--config", "ui.diff-formatter=:git"]
+  diff-jj = ["diff", "--config", "ui.diff-formatter=:color-words"]

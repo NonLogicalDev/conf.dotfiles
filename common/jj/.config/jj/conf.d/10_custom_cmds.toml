@@ -1,0 +1,272 @@
+# Complex command aliases for jj
+# These are personal workflow commands that use bash scripts
+
+[aliases]
+  # (d)iff (t)o -- show the differences between the current revision and a bookmark
+  diff-to = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jj_bm="$1"
+    if [[ -z "$jj_bm" ]]; then
+    echo "Error: must specify a bookmark as an argument (e.g. 'jj diff-to <bookmark>')"
+    exit 1
+    fi
+    jj --ignore-working-copy diff -f "fork_point(@|$jj_bm)" -t "@"
+  ''', "--"]
+
+  # (d)iff (b)etween -- show the differences between two bookmarks
+  diff-bw = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    _jji () { jj --ignore-working-copy "$@"; }
+
+    jj_bm_a="$1" jj_bm_b="$2"
+    if [[ -z "$jj_bm_a" ]] || [[ -z "$jj_bm_b" ]]; then
+    echo "Error: must specify a bookmark as an argument (e.g. 'jj diff-bw <bookmark1> <bookmark2>')"
+    exit 1
+    fi
+    jj_change_id_a=$(_jji log -n 1 -r "$jj_bm_a" -GT "self.change_id()")
+    if [[ -z "$jj_change_id_a" ]]; then
+    echo "Error: Could not find change_id for bookmark [$jj_bm_a] (bug)"
+    exit 1
+    fi
+    jj_change_id_b=$(_jji log -n 1 -r "$jj_bm_b" -GT "self.change_id()")
+    if [[ -z "$jj_change_id_b" ]]; then
+    echo "Error: Could not find change_id for bookmark [$jj_bm_b] (bug)"
+    exit 1
+    fi
+    _jji diff -f "fork_point(@|$jj_change_id_a)" -t "$jj_change_id_b"
+  ''', "---"]
+
+  # send -- send a specific bookmark to the remote repository
+  send = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jji() { jj --ignore-working-copy "$@"; }
+
+    jj_ref="${1:-@}"
+    jj_remote="${2:-origin}"
+
+    if [ -z "$jj_ref" ]; then
+      echo >&2 "Error: must specify a reference as an argument (e.g. 'jj send <reference>')"
+      exit 1
+    fi
+    if [ -z "$jj_remote" ]; then
+      echo >&2 "Error: must specify a remote as an argument (e.g. 'jj send <reference> <remote>') (default: origin)"
+      exit 1
+    fi
+
+    commit_json=$(jji log -n 1 -r "$jj_ref" -GT 'json(self)')
+    if [ -z "$commit_json" ]; then
+      echo >&2 "Error: Could not find commit for reference [$jj_ref]"
+      exit 1
+    fi
+
+    jj_change_id=$(echo "$commit_json" | jq -r '.change_id // ""')
+    if [ -z "$jj_change_id" ]; then
+      echo >&2 "Error: Could not find change_id for bookmark [$jj_ref] (bug)"
+      exit 1
+    fi
+
+    # Extract shortest unique prefix (first 8 characters, matching jj's .shortest() behavior)
+    jj_change_id_short="${jj_change_id:0:8}"
+
+    # Check if a bookmark exists in the commit's bookmarks
+    bookmarks_json=$(jji log -n 1 -r "$jj_change_id" -GT 'json(self.bookmarks())')
+    bookmarks_found=$(echo "$bookmarks_json" | jq -r --arg ref "$jj_ref" '.[]? | select(.name == $ref) | .name')
+
+    # Decide if we want to push as a bookmark or just as a change-id
+    bookmark_selected=""
+    bookmark_empty="(change-id: $jj_change_id_short)"
+
+    # If no bookmark selected yet and there are bookmarks, ask the user to choose one
+    if [ -z "$bookmark_selected" ] && [ $(printf "%s" "$bookmarks_found" | wc -l) -ge 0 ]; then
+      bookmark_selected=$({ echo "$bookmark_empty"; echo "$bookmarks_found"; } | gum choose --header "Select a bookmark to push as" --limit 1)
+      if [ -z "$bookmark_selected" ]; then
+        echo >&2 "Aborting: No bookmark option selected, assuming Ctrl-C was pressed"
+        exit 1
+      fi
+    fi
+    if [ "$bookmark_selected" = "$bookmark_empty" ]; then
+      bookmark_selected=""
+    fi
+
+    # Find author info
+    jj_author=$(echo "$commit_json" | jq -r '.author.email // ""' | cut -d@ -f1)
+    if [ -z "$jj_author" ]; then
+      echo >&2 "Error: Could not find author for bookmark [$jj_ref] (bug)"
+      exit 1
+    fi
+
+    # Find GIT commit id
+    git_commit_id=$(echo "$commit_json" | jq -r '.commit_id // ""')
+    if [ -z "$git_commit_id" ]; then
+      echo >&2 "Error: Could not find commit_id for bookmark [$jj_ref] (bug)"
+      exit 1
+    fi
+
+    if [ -z "$bookmark_selected" ]; then
+      ( set -x;
+        git push origin -f "$git_commit_id:refs/heads/$jj_author/jj-change-id/$jj_change_id_short"
+      )
+    fi
+    if [ -n "$bookmark_selected" ]; then
+      ( set -x;
+        git push origin -f "$git_commit_id:refs/heads/$jj_author/jj-bookmark/$bookmark_selected"
+      )
+    fi
+  ''', ""]
+
+  # sendi -- send a specific bookmark to the remote repository (interactive)
+  sendi = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jji() { jj --ignore-working-copy "$@"; }
+
+    jj_local_bookmarks=$(jji log -GT 'json(self.bookmarks())' -r 'bookmarks() & mine()' | jq -r '.[]|.name' | grep -v "/jj-publish/")
+
+    # ask user to select a bookmark
+    bookmark_empty="---"
+    bookmark_selected=$({ echo "$bookmark_empty"; echo "$jj_local_bookmarks"; } | gum choose --header "Select a bookmark to push" --limit 1)
+    if [ "$bookmark_selected" = "$bookmark_empty" ]; then
+      echo >&2 "Aborting: no bookmarks selected"
+      exit 1
+    fi
+
+    # send the selected bookmark
+    jj send "$bookmark_selected"
+  ''', ""]
+
+  # ------------------------------------------------------------------------------
+  # Fixups
+  # ------------------------------------------------------------------------------
+
+  fix-div = [ "util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jj_ref="${1:-@}"
+
+    jj_commit_ids=$(jj --ignore-working-copy log -r "change_id($(jj id $jj_ref))" -GT 'separate("\t", self.change_id(), commit_timestamp(self), self.commit_id()) ++ "\n"' | sort -n)
+    echo "$jj_commit_ids"
+
+    # if < 1 commit found, exit, its all good
+    if [ $(echo "$jj_commit_ids" | wc -l) -lt 2 ]; then
+      echo >&2 "OK: less than 2 commits found for reference [$jj_ref], reference is not divergent"
+      exit 0
+    fi
+
+    declare -a jj_git_shas_map
+    while IFS=$'\t' read -r jj_commit_id jj_timestamp jj_git_sha; do
+      jj_git_shas_array+=( "$jj_git_sha" )
+    done <<< "$jj_commit_ids"
+
+    echo "Diverging commit id options:"
+    echo "  ${jj_git_shas_array[@]}"
+
+    # if more than 2 commits found, we can't do anything, exit
+    if [ $(echo "$jj_commit_ids" | wc -l) -gt 2 ]; then
+      echo >&2 "Error: more than 2 commits found for reference [$jj_ref], reference is super divergent"
+      exit 1
+    fi
+
+    # compare via git diff first to second
+    # Use git diff-tree to get the summary
+    summary_output=$(git diff-tree --no-commit-id --name-status -r "${jj_git_shas_array[0]}" "${jj_git_shas_array[1]}")
+    echo "Checking for differences between the commits..."
+    if [ -n "$summary_output" ]; then
+      echo "Showing full diff..."
+      echo "================================================"
+      echo "$summary_output"
+      echo "================================================"
+      # Ask the user if they want to see the full diff
+      if gum confirm "Show full diff?"; then
+        echo "Showing full diff..."
+        echo "================================================"
+        git diff "${jj_git_shas_array[0]}:" "${jj_git_shas_array[1]}:" | cat
+        echo "================================================"
+      fi
+    else
+      echo "  No differences found."
+      echo "Undiverge the change by running:"
+      echo "  jj new ${jj_git_shas_array[1]} && jj abandon ${jj_git_shas_array[0]}"
+    fi
+  ''', ""]
+
+  # begone -- tries very hard to delete a bookmark
+  begone = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    jji() { jj --ignore-working-copy "$@"; }
+
+    jj_ref="$1"
+    if [ -z "$jj_ref" ]; then
+      echo >&2 "Error: must specify a reference as an argument (e.g. 'jj begone <reference>')"
+      exit 1
+    fi
+
+    jj_ref_local=$(echo "$jj_ref" | jq -Rr '(split("@")[0]) // ""')
+    jj_ref_remote=$(echo "$jj_ref" | jq -Rr '(split("@")[1]) // ""')
+
+    # Try deleting the local bookmark
+    if [ -z "$jj_ref_remote" ]; then
+      echo "Detected: local bookmark [$jj_ref]"
+      (set -x;
+        jji bookmark delete "$jj_ref_local"
+      ) || true
+    fi
+
+    # If remote bookmark is specified, try untracking and forgetting it, and deleting git remote branch associated with it
+    if [ -n "$jj_ref_remote" ]; then
+      (set -x;
+        jji bookmark untrack "$jj_ref"
+        jji bookmark forget --include-remotes "$jj_ref_local"
+        git update-ref -d "refs/heads/$jj_ref_remote/$jj_ref_local"
+      ) || true
+    fi
+  ''', ""]
+
+  # ------------------------------------------------------------------------------
+  # Squash Helpers
+  # ------------------------------------------------------------------------------
+
+  # (sq)uash to last (b)ookmark
+  sqb = ["util", "exec", "--", "bash", "-euxo", "pipefail", "-c", """
+    jj squash --use-destination-message --from "closest_bookmark(@)..@" --to "closest_bookmark(@)"
+  """, ""]
+
+  # (sq)uash to (p)arent
+  sqp = ["util", "exec", "--", "bash", "-euxo", "pipefail", "-c", """
+    jj squash --use-destination-message --from "@" --to "@-"
+  """, ""]
+
+  # (b)ookmark (m)ake (m)unique - make a unique bookmark name using random string (legacy)
+  mark = ["util", "exec", "--", "bash", "-euo", "pipefail", "-c", '''
+    gen_suffix() { ( LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom || true ) | head -c 5; }
+    jji() { jj --ignore-working-copy "$@"; }
+
+    prefix="${1:-}"
+    target="${2:-}"
+
+    if [[ -z "$target" ]]; then
+      target=$(
+        jji log -r 'trunk()..@ & mine()' -GT \
+          'separate(" ", self.change_id(), self.author().email().local(), "--", self.bookmarks().join(", "), "--", self.description().first_line()) ++ "\n"' \
+        | gum choose --header "Select a target change-id" --limit 1 \
+        | cut -d' ' -f1
+      )
+      if [[ -z "$target" ]]; then
+        echo >&2 "Error: Must provide a target change-id as an argument"
+        exit 1
+      fi
+    fi
+    if [[ -z "$prefix" ]]; then
+      prefix=$(gum input --placeholder "Bookmark prefix" --value ktlo)
+    fi
+
+    jj_json=$(jji log -n 1 -r "$target" -GT 'json(self)')
+    if [[ -z "$jj_json" ]]; then
+      echo >&2 "Error: Could not find change_id for target [$target]"
+      exit 1
+    fi
+
+    jj_change_id=$(echo "$jj_json" | jq -r '.change_id // ""')
+    if [[ -z "$jj_change_id" ]]; then
+      echo >&2 "Error: Could not find change_id for target [$target] (bug)"
+      exit 1
+    fi
+
+    jj_author=$(echo "$jj_json" | jq -r '.author.email // ""')
+    jj_description=$(echo "$jj_json" | jq -r '.description // ""')
+
+
+    jj_bookmark_name="${prefix}-$(gen_suffix)"
+    ( set -x; jj bookmark create "$jj_bookmark_name" -r "$jj_change_id" )
+  ''', ""]
