@@ -91,6 +91,14 @@ function __microprompt_prompt_date() {
   echo "%F{blue}$(date +%Y-%m-%dT%H:%M:%S)%f"
 }
 
+function __microprompt_prompt_host() {
+  # Detect if we're in a remote session (SSH)
+  if [[ -n "$SSH_CONNECTION" ]] || [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
+    local hostname="${HOST:-$(hostname -s 2>/dev/null || hostname)}"
+    echo "%F{cyan}($hostname)%f"
+  fi
+}
+
 function __microprompt_prompt_preexec() {
   __MICROPROMPT_LAST_CMD_START_TIME=$EPOCHSECONDS
 }
@@ -112,6 +120,12 @@ function __microprompt_prompt_func() {
 
   # Add date
   prompt_parts+=("$(__microprompt_prompt_date)")
+
+  # Add host if remote
+  local host_part="$(__microprompt_prompt_host)"
+  if [[ -n "$host_part" ]]; then
+    prompt_parts+=("$host_part")
+  fi
 
   # Add exit code if non-zero
   local exit_code_part="$(__microprompt_prompt_cmd_exit_code)"

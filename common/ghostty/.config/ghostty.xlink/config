@@ -71,8 +71,20 @@ term = xterm-256color
 #alpha-blending = linear
 window-colorspace = display-p3
 
-theme = IBM 5153 CGA (custom)
-#theme = BirdsOfParadise
+#theme = IBM 5153 CGA (custom)
+#theme = 0x96f
+#theme = Chalk
+#theme = Firewatch
+#theme = Github Dark
+#theme = Material Darker
+#theme = Catppuccin Mocha
+#theme = Snazzy Soft
+#theme = Sonokai
+#theme = Sublette
+#theme = Subliminal
+#theme = Sugarplum
+#theme = Symfonic
+theme = TokyoNight Night (custom)
 
 #background = 1b2330
 background-opacity = 0.90
