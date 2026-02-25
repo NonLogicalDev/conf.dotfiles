@@ -13,12 +13,14 @@ return {
     vim.api.nvim_create_autocmd('FileType', {
       callback = function()
         -- syntax highlighting, provided by Neovim
-        pcall(vim.treesitter.start)
+        local ts_available = pcall(vim.treesitter.start)
         -- folds, provided by Neovim (I don't like folds)
         -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
         -- vim.wo.foldmethod = 'expr'
-        -- indentation, provided by nvim-treesitter
-        vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        -- indentation, provided by nvim-treesitter (only if parser available)
+        if ts_available then
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end
       end,
     })
   end
