@@ -30,7 +30,7 @@ return {
             file = false,
             folder = false,
             folder_arrow = true,
-            git = false,
+            git = true,
           },
           glyphs = {
             folder = {
